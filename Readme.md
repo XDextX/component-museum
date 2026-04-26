@@ -56,6 +56,34 @@ El sitio compilado estará en el directorio `packages/gallery/dist/`
 npm run preview
 ```
 
+### Scripts del Monorepo (@s-ui/mono)
+
+Este proyecto usa **@s-ui/mono** para gestionar el monorepo. Proporciona comandos útiles para commits, releases y ejecución de comandos en múltiples paquetes:
+
+#### Commits y Releases
+
+```bash
+npm run commit              # Commit interactivo con plantilla (feat/fix/docs/etc)
+npm run check               # Preview de qué versiones se liberarán
+npm run release             # Publica nuevas versiones a npm
+npm run changelog           # Genera archivos CHANGELOG.md automáticamente
+```
+
+**Convenciones de Commits:** Usa [Conventional Commits](https://www.conventionalcommits.org/) - los commits se categorizan como `feat:`, `fix:`, `docs:`, `refactor:`, `perf:`, `test:`, `chore:`, `release:`
+
+#### Ejecutar comandos en todos los paquetes
+
+```bash
+npm run run "npm install"           # Ejecuta en serie en todos los paquetes
+npm run run-parallel "npm build"    # Ejecuta en paralelo (más rápido)
+```
+
+#### Mantenimiento
+
+```bash
+npm run phoenix              # Limpia e reinstala todas las dependencias
+```
+
 ## 📁 Estructura del Proyecto
 
 ```

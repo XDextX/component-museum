@@ -9,7 +9,14 @@
     "@s-ui/mono": "^2.45.0"
   },
   "scripts": {
-    "dev":"npm run dev --workspace=packages/gallery "
+    "dev": "npm run dev --workspace=packages/gallery",
+    "commit": "sui-mono commit",
+    "check": "sui-mono check",
+    "release": "sui-mono release",
+    "run": "sui-mono run",
+    "run-parallel": "sui-mono run-parallel",
+    "phoenix": "sui-mono phoenix",
+    "changelog": "sui-mono changelog"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",
