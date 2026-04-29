@@ -1,0 +1,164 @@
+---
+import { Breadcrumb as Comp, Code } from '@component-museum/astro';
+import '../styles/global.css';
+---
+
+<html lang='en'>
+	<head>
+		<meta charset='utf-8' />
+		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
+		<link rel='icon' href='/favicon.ico' />
+		<meta name='viewport' content='width=device-width' />
+		<meta name='generator' content={Astro.generator} />
+		<title>Breadcrumb Stories</title>
+	</head>
+	<body class='bg-gray-50 p-8'>
+		<div class='max-w-4xl mx-auto'>
+			<Comp items={[
+				{ label: 'Home', href: '/' },
+				{ label: 'Breadcrumb' }
+			]} />
+			<h1 class='text-4xl font-bold mb-12'>Breadcrumb Component</h1>
+
+			<!-- Basic Usage -->
+			<section class='mb-16'>
+				<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+				<div class='p-8 bg-white rounded-lg shadow'>
+					<Comp
+						items={[
+							{ label: 'Home', href: '/' },
+							{ label: 'Products', href: '/products' },
+							{ label: 'Electronics' },
+						]}
+					/>
+				</div>
+			</section>
+
+			<!-- With Different Separators -->
+			<section class='mb-16'>
+				<h2 class='text-2xl font-bold mb-6'>Custom Separators</h2>
+				<div class='space-y-4'>
+					<div class='p-8 bg-white rounded-lg shadow'>
+						<h3 class='font-semibold mb-4'>Forward Slash (default)</h3>
+						<Comp
+							items={[
+								{ label: 'Home', href: '/' },
+								{ label: 'Blog', href: '/blog' },
+								{ label: 'Post', href: '/blog/post' },
+								{ label: 'Article' },
+							]}
+						/>
+					</div>
+					<div class='p-8 bg-white rounded-lg shadow'>
+						<h3 class='font-semibold mb-4'>Arrow Separator</h3>
+						<Comp
+							separator='→'
+							items={[
+								{ label: 'Home', href: '/' },
+								{ label: 'Categories', href: '/categories' },
+								{ label: 'Tech' },
+							]}
+						/>
+					</div>
+					<div class='p-8 bg-white rounded-lg shadow'>
+						<h3 class='font-semibold mb-4'>Chevron Separator</h3>
+						<Comp
+							separator='›'
+							items={[
+								{ label: 'Dashboard', href: '/' },
+								{ label: 'Settings', href: '/settings' },
+								{ label: 'Account' },
+							]}
+						/>
+					</div>
+				</div>
+			</section>
+
+			<!-- Use Cases -->
+			<section class='mb-16'>
+				<h2 class='text-2xl font-bold mb-6'>Use Cases</h2>
+				<div class='space-y-4'>
+					<div class='p-8 bg-white rounded-lg shadow'>
+						<h3 class='font-semibold mb-4'>E-commerce Navigation</h3>
+						<Comp
+							items={[
+								{ label: 'Shop', href: '/' },
+								{ label: 'Electronics', href: '/electronics' },
+								{ label: 'Phones', href: '/electronics/phones' },
+								{ label: 'Smartphones' },
+							]}
+						/>
+					</div>
+					<div class='p-8 bg-white rounded-lg shadow'>
+						<h3 class='font-semibold mb-4'>Documentation Navigation</h3>
+						<Comp
+							items={[
+								{ label: 'Docs', href: '/docs' },
+								{ label: 'Getting Started', href: '/docs/getting-started' },
+								{ label: 'Installation', href: '/docs/getting-started/installation' },
+								{ label: 'npm Setup' },
+							]}
+						/>
+					</div>
+					<div class='p-8 bg-white rounded-lg shadow'>
+						<h3 class='font-semibold mb-4'>File System Navigation</h3>
+						<Comp
+							separator='/'
+							items={[
+								{ label: 'Documents', href: '/documents' },
+								{ label: 'Projects', href: '/documents/projects' },
+								{ label: '2024', href: '/documents/projects/2024' },
+								{ label: 'Q2' },
+							]}
+						/>
+					</div>
+				</div>
+			</section>
+
+			<!-- Code Examples -->
+			<section>
+				<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+				<Code language='astro' title='Complete Example' copyable>
+					{
+						"---\nimport { Breadcrumb } from \"@component-museum/astro\";\nimport \"@component-museum/astro/styles.css\";\n---\n\n<!-- Basic breadcrumb -->\n<Breadcrumb items={[\n  { label: 'Home', href: '/' },\n  { label: 'Products', href: '/products' },\n  { label: 'Electronics' }\n]} />\n\n<!-- With custom separator -->\n<Breadcrumb separator='→' items={[\n  { label: 'Dashboard', href: '/' },\n  { label: 'Reports', href: '/reports' },\n  { label: 'Sales' }\n]} />\n\n<!-- E-commerce example -->\n<Breadcrumb items={[\n  { label: 'Shop', href: '/' },\n  { label: 'Electronics', href: '/electronics' },\n  { label: 'Phones', href: '/electronics/phones' },\n  { label: 'iPhone 15' }\n]} />"
+					}
+				</Code>
+			</section>
+
+			<!-- Props -->
+			<section class='mt-16'>
+				<h2 class='text-2xl font-bold mb-6'>Props</h2>
+				<div class='bg-white rounded-lg border border-gray-200 p-6'>
+					<table class='w-full text-sm'>
+						<thead>
+							<tr class='border-b'>
+								<th class='text-left py-2 font-semibold'>Prop</th>
+								<th class='text-left py-2 font-semibold'>Type</th>
+								<th class='text-left py-2 font-semibold'>Default</th>
+								<th class='text-left py-2 font-semibold'>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr class='border-b'>
+								<td class='py-3'
+									><code class='bg-gray-100 px-2 py-1 rounded'>items</code></td
+								>
+								<td>BreadcrumbItem[]</td>
+								<td><code>[]</code></td>
+								<td>Array of breadcrumb items with label and optional href</td>
+							</tr>
+							<tr>
+								<td class='py-3'
+									><code class='bg-gray-100 px-2 py-1 rounded'>separator</code></td
+								>
+								<td>string</td>
+								<td><code>'/'</code></td>
+								<td>Character or string to separate breadcrumb items</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+		</div>
+	</body>
+</html>
