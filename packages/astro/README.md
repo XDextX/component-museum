@@ -38,27 +38,53 @@ A flexible button component with variants and sizes.
 **Examples:**
 
 ```astro
-<!-- Basic -->
-<Button>Click me</Button>
-
-<!-- Variants -->
 <Button variant="primary">Primary</Button>
-<Button variant="secondary">Secondary</Button>
-<Button variant="outline">Outline</Button>
+<Button variant="secondary" size="lg">Secondary Large</Button>
+<Button variant="outline" disabled>Disabled</Button>
+```
 
-<!-- Sizes -->
-<Button size="sm">Small</Button>
-<Button size="md">Medium</Button>
-<Button size="lg">Large</Button>
+---
 
-<!-- Combined -->
-<Button variant="outline" size="lg">Large Outline</Button>
+### Badge
 
-<!-- Disabled -->
-<Button disabled>Disabled</Button>
+A small label component with multiple variants and sizes.
 
-<!-- Custom classes -->
-<Button class="w-full">Full Width</Button>
+**Props:**
+- `variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info'` (default: 'primary')
+- `size?: 'sm' | 'md' | 'lg'` (default: 'md')
+- `class?: string` (additional Tailwind classes)
+
+**Examples:**
+
+```astro
+<Badge variant="primary">New</Badge>
+<Badge variant="success" size="lg">Approved</Badge>
+<Badge variant="danger" size="sm">Error</Badge>
+<Badge variant="warning">Pending</Badge>
+```
+
+---
+
+### Card
+
+A flexible container component for content organization.
+
+**Props:**
+- `variant?: 'basic' | 'elevated' | 'outlined'` (default: 'basic')
+- `class?: string` (additional Tailwind classes)
+
+**Examples:**
+
+```astro
+<Card variant="elevated">
+  <h3>Card Title</h3>
+  <p>Card content goes here</p>
+</Card>
+
+<Card variant="outlined" class="p-6">
+  <h2>Outlined Card</h2>
+  <p>With custom padding</p>
+</Card>
 ```
 
 ## License

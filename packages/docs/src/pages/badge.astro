@@ -1,0 +1,100 @@
+---
+import { Badge as Comp } from '@component-museum/astro';
+import '../styles/global.css';
+---
+
+<html lang='en'>
+	<head>
+		<meta charset='utf-8' />
+		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
+		<link rel='icon' href='/favicon.ico' />
+		<meta name='viewport' content='width=device-width' />
+		<meta name='generator' content={Astro.generator} />
+		<title>Badge Stories</title>
+	</head>
+	<body class='bg-gray-50 p-8'>
+		<div class='max-w-4xl mx-auto'>
+			<h1 class='text-4xl font-bold mb-12'>Badge Component</h1>
+
+			<!-- Variants -->
+			<section class='mb-16'>
+				<h2 class='text-2xl font-bold mb-6'>Variants</h2>
+				<div class='flex flex-wrap gap-4 p-8 bg-white rounded-lg shadow'>
+					<Comp variant='primary'>Primary</Comp>
+					<Comp variant='secondary'>Secondary</Comp>
+					<Comp variant='success'>Success</Comp>
+					<Comp variant='warning'>Warning</Comp>
+					<Comp variant='danger'>Danger</Comp>
+					<Comp variant='info'>Info</Comp>
+				</div>
+			</section>
+
+			<!-- Sizes -->
+			<section class='mb-16'>
+				<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+				<div
+					class='flex flex-wrap gap-6 p-8 bg-white rounded-lg shadow items-center'
+				>
+					<div class='flex flex-col items-center gap-4'>
+						<Comp size='sm'>Small</Comp>
+						<code class='text-sm text-gray-600'>size="sm"</code>
+					</div>
+					<div class='flex flex-col items-center gap-4'>
+						<Comp size='md'>Medium</Comp>
+						<code class='text-sm text-gray-600'>size="md"</code>
+					</div>
+					<div class='flex flex-col items-center gap-4'>
+						<Comp size='lg'>Large</Comp>
+						<code class='text-sm text-gray-600'>size="lg"</code>
+					</div>
+				</div>
+			</section>
+
+			<!-- Combinations -->
+			<section class='mb-16'>
+				<h2 class='text-2xl font-bold mb-6'>Combinations</h2>
+				<div class='flex flex-wrap gap-4 p-8 bg-white rounded-lg shadow'>
+					<Comp variant='success' size='sm'>New</Comp>
+					<Comp variant='warning' size='md'>Pending</Comp>
+					<Comp variant='danger' size='lg'>Critical</Comp>
+					<Comp variant='info' size='sm'>Info</Comp>
+					<Comp variant='primary' size='lg'>Featured</Comp>
+				</div>
+			</section>
+
+			<!-- Use Cases -->
+			<section class='mb-16'>
+				<h2 class='text-2xl font-bold mb-6'>Use Cases</h2>
+				<div
+					class='grid grid-cols-1 md:grid-cols-2 gap-4 p-8 bg-white rounded-lg shadow'
+				>
+					<div class='border-l-4 border-green-500 pl-4'>
+						<h3 class='font-semibold mb-2'>Status Tags</h3>
+						<p class='text-sm text-gray-600 mb-3'>Mark item status</p>
+						<div class='flex gap-2'>
+							<Comp variant='success'>Active</Comp>
+							<Comp variant='warning'>Inactive</Comp>
+						</div>
+					</div>
+					<div class='border-l-4 border-blue-500 pl-4'>
+						<h3 class='font-semibold mb-2'>Category Tags</h3>
+						<p class='text-sm text-gray-600 mb-3'>Organize content</p>
+						<div class='flex gap-2'>
+							<Comp variant='primary'>Feature</Comp>
+							<Comp variant='secondary'>Bug</Comp>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Code Examples -->
+			<section>
+				<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+				<div class='bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto'>
+					<pre
+						class='text-sm'><code>{'---\nimport { Badge } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic badge -->\n<Badge>Default</Badge>\n\n<!-- With variants -->\n<Badge variant="success">Success</Badge>\n<Badge variant="danger">Danger</Badge>\n\n<!-- With sizes -->\n<Badge size="sm">Small</Badge>\n<Badge size="lg">Large</Badge>\n\n<!-- Combined -->\n<Badge variant="warning" size="lg">Warning Large</Badge>'}</code></pre>
+				</div>
+			</section>
+		</div>
+	</body>
+</html>
