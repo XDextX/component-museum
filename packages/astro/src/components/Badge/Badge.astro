@@ -1,0 +1,23 @@
+---
+interface Props {
+	variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info';
+	size?: 'sm' | 'md' | 'lg';
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	variant = 'primary',
+	size = 'md',
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const variantClass = `badge-${variant}`;
+const sizeClass = `badge-${size}`;
+const finalClass = `badge ${variantClass} ${sizeClass} ${className}`;
+---
+
+<span class={finalClass} {...rest}>
+	<slot />
+</span>
