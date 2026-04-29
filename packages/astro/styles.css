@@ -194,6 +194,86 @@
   }
 
   /* ============================================
+     BREADCRUMB COMPONENT
+     ============================================ */
+
+  .breadcrumb {
+    @apply py-2;
+  }
+
+  .breadcrumb-list {
+    @apply flex flex-wrap items-center gap-0 list-none p-0 m-0;
+  }
+
+  .breadcrumb-item {
+    @apply flex items-center gap-0;
+  }
+
+  .breadcrumb-link {
+    @apply text-blue-600 hover:text-blue-700 hover:underline transition-colors px-1;
+  }
+
+  .breadcrumb-current {
+    @apply text-gray-900 font-medium px-1;
+  }
+
+  .breadcrumb-separator {
+    @apply text-gray-400 px-1;
+  }
+
+  /* ============================================
+     TREE COMPONENT
+     ============================================ */
+
+  .tree {
+    @apply font-sans text-gray-900;
+  }
+
+  .tree-list {
+    @apply list-none p-0 m-0;
+  }
+
+  .tree-item {
+    @apply relative;
+  }
+
+  .tree-node {
+    @apply flex items-center gap-2 py-2 px-1 rounded hover:bg-gray-100 transition-colors;
+  }
+
+  .tree-toggle {
+    @apply flex items-center justify-center w-5 h-5 p-0 bg-transparent border-0 cursor-pointer text-gray-600 hover:text-gray-900 transition-colors;
+  }
+
+  .tree-toggle-icon {
+    @apply transition-transform;
+  }
+
+  .tree-toggle[aria-expanded="false"] .tree-toggle-icon {
+    @apply rotate-0;
+  }
+
+  .tree-label {
+    @apply text-sm select-none;
+  }
+
+  .tree-link {
+    @apply text-sm text-blue-600 hover:text-blue-700 hover:underline transition-colors select-none;
+  }
+
+  .tree-spacer {
+    @apply w-5 h-5 flex-shrink-0;
+  }
+
+  .tree-children {
+    @apply ml-6 border-l border-gray-300;
+  }
+
+  .tree-children.hidden {
+    @apply hidden;
+  }
+
+  /* ============================================
      ADD MORE COMPONENTS HERE
      ============================================ */
 }
