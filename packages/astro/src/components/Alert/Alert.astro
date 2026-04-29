@@ -1,0 +1,80 @@
+---
+interface Props {
+  variant?: 'success' | 'warning' | 'danger' | 'info';
+  title?: string;
+  closable?: boolean;
+  id?: string;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  variant = 'info',
+  title,
+  closable = false,
+  id = `alert-${Math.random().toString(36).substr(2, 9)}`,
+  class: className = '',
+  ...rest
+} = Astro.props as Props;
+
+const variantClass = `alert-${variant}`;
+const finalClass = `alert ${variantClass} ${className}`;
+
+const iconMap = {
+  success: '✓',
+  warning: '⚠',
+  danger: '✕',
+  info: 'ℹ',
+};
+---
+
+<div class={finalClass} id={id} role='alert' {...rest}>
+  <div class='alert-content'>
+    <div class='alert-icon'>{iconMap[variant]}</div>
+    <div class='alert-body'>
+      {title && <h4 class='alert-title'>{title}</h4>}
+      <div class='alert-message'>
+        <slot />
+      </div>
+    </div>
+  </div>
+  {closable && (
+    <button
+      class='alert-close'
+      aria-label='Close alert'
+      data-alert-close={id}
+    >
+      ✕
+    </button>
+  )}
+</div>
+
+<script define:vars={{ alertId: id }}>
+  // Cerrar alerta con botón
+  document.querySelectorAll('[data-alert-close]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const alertElement = e.target.closest('.alert');
+      if (alertElement) {
+        alertElement.style.display = 'none';
+      }
+    });
+  });
+
+  // Métodos globales para controlar alertas
+  window.showAlert = function(alertId) {
+    const alert = document.getElementById(alertId);
+    if (alert) alert.style.display = 'flex';
+  };
+
+  window.hideAlert = function(alertId) {
+    const alert = document.getElementById(alertId);
+    if (alert) alert.style.display = 'none';
+  };
+
+  window.toggleAlert = function(alertId) {
+    const alert = document.getElementById(alertId);
+    if (alert) {
+      alert.style.display = alert.style.display === 'none' ? 'flex' : 'none';
+    }
+  };
+</script>

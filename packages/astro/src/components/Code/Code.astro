@@ -1,0 +1,68 @@
+---
+interface Props {
+	language?:
+		| 'javascript'
+		| 'typescript'
+		| 'python'
+		| 'html'
+		| 'css'
+		| 'astro'
+		| 'bash'
+		| 'json';
+	copyable?: boolean;
+	title?: string;
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	language = 'javascript',
+	copyable = false,
+	title,
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const codeId = `code-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<div class={`code-block ${className}`} {...rest}>
+	{title && <div class='code-title'>{title}</div>}
+	<div class='code-wrapper'>
+		<pre
+			class='code-pre'><code class={`language-${language}`}><slot /></code></pre>
+		{
+			copyable && (
+				<button class='code-copy' data-code-id={codeId} title='Copy code'>
+					Copy
+				</button>
+			)
+		}
+	</div>
+</div>
+
+<script>
+	document.addEventListener('click', async (e) => {
+		if (!(e.target instanceof HTMLElement)) return;
+
+		const btn = e.target.closest('.code-copy');
+		if (!btn) return;
+
+		const wrapper = btn.closest('.code-wrapper');
+		const pre = wrapper?.querySelector('pre');
+		const code = pre?.textContent?.trim() ?? '';
+
+		try {
+			await navigator.clipboard.writeText(code);
+
+			const originalText = btn.textContent;
+			btn.textContent = 'Copied!';
+
+			setTimeout(() => {
+				btn.textContent = originalText;
+			}, 2000);
+		} catch (err) {
+			console.error('Failed to copy:', err);
+		}
+	});
+</script>

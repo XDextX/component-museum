@@ -87,6 +87,84 @@ A flexible container component for content organization.
 </Card>
 ```
 
+---
+
+### Alert
+
+A flexible alert component for displaying messages, notifications, and warnings.
+
+**Props:**
+- `variant?: 'success' | 'warning' | 'danger' | 'info'` (default: 'info')
+- `title?: string` (optional title)
+- `closable?: boolean` (add close button, default: false)
+- `class?: string` (additional Tailwind classes)
+
+**Examples:**
+
+```astro
+<!-- Basic alert -->
+<Alert variant="info">
+  This is an info message.
+</Alert>
+
+<!-- With title -->
+<Alert variant="success" title="Success">
+  Operation completed successfully.
+</Alert>
+
+<!-- Closable alert -->
+<Alert variant="warning" title="Warning" closable>
+  This alert can be dismissed by the user.
+</Alert>
+
+<!-- All variants -->
+<Alert variant="success">Success message</Alert>
+<Alert variant="info">Info message</Alert>
+<Alert variant="warning">Warning message</Alert>
+<Alert variant="danger">Danger message</Alert>
+```
+
+---
+
+### Code
+
+A syntax-highlighted code block component with copy-to-clipboard functionality.
+
+**Props:**
+- `language?: 'javascript' | 'typescript' | 'python' | 'html' | 'css' | 'astro' | 'bash' | 'json'` (default: 'javascript')
+- `title?: string` (optional title for the code block)
+- `copyable?: boolean` (enable/disable copy button, default: true)
+- `class?: string` (additional Tailwind classes)
+
+**Examples:**
+
+```astro
+<!-- Basic code block -->
+<Code language="javascript">
+  const greeting = "Hello, World!";
+</Code>
+
+<!-- With title -->
+<Code language="typescript" title="Function Example">
+  const add = (a: number, b: number): number => a + b;
+</Code>
+
+<!-- Non-copyable -->
+<Code language="bash" copyable={false}>
+  npm install
+</Code>
+
+<!-- Different languages -->
+<Code language="python">
+  def greet(name):
+      return f"Hello, {name}!"
+</Code>
+
+<Code language="json">
+  { "name": "my-project", "version": "1.0.0" }
+</Code>
+```
+
 ## License
 
 MIT
