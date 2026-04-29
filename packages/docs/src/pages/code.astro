@@ -1,5 +1,5 @@
 ---
-import { Code as CodeComp } from '@component-museum/astro';
+import { Code as CodeComp, Breadcrumb } from '@component-museum/astro';
 import '../styles/global.css';
 ---
 
@@ -14,6 +14,10 @@ import '../styles/global.css';
 	</head>
 	<body class='bg-gray-50 p-8'>
 		<div class='max-w-4xl mx-auto'>
+			<Breadcrumb items={[
+				{ label: 'Home', href: '/' },
+				{ label: 'Code' }
+			]} />
 			<h1 class='text-4xl font-bold mb-12'>Code Component</h1>
 
 			<!-- Languages -->

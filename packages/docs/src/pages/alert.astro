@@ -1,5 +1,5 @@
 ---
-import { Alert as Comp, Code } from '@component-museum/astro';
+import { Alert as Comp, Code, Breadcrumb } from '@component-museum/astro';
 import '../styles/global.css';
 const copytext =
 	'---\nimport { Alert } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n<!-- Basic alert -->\n<Alert variant="info">\nThis is an info message.\n</Alert>\n\n<!-- With title -->\n<Alert variant="success" title="Success">\nOperation completed successfully.\n</Alert>\n\n<!-- Closable -->\n<Alert variant="warning" title="Warning" closable>\nThis alert can be dismissed by the user.\n</Alert>\n\n<!-- With ID for dynamic control -->\n<Alert id="myAlert" variant="info" title="Dynamic">\nThis alert can be controlled with JavaScript.\n</Alert>\n\n<!-- JavaScript control -->\n<script>\n// Show alert\nwindow.showAlert("myAlert");\n\n// Hide alert\nwindow.hideAlert("myAlert");\n\n// Toggle alert\nwindow.toggleAlert("myAlert");\n\n// Show after delay\nsetTimeout(() => {\nwindow.showAlert("myAlert");\n}, 1000);\n</script>`';
@@ -16,6 +16,10 @@ const copytext =
 	</head>
 	<body class='bg-gray-50 p-8'>
 		<div class='max-w-4xl mx-auto'>
+			<Breadcrumb items={[
+				{ label: 'Home', href: '/' },
+				{ label: 'Alert' }
+			]} />
 			<h1 class='text-4xl font-bold mb-12'>Alert Component</h1>
 
 			<!-- Variants -->
