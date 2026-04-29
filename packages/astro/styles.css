@@ -68,7 +68,7 @@
 
   /* Badge Sizes */
   .badge-sm {
-    @apply px-2 py-0.5 text-xs;
+    @apply px-2 py-0.5 text-xs justify-center;
   }
 
   .badge-md {
