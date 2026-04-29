@@ -9,7 +9,7 @@
     "@s-ui/mono": "^2.45.0"
   },
   "scripts": {
-    "dev": "npm run dev --workspace=packages/gallery",
+    "dev": "npm run dev --workspace=packages/docs",
     "commit": "sui-mono commit",
     "check": "sui-mono check",
     "release": "sui-mono release",

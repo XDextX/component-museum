@@ -1,17 +1,36 @@
 ---
-
+import '../styles/global.css';
 ---
 
-<html lang="en">
+<html lang='en'>
 	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<meta charset='utf-8' />
+		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
+		<link rel='icon' href='/favicon.ico' />
+		<meta name='viewport' content='width=device-width' />
+		<meta name='generator' content={Astro.generator} />
+		<title>Component Museum</title>
 	</head>
-	<body>
-		<h1>Astro</h1>
+	<body class='bg-gray-50'>
+		<div class='min-h-screen flex flex-col items-center justify-center p-8'>
+			<div class='max-w-2xl'>
+				<h1 class='text-5xl font-bold mb-4 text-gray-900'>Component Museum</h1>
+				<p class='text-xl text-gray-600 mb-12'>
+					A collection of reusable components for React and Astro
+				</p>
+
+				<div class='grid grid-cols-1 md:grid-cols-2 gap-6'>
+					<a
+						href='/button'
+						class='block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow'
+					>
+						<h2 class='text-2xl font-bold mb-2 text-gray-900'>Button</h2>
+						<p class='text-gray-600'>
+							A versatile button component with multiple variants and sizes
+						</p>
+					</a>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>
