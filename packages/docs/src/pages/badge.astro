@@ -1,5 +1,5 @@
 ---
-import { Badge as Comp } from '@component-museum/astro';
+import { Badge as Comp, Code } from '@component-museum/astro';
 import '../styles/global.css';
 ---
 
@@ -37,15 +37,15 @@ import '../styles/global.css';
 				>
 					<div class='flex flex-col items-center gap-4'>
 						<Comp size='sm'>Small</Comp>
-						<code class='text-sm text-gray-600'>size="sm"</code>
+						<Code class='text-sm text-gray-600'>size="sm"</Code>
 					</div>
 					<div class='flex flex-col items-center gap-4'>
 						<Comp size='md'>Medium</Comp>
-						<code class='text-sm text-gray-600'>size="md"</code>
+						<Code class='text-sm text-gray-600'>size="md"</Code>
 					</div>
 					<div class='flex flex-col items-center gap-4'>
 						<Comp size='lg'>Large</Comp>
-						<code class='text-sm text-gray-600'>size="lg"</code>
+						<Code class='text-sm text-gray-600'>size="lg"</Code>
 					</div>
 				</div>
 			</section>
@@ -90,10 +90,12 @@ import '../styles/global.css';
 			<!-- Code Examples -->
 			<section>
 				<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
-				<div class='bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto'>
-					<pre
-						class='text-sm'><code>{'---\nimport { Badge } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic badge -->\n<Badge>Default</Badge>\n\n<!-- With variants -->\n<Badge variant="success">Success</Badge>\n<Badge variant="danger">Danger</Badge>\n\n<!-- With sizes -->\n<Badge size="sm">Small</Badge>\n<Badge size="lg">Large</Badge>\n\n<!-- Combined -->\n<Badge variant="warning" size="lg">Warning Large</Badge>'}</code></pre>
-				</div>
+
+				<Code copyable>
+					{
+						'---\nimport { Badge } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic badge -->\n<Badge>Default</Badge>\n\n<!-- With variants -->\n<Badge variant="success">Success</Badge>\n<Badge variant="danger">Danger</Badge>\n\n<!-- With sizes -->\n<Badge size="sm">Small</Badge>\n<Badge size="lg">Large</Badge>\n\n<!-- Combined -->\n<Badge variant="warning" size="lg">Warning Large</Badge>'
+					}
+				</Code>
 			</section>
 		</div>
 	</body>

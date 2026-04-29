@@ -1,5 +1,5 @@
 ---
-import { Card as Comp, Button, Badge } from '@component-museum/astro';
+import { Card as Comp, Button, Badge, Code } from '@component-museum/astro';
 import '../styles/global.css';
 ---
 
@@ -114,10 +114,11 @@ import '../styles/global.css';
 			<!-- Code Examples -->
 			<section>
 				<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
-				<div class='bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto'>
-					<pre
-						class='text-sm'><code>{'---\nimport { Card, Button } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic card -->\n<Card variant="elevated" class="p-6">\n  <h3>Card Title</h3>\n  <p>Card content goes here</p>\n</Card>\n\n<!-- Card with sections -->\n<Card variant="elevated" class="p-0 overflow-hidden">\n  <div class="bg-blue-600 text-white p-4">\n    <h3>Header</h3>\n  </div>\n  <div class="p-6">\n    Content here\n  </div>\n  <div class="bg-gray-50 p-4">\n    <Button>Action</Button>\n  </div>\n</Card>'}</code></pre>
-				</div>
+				<Code language='astro' title='Complete Example'>
+					{
+						'---\nimport { Card, Button } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic card -->\n<Card variant="elevated" class="p-6">\n\t<h3>Card Title</h3>\n\t<p>Card content goes here</p>\n</Card>\n\n<!-- Card with sections -->\n<Card variant="elevated" class="p-0 overflow-hidden">\n\t<div class="bg-blue-600 text-white p-4">\n\t\t<h3>Header</h3>\n\t</div>\n\t<div class="p-6">\n\t\t<p>Content goes here</p>\n\t</div>\n\t<div class="bg-gray-50 p-4 flex gap-2">\n\t\t<Button size="sm">Save</Button>\n\t\t<Button variant="outline" size="sm">Cancel</Button>\n\t</div>\n</Card>'
+					}
+				</Code>
 			</section>
 		</div>
 	</body>

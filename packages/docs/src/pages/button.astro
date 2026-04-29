@@ -1,5 +1,5 @@
 ---
-import { Button as Btn } from '@component-museum/astro';
+import { Button as Btn, Code } from '@component-museum/astro';
 import '../styles/global.css';
 ---
 
@@ -24,15 +24,15 @@ import '../styles/global.css';
 				>
 					<div class='flex flex-col items-center gap-4'>
 						<Btn variant='primary'>Primary</Btn>
-						<code class='text-sm text-gray-600'>variant="primary"</code>
+						<Code class='text-sm text-gray-600'>variant="primary"</Code>
 					</div>
 					<div class='flex flex-col items-center gap-4'>
 						<Btn variant='secondary'>Secondary</Btn>
-						<code class='text-sm text-gray-600'>variant="secondary"</code>
+						<Code class='text-sm text-gray-600'>variant="secondary"</Code>
 					</div>
 					<div class='flex flex-col items-center gap-4'>
 						<Btn variant='outline'>Outline</Btn>
-						<code class='text-sm text-gray-600'>variant="outline"</code>
+						<Code class='text-sm text-gray-600'>variant="outline"</Code>
 					</div>
 				</div>
 			</section>
@@ -45,15 +45,15 @@ import '../styles/global.css';
 				>
 					<div class='flex flex-col items-center gap-4'>
 						<Btn size='sm'>Small</Btn>
-						<code class='text-sm text-gray-600'>size="sm"</code>
+						<Code class='text-sm text-gray-600'>size="sm"</Code>
 					</div>
 					<div class='flex flex-col items-center gap-4'>
 						<Btn size='md'>Medium</Btn>
-						<code class='text-sm text-gray-600'>size="md"</code>
+						<Code>size="md"</Code>
 					</div>
 					<div class='flex flex-col items-center gap-4'>
 						<Btn size='lg'>Large</Btn>
-						<code class='text-sm text-gray-600'>size="lg"</code>
+						<Code>size="lg"</Code>
 					</div>
 				</div>
 			</section>
@@ -92,10 +92,12 @@ import '../styles/global.css';
 			<!-- Code Examples -->
 			<section>
 				<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
-				<div class='bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto'>
-					<pre
-						class='text-sm'><code>{'---\nimport Button from "@component-museum/astro";\n---\n\n<!-- Basic button -->\n<Button>Click me</Button>\n\n<!-- With variants -->\n<Button variant="secondary">Secondary</Button>\n<Button variant="outline">Outline</Button>\n\n<!-- With sizes -->\n<Button size="sm">Small</Button>\n<Button size="md">Medium</Button>\n<Button size="lg">Large</Button>\n\n<!-- Combined -->\n<Button variant="outline" size="lg">Large Outline</Button>\n\n<!-- Disabled -->\n<Button disabled>Disabled</Button>\n\n<!-- Full width -->\n<Button class="w-full">Full Width</Button>'}</code></pre>
-				</div>
+
+				<Code copyable language='astro'
+					>{
+						'---\nimport Button from "@component-museum/astro";\n---\n\n<!-- Basic button -->\n<Button>Click me</Button>\n\n<!-- With variants -->\n<Button variant="secondary">Secondary</Button>\n<Button variant="outline">Outline</Button>\n\n<!-- With sizes -->\n<Button size="sm">Small</Button>\n<Button size="md">Medium</Button>\n<Button size="lg">Large</Button>\n\n<!-- Combined -->\n<Button variant="outline" size="lg">Large Outline</Button>\n\n<!-- Disabled -->\n<Button disabled>Disabled</Button>\n\n<!-- Full width -->\n<Button class="w-full">Full Width</Button>'
+					}</Code
+				>
 			</section>
 		</div>
 	</body>
