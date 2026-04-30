@@ -1,11 +1,6 @@
 ---
-export interface TreeItem {
-	label: string;
-	href?: string;
-	children?: TreeItem[];
-	expanded?: boolean;
-}
-
+import type { TreeItem } from './TreeItem';
+import TreeNode from './TreeNode.astro';
 interface Props {
 	items: TreeItem[];
 	class?: string;
@@ -13,123 +8,8 @@ interface Props {
 }
 
 const { items = [], class: className = '', ...rest } = Astro.props as Props;
-
-function generateId(label: string, depth: number): string {
-	return `tree-${label.replace(/\s+/g, '-').toLowerCase()}-${depth}-${Math.random().toString(36).substr(2, 9)}`;
-}
 ---
 
 <div class={`tree ${className}`} {...rest}>
-	<ul class='tree-list'>
-		{
-			items.map((item, index) => {
-				const itemId = generateId(item.label, 0);
-				const hasChildren = item.children && item.children.length > 0;
-
-				return (
-					<li class='tree-item'>
-						<div class='tree-node'>
-							{hasChildren && (
-								<button
-									class='tree-toggle'
-									aria-expanded={item.expanded ?? true}
-									aria-controls={itemId}
-									onclick={`document.getElementById('${itemId}').classList.toggle('hidden')`}
-								>
-									<svg
-										class='tree-toggle-icon'
-										width='16'
-										height='16'
-										viewBox='0 0 16 16'
-										fill='currentColor'
-									>
-										<path
-											d='M6 4l4 4-4 4'
-											stroke='currentColor'
-											stroke-width='2'
-											fill='none'
-											stroke-linecap='round'
-										/>
-									</svg>
-								</button>
-							)}
-							{!hasChildren && <span class='tree-spacer' />}
-							{item.href ? (
-								<a href={item.href} class='tree-link'>
-									{item.label}
-								</a>
-							) : (
-								<span class='tree-label'>{item.label}</span>
-							)}
-						</div>
-						{hasChildren && (
-							<ul class='tree-list tree-children' id={itemId}>
-								{item.children!.map((child, childIndex) => {
-									const childId = generateId(child.label, 1);
-									const childHasChildren = child.children && child.children.length > 0;
-
-									return (
-										<li class='tree-item'>
-											<div class='tree-node'>
-												{childHasChildren && (
-													<button
-														class='tree-toggle'
-														aria-expanded={child.expanded ?? true}
-														aria-controls={childId}
-														onclick={`document.getElementById('${childId}').classList.toggle('hidden')`}
-													>
-														<svg
-															class='tree-toggle-icon'
-															width='16'
-															height='16'
-															viewBox='0 0 16 16'
-															fill='currentColor'
-														>
-															<path
-																d='M6 4l4 4-4 4'
-																stroke='currentColor'
-																stroke-width='2'
-																fill='none'
-																stroke-linecap='round'
-															/>
-														</svg>
-													</button>
-												)}
-												{!childHasChildren && <span class='tree-spacer' />}
-												{child.href ? (
-													<a href={child.href} class='tree-link'>
-														{child.label}
-													</a>
-												) : (
-													<span class='tree-label'>{child.label}</span>
-												)}
-											</div>
-											{childHasChildren && (
-												<ul class='tree-list tree-children' id={childId}>
-													{child.children!.map((grandchild) => (
-														<li class='tree-item'>
-															<div class='tree-node'>
-																<span class='tree-spacer' />
-																{grandchild.href ? (
-																	<a href={grandchild.href} class='tree-link'>
-																		{grandchild.label}
-																	</a>
-																) : (
-																	<span class='tree-label'>{grandchild.label}</span>
-																)}
-															</div>
-														</li>
-													))}
-												</ul>
-											)}
-										</li>
-									);
-								})}
-							</ul>
-						)}
-					</li>
-				);
-			})
-		}
-	</ul>
+	<TreeNode items={items} />
 </div>
