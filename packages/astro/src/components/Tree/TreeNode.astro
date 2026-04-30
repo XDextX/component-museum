@@ -1,0 +1,44 @@
+---
+import type { TreeItem } from './TreeItem';
+import { generateId } from './scripts';
+import TreeSpacer from './TreeSpacer.astro';
+import TreeToggle from './TreeToggle.astro';
+import { default as TNode } from './TreeNode.astro';
+
+interface Props {
+	items?: TreeItem[];
+	class?: string;
+	[key: string]: any;
+}
+const { items = [], class: className = '', ...rest } = Astro.props as Props;
+---
+
+<ul class={`tree-list ${className}`} {...rest}>
+	{
+		items?.map((item, index) => {
+			const itemId = generateId(item.label, 0);
+			const hasChildren = item.children && item.children.length > 0;
+
+			return (
+				<li class='tree-item'>
+					<div class='tree-node'>
+						{hasChildren && (
+							<TreeToggle expanded={item.expanded ?? true} itemId={itemId} />
+						)}
+						{!hasChildren && <TreeSpacer />}
+						{item.href ? (
+							<a href={item.href} class='tree-link'>
+								{item.label}
+							</a>
+						) : (
+							<span class='tree-label'>{item.label}</span>
+						)}
+					</div>
+					{hasChildren && (
+						<TNode items={item.children} class:list={'tree-children'} />
+					)}
+				</li>
+			);
+		})
+	}
+</ul>
