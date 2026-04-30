@@ -1,42 +1,33 @@
 ---
 import { Tree } from '@component-museum/astro';
+import HomeLayout from '../layouts/HomeLayout.astro';
 import '../styles/global.css';
 ---
 
-<html lang='en'>
-	<head>
-		<meta charset='utf-8' />
-		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
-		<link rel='icon' href='/favicon.ico' />
-		<meta name='viewport' content='width=device-width' />
-		<meta name='generator' content={Astro.generator} />
-		<title>Component Museum</title>
-	</head>
-	<body class='bg-gray-50'>
-		<div class='min-h-screen flex flex-col items-center justify-center p-8'>
-			<div class='max-w-2xl'>
-				<h1 class='text-5xl font-bold mb-4 text-gray-900'>Component Museum</h1>
-				<p class='text-xl text-gray-600 mb-12'>
-					A collection of reusable components for React and Astro
-				</p>
+<HomeLayout title='Component Museum'>
+	<div class='min-h-screen flex flex-col items-center justify-center p-8'>
+		<div class='max-w-2xl'>
+			<h1 class='text-5xl font-bold mb-4 text-gray-900'>Component Museum</h1>
+			<p class='text-xl text-gray-600 mb-12'>
+				A collection of reusable components for React and Astro
+			</p>
 
-				<div class='bg-white rounded-lg shadow p-8'>
-					<Tree items={[
-						{
-							label: 'Components',
-							children: [
-								{ label: 'Button', href: '/button' },
-								{ label: 'Badge', href: '/badge' },
-								{ label: 'Card', href: '/card' },
-								{ label: 'Alert', href: '/alert' },
-								{ label: 'Code', href: '/code' },
-								{ label: 'Breadcrumb', href: '/breadcrumb' },
-								{ label: 'Tree', href: '/tree' },
-							],
-						},
-					]} />
-				</div>
+			<div class='bg-white rounded-lg shadow p-8'>
+				<Tree items={[
+					{
+						label: 'Components',
+						children: [
+							{ label: 'Button', href: '/button' },
+							{ label: 'Badge', href: '/badge' },
+							{ label: 'Card', href: '/card' },
+							{ label: 'Alert', href: '/alert' },
+							{ label: 'Code', href: '/code' },
+							{ label: 'Breadcrumb', href: '/breadcrumb' },
+							{ label: 'Tree', href: '/tree' },
+						],
+					},
+				]} />
 			</div>
 		</div>
-	</body>
-</html>
+	</div>
+</HomeLayout>
