@@ -1,154 +1,138 @@
 ---
+import DocsLayout from '../layouts/DocsLayout.astro';
 import { Code as CodeComp, Breadcrumb } from '@component-museum/astro';
-import '../styles/global.css';
 ---
 
-<html lang='en'>
-	<head>
-		<meta charset='utf-8' />
-		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
-		<link rel='icon' href='/favicon.ico' />
-		<meta name='viewport' content='width=device-width' />
-		<meta name='generator' content={Astro.generator} />
-		<title>Code Stories</title>
-	</head>
-	<body class='bg-gray-50 p-8'>
-		<div class='max-w-4xl mx-auto'>
-			<Breadcrumb items={[
-				{ label: 'Home', href: '/' },
-				{ label: 'Code' }
-			]} />
-			<h1 class='text-4xl font-bold mb-12'>Code Component</h1>
+<DocsLayout title='Code Stories'>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Code' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Code Component</h1>
 
-			<!-- Languages -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Supported Languages</h2>
-				<div class='space-y-4'>
-					<CodeComp language='javascript' title='JavaScript'>
-						{
-							`function greet(name) {\n  return \`Hello, \${name}!\`;\n}\n\nconsole.log(greet("World"));`
-						}</CodeComp
-					>
+	<!-- Languages -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Supported Languages</h2>
+		<div class='space-y-4'>
+			<CodeComp language='javascript' title='JavaScript'>
+				{
+					`function greet(name) {\n  return \`Hello, \${name}!\`;\n}\n\nconsole.log(greet("World"));`
+				}
+			</CodeComp>
+			<CodeComp language='typescript' title='TypeScript'>
+				{
+					`interface User {\n  id: number;\n  name: string;\n  email: string;\n}\n\nconst user: User = {\n  id: 1,\n  name: "John",\n  email: "john@example.com"\n};`
+				}
+			</CodeComp>
 
-					<CodeComp language='typescript' title='TypeScript'>
-						{
-							`interface User {\n  id: number;\n  name: string;\n  email: string;\n}\n\nconst user: User = {\n  id: 1,\n  name: "John",\n  email: "john@example.com"\n};`	
-						}</CodeComp
-					>
+			<CodeComp language='python' title='Python'>
+				{
+					`def greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("World"))`
+				}
+			</CodeComp>
+			<CodeComp language='html' title='HTML'>
+				{
+					`<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8">\n    <title>My Page</title>\n  </head>\n  <body>\n    <h1>Welcome</h1>\n  </body>\n</html>`
+				}
+			</CodeComp>
+			<CodeComp language='astro' title='Astro Component'>
+				{
+					`---\nimport { Code } from "@component-museum/astro";\n---\n\n<Code language="javascript" copyable title="Example">\n  const greeting = "Hello, World!";\n</Code>`
+				}
+			</CodeComp>
 
-					<CodeComp language='python' title='Python'>
-						{
-							`def greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("World"))`
-						}</CodeComp
-					>
+			<CodeComp language='bash' title='Bash Command'>
+				{
+					`# Clone repository\ngit clone https://github.com/user/repo.git\n\n# Install dependencies\nnpm install\n\n# Start development server\nnpm run dev`
+				}
+			</CodeComp>
 
-					<CodeComp language='html' title='HTML'>
-						{
-							`<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8">\n    <title>My Page</title>\n  </head>\n  <body>\n    <h1>Welcome</h1>\n  </body>\n</html>`
-						}</CodeComp
-					>
-				</div>
-			</section>
+			<CodeComp language='json' title='JSON Data'>
+				{
+					`{\n  "name": "component-museum",\n  "version": "1.0.0",\n  "description": "A collection of reusable components",\n  "components": ["Button", "Badge", "Card", "Alert", "Code"]\n}`
+				}
+			</CodeComp>
 
-			<!-- Features -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Features</h2>
-				<div class='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
-					<div class='p-4 bg-white rounded-lg border border-gray-200'>
-						<h3 class='font-semibold mb-2'>✓ Copy to Clipboard</h3>
-						<p class='text-sm text-gray-600'>
-							Click the Copy button to quickly copy code
-						</p>
-					</div>
-					<div class='p-4 bg-white rounded-lg border border-gray-200'>
-						<h3 class='font-semibold mb-2'>✓ Language Support</h3>
-						<p class='text-sm text-gray-600'>
-							Multiple programming languages supported
-						</p>
-					</div>
-					<div class='p-4 bg-white rounded-lg border border-gray-200'>
-						<h3 class='font-semibold mb-2'>✓ Optional Title</h3>
-						<p class='text-sm text-gray-600'>Add titles to identify code snippets</p>
-					</div>
-					<div class='p-4 bg-white rounded-lg border border-gray-200'>
-						<h3 class='font-semibold mb-2'>✓ Responsive</h3>
-						<p class='text-sm text-gray-600'>Works great on all screen sizes</p>
-					</div>
-				</div>
-
-				<div class='space-y-4'>
-					<CodeComp language='astro' title='Astro Component'>
-						{
-							`---\nimport { Code } from "@component-museum/astro";\n---\n\n<Code language="javascript" copyable title="Example">\n  const greeting = "Hello, World!";\n</Code>`
-						}</CodeComp
-					>
-
-					<CodeComp language='bash' title='Bash Command'>
-						{
-							`# Clone repository\ngit clone https://github.com/user/repo.git\n\n# Install dependencies\nnpm install\n\n# Start development server\nnpm run dev`
-						}</CodeComp
-					>
-
-					<CodeComp language='json' title='JSON Data'>
-						{
-							`{\n  "name": "component-museum",\n  "version": "1.0.0",\n  "description": "A collection of reusable components",\n  "components": ["Button", "Badge", "Card", "Alert", "Code"]\n}`
-						}</CodeComp
-					>
-				</div>
-			</section>
-
-			<!-- Usage Examples -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
-				<CodeComp language='astro' title='Complete Example'>
-					{
-						`---\nimport { Code } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic code block -->\n<Code language="javascript">\n  console.log("Hello World");\n</Code>\n\n<!-- With title -->\n<Code language="typescript" title="Function Example">\n  const add = (a: number, b: number): number => a + b;\n</Code>\n\n<!-- Non-copyable -->\n<Code language="bash" copyable={false}>\n  npm install\n</Code>\n\n<!-- All languages -->\n<Code language="python">Python code</Code>\n<Code language="html">HTML code</Code>\n<Code language="css">CSS code</Code>\n<Code language="json">JSON data</Code>`
-					}</CodeComp
-				>
-			</section>
-
-			<!-- Props -->
-			<section>
-				<h2 class='text-2xl font-bold mb-6'>Props</h2>
-				<div class='bg-white rounded-lg border border-gray-200 p-6'>
-					<table class='w-full text-sm'>
-						<thead>
-							<tr class='border-b'>
-								<th class='text-left py-2 font-semibold'>Prop</th>
-								<th class='text-left py-2 font-semibold'>Type</th>
-								<th class='text-left py-2 font-semibold'>Default</th>
-								<th class='text-left py-2 font-semibold'>Description</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr class='border-b'>
-								<td class='py-3'
-									><code class='bg-gray-100 px-2 py-1 rounded'>language</code></td
-								>
-								<td>string</td>
-								<td><code>'javascript'</code></td>
-								<td>Programming language for syntax highlighting</td>
-							</tr>
-							<tr class='border-b'>
-								<td class='py-3'
-									><code class='bg-gray-100 px-2 py-1 rounded'>title</code></td
-								>
-								<td>string</td>
-								<td>undefined</td>
-								<td>Optional title for the code block</td>
-							</tr>
-							<tr>
-								<td class='py-3'
-									><code class='bg-gray-100 px-2 py-1 rounded'>copyable</code></td
-								>
-								<td>boolean</td>
-								<td><code>true</code></td>
-								<td>Enable/disable copy button</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</section>
 		</div>
-	</body>
-</html>
+	</section>
+	<!-- Features -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Features</h2>
+		<div class='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
+			<div class='p-4 bg-white rounded-lg border border-gray-200'>
+				<h3 class='font-semibold mb-2'>✓ Copy to Clipboard</h3>
+				<p class='text-sm text-gray-600'>
+					Click the Copy button to quickly copy code
+				</p>
+			</div>
+			<div class='p-4 bg-white rounded-lg border border-gray-200'>
+				<h3 class='font-semibold mb-2'>✓ Language Support</h3>
+				<p class='text-sm text-gray-600'>
+					Multiple programming languages supported
+				</p>
+			</div>
+			<div class='p-4 bg-white rounded-lg border border-gray-200'>
+				<h3 class='font-semibold mb-2'>✓ Optional Title</h3>
+				<p class='text-sm text-gray-600'>Add titles to identify code snippets</p>
+			</div>
+			<div class='p-4 bg-white rounded-lg border border-gray-200'>
+				<h3 class='font-semibold mb-2'>✓ Responsive</h3>
+				<p class='text-sm text-gray-600'>Works great on all screen sizes</p>
+			</div>
+		</div>
+		</section>
+		<div class='space-y-4'>
+			
+		</div>
+
+		<!-- Usage Examples -->
+		<section class='mb-16'>
+			<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+			<CodeComp copyable language='astro' title='Complete Example'>
+				{
+					`---\nimport { Code } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic code block -->\n<Code language="javascript">\n  console.log("Hello World");\n</Code>\n\n<!-- With title -->\n<Code language="typescript" title="Function Example">\n  const add = (a: number, b: number): number => a + b;\n</Code>\n\n<!-- Non-copyable -->\n<Code language="bash" copyable={false}>\n  npm install\n</Code>\n\n<!-- All languages -->\n<Code language="python">Python code</Code>\n<Code language="html">HTML code</Code>\n<Code language="css">CSS code</Code>\n<Code language="json">JSON data</Code>`
+				}
+			</CodeComp>
+		</section>
+
+		<!-- Props -->
+		<section>
+			<h2 class='text-2xl font-bold mb-6'>Props</h2>
+			<div class='bg-white rounded-lg border border-gray-200 p-6'>
+				<table class='w-full text-sm'>
+					<thead>
+						<tr class='border-b'>
+							<th class='text-left py-2 font-semibold'>Prop</th>
+							<th class='text-left py-2 font-semibold'>Type</th>
+							<th class='text-left py-2 font-semibold'>Default</th>
+							<th class='text-left py-2 font-semibold'>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class='border-b'>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>language</code></td
+							>
+							<td>string</td>
+							<td><code>'javascript'</code></td>
+							<td>Programming language for syntax highlighting</td>
+						</tr>
+						<tr class='border-b'>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>title</code></td
+							>
+							<td>string</td>
+							<td>undefined</td>
+							<td>Optional title for the code block</td>
+						</tr>
+						<tr>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>copyable</code></td
+							>
+							<td>boolean</td>
+							<td><code>false</code></td>
+							<td>Enable/disable copy button</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+	</section>
+</DocsLayout>

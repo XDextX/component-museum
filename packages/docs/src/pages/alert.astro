@@ -1,140 +1,125 @@
 ---
+import DocsLayout from '../layouts/DocsLayout.astro';
 import { Alert as Comp, Code, Breadcrumb } from '@component-museum/astro';
-import '../styles/global.css';
+
 const copytext =
 	'---\nimport { Alert } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n<!-- Basic alert -->\n<Alert variant="info">\nThis is an info message.\n</Alert>\n\n<!-- With title -->\n<Alert variant="success" title="Success">\nOperation completed successfully.\n</Alert>\n\n<!-- Closable -->\n<Alert variant="warning" title="Warning" closable>\nThis alert can be dismissed by the user.\n</Alert>\n\n<!-- With ID for dynamic control -->\n<Alert id="myAlert" variant="info" title="Dynamic">\nThis alert can be controlled with JavaScript.\n</Alert>\n\n<!-- JavaScript control -->\n<script>\n// Show alert\nwindow.showAlert("myAlert");\n\n// Hide alert\nwindow.hideAlert("myAlert");\n\n// Toggle alert\nwindow.toggleAlert("myAlert");\n\n// Show after delay\nsetTimeout(() => {\nwindow.showAlert("myAlert");\n}, 1000);\n</script>`';
 ---
 
-<html lang='en'>
-	<head>
-		<meta charset='utf-8' />
-		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
-		<link rel='icon' href='/favicon.ico' />
-		<meta name='viewport' content='width=device-width' />
-		<meta name='generator' content={Astro.generator} />
-		<title>Alert Stories</title>
-	</head>
-	<body class='bg-gray-50 p-8'>
-		<div class='max-w-4xl mx-auto'>
-			<Breadcrumb items={[
-				{ label: 'Home', href: '/' },
-				{ label: 'Alert' }
-			]} />
-			<h1 class='text-4xl font-bold mb-12'>Alert Component</h1>
+<DocsLayout title='Alert Stories'>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Alert' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Alert Component</h1>
 
-			<!-- Variants -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Variants</h2>
-				<div class='space-y-4'>
-					<Comp variant='success'>
-						This is a success alert with a positive message.
-					</Comp>
-					<Comp variant='info'>
-						This is an info alert providing additional information.
-					</Comp>
-					<Comp variant='warning'>
-						This is a warning alert that requires attention.
-					</Comp>
-					<Comp variant='danger'>
-						This is a danger alert indicating an error or critical issue.
-					</Comp>
-				</div>
-			</section>
-
-			<!-- With Titles -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>With Titles</h2>
-				<div class='space-y-4'>
-					<Comp variant='success' title='Success'>
-						Your changes have been saved successfully.
-					</Comp>
-					<Comp variant='info' title='Information'>
-						New features are available in the latest version.
-					</Comp>
-					<Comp variant='warning' title='Warning'>
-						Your session will expire in 5 minutes.
-					</Comp>
-					<Comp variant='danger' title='Error'>
-						An error occurred while processing your request.
-					</Comp>
-				</div>
-			</section>
-
-			<!-- Closable -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Closable Alerts</h2>
-				<div class='space-y-4'>
-					<Comp variant='success' title='Great!' closable>
-						Click the X button to dismiss this alert.
-					</Comp>
-					<Comp variant='info' closable>
-						This notification can be closed by the user.
-					</Comp>
-					<Comp variant='warning' title='Attention' closable>
-						Dismissible warning message.
-					</Comp>
-				</div>
-			</section>
-
-			<!-- Dynamic Control -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Dynamic Control</h2>
-				<p class='text-gray-600 mb-4'>
-					Use JavaScript methods to show, hide, or toggle alerts programmatically.
-				</p>
-				<div class='mb-6 flex gap-3'>
-					<button
-						onclick='showAlert("demo-alert")'
-						class='px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700'
-					>
-						Show Alert
-					</button>
-					<button
-						onclick='hideAlert("demo-alert")'
-						class='px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700'
-					>
-						Hide Alert
-					</button>
-					<button
-						onclick='toggleAlert("demo-alert")'
-						class='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
-					>
-						Toggle Alert
-					</button>
-				</div>
-				<Comp id='demo-alert' variant='info' title='Dynamic Alert'>
-					This alert is controlled by JavaScript buttons above.
-				</Comp>
-			</section>
-
-			<!-- Use Cases -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Use Cases</h2>
-				<div class='space-y-4'>
-					<Comp variant='success' title='✓ Upload Complete'>
-						Your file has been uploaded successfully. It is now available for
-						download.
-					</Comp>
-					<Comp variant='warning' title='⚠ Disk Space Low'>
-						You have used 85% of your storage. Consider deleting old files.
-					</Comp>
-					<Comp variant='danger' title='✕ Connection Failed'>
-						Unable to connect to the server. Please check your internet connection.
-					</Comp>
-					<Comp variant='info' title='ℹ Update Available'>
-						A new version is available. Update now to get the latest features.
-					</Comp>
-				</div>
-			</section>
-
-			<!-- Code Examples -->
-			<section>
-				<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
-
-				<Code copyable>
-					{copytext}
-				</Code>
-			</section>
+	<!-- Variants -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Variants</h2>
+		<div class='space-y-4'>
+			<Comp variant='success'>
+				This is a success alert with a positive message.
+			</Comp>
+			<Comp variant='info'>
+				This is an info alert providing additional information.
+			</Comp>
+			<Comp variant='warning'>
+				This is a warning alert that requires attention.
+			</Comp>
+			<Comp variant='danger'>
+				This is a danger alert indicating an error or critical issue.
+			</Comp>
 		</div>
-	</body>
-</html>
+	</section>
+
+	<!-- With Titles -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>With Titles</h2>
+		<div class='space-y-4'>
+			<Comp variant='success' title='Success'>
+				Your changes have been saved successfully.
+			</Comp>
+			<Comp variant='info' title='Information'>
+				New features are available in the latest version.
+			</Comp>
+			<Comp variant='warning' title='Warning'>
+				Your session will expire in 5 minutes.
+			</Comp>
+			<Comp variant='danger' title='Error'>
+				An error occurred while processing your request.
+			</Comp>
+		</div>
+	</section>
+
+	<!-- Closable -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Closable Alerts</h2>
+		<div class='space-y-4'>
+			<Comp variant='success' title='Great!' closable>
+				Click the X button to dismiss this alert.
+			</Comp>
+			<Comp variant='info' closable>
+				This notification can be closed by the user.
+			</Comp>
+			<Comp variant='warning' title='Attention' closable>
+				Dismissible warning message.
+			</Comp>
+		</div>
+	</section>
+
+	<!-- Dynamic Control -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Dynamic Control</h2>
+		<p class='text-gray-600 mb-4'>
+			Use JavaScript methods to show, hide, or toggle alerts programmatically.
+		</p>
+		<div class='mb-6 flex gap-3'>
+			<button
+				onclick='showAlert("demo-alert")'
+				class='px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700'
+			>
+				Show Alert
+			</button>
+			<button
+				onclick='hideAlert("demo-alert")'
+				class='px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700'
+			>
+				Hide Alert
+			</button>
+			<button
+				onclick='toggleAlert("demo-alert")'
+				class='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
+			>
+				Toggle Alert
+			</button>
+		</div>
+		<Comp id='demo-alert' variant='info' title='Dynamic Alert'>
+			This alert is controlled by JavaScript buttons above.
+		</Comp>
+	</section>
+
+	<!-- Use Cases -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Use Cases</h2>
+		<div class='space-y-4'>
+			<Comp variant='success' title='✓ Upload Complete'>
+				Your file has been uploaded successfully. It is now available for download.
+			</Comp>
+			<Comp variant='warning' title='⚠ Disk Space Low'>
+				You have used 85% of your storage. Consider deleting old files.
+			</Comp>
+			<Comp variant='danger' title='✕ Connection Failed'>
+				Unable to connect to the server. Please check your internet connection.
+			</Comp>
+			<Comp variant='info' title='ℹ Update Available'>
+				A new version is available. Update now to get the latest features.
+			</Comp>
+		</div>
+	</section>
+
+	<!-- Code Examples -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+
+		<Code copyable>
+			{copytext}
+		</Code>
+	</section>
+</DocsLayout>

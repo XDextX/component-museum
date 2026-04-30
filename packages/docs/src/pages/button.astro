@@ -1,105 +1,93 @@
 ---
 import { Button as Btn, Code, Breadcrumb } from '@component-museum/astro';
-import '../styles/global.css';
+import DocsLayout from '../layouts/DocsLayout.astro';
 ---
 
-<html lang='en'>
-	<head>
-		<meta charset='utf-8' />
-		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
-		<link rel='icon' href='/favicon.ico' />
-		<meta name='viewport' content='width=device-width' />
-		<meta name='generator' content={Astro.generator} />
-		<title>Button Stories</title>
-	</head>
-	<body class='bg-gray-50 p-8'>
-		<div class='max-w-4xl mx-auto'>
-			<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Button' }]} />
-			<h1 class='text-4xl font-bold mb-12'>Button Component</h1>
+<DocsLayout title='Button Stories'>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Button' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Button Component</h1>
 
-			<!-- Variants -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Variants</h2>
-				<div
-					class='grid grid-cols-1 md:grid-cols-3 gap-8 p-8 bg-white rounded-lg shadow'
-				>
-					<div class='flex flex-col items-center gap-4'>
-						<Btn variant='primary'>Primary</Btn>
-						<Code class='text-sm text-gray-600'>variant="primary"</Code>
-					</div>
-					<div class='flex flex-col items-center gap-4'>
-						<Btn variant='secondary'>Secondary</Btn>
-						<Code class='text-sm text-gray-600'>variant="secondary"</Code>
-					</div>
-					<div class='flex flex-col items-center gap-4'>
-						<Btn variant='outline'>Outline</Btn>
-						<Code class='text-sm text-gray-600'>variant="outline"</Code>
-					</div>
-				</div>
-			</section>
-
-			<!-- Sizes -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
-				<div
-					class='flex flex-wrap gap-8 p-8 bg-white rounded-lg shadow items-center'
-				>
-					<div class='flex flex-col items-center gap-4'>
-						<Btn size='sm'>Small</Btn>
-						<Code class='text-sm text-gray-600'>size="sm"</Code>
-					</div>
-					<div class='flex flex-col items-center gap-4'>
-						<Btn size='md'>Medium</Btn>
-						<Code>size="md"</Code>
-					</div>
-					<div class='flex flex-col items-center gap-4'>
-						<Btn size='lg'>Large</Btn>
-						<Code>size="lg"</Code>
-					</div>
-				</div>
-			</section>
-
-			<!-- Combinations -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Combinations</h2>
-				<div
-					class='grid grid-cols-1 md:grid-cols-2 gap-4 p-8 bg-white rounded-lg shadow'
-				>
-					<Btn variant='secondary' size='sm'>Secondary Small</Btn>
-					<Btn variant='outline' size='md'>Outline Medium</Btn>
-					<Btn variant='secondary' size='lg'>Secondary Large</Btn>
-					<Btn variant='outline' size='sm'>Outline Small</Btn>
-				</div>
-			</section>
-
-			<!-- States -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>States</h2>
-				<div class='flex flex-wrap gap-4 p-8 bg-white rounded-lg shadow'>
-					<Btn>Hover me</Btn>
-					<Btn disabled>Disabled</Btn>
-					<Btn variant='outline' disabled>Outline Disabled</Btn>
-				</div>
-			</section>
-
-			<!-- Full Width -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Full Width</h2>
-				<div class='p-8 bg-white rounded-lg shadow'>
-					<Btn class='w-full'>Full Width Button</Btn>
-				</div>
-			</section>
-
-			<!-- Code Examples -->
-			<section>
-				<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
-
-				<Code copyable language='astro'
-					>{
-						'---\nimport Button from "@component-museum/astro";\n---\n\n<!-- Basic button -->\n<Button>Click me</Button>\n\n<!-- With variants -->\n<Button variant="secondary">Secondary</Button>\n<Button variant="outline">Outline</Button>\n\n<!-- With sizes -->\n<Button size="sm">Small</Button>\n<Button size="md">Medium</Button>\n<Button size="lg">Large</Button>\n\n<!-- Combined -->\n<Button variant="outline" size="lg">Large Outline</Button>\n\n<!-- Disabled -->\n<Button disabled>Disabled</Button>\n\n<!-- Full width -->\n<Button class="w-full">Full Width</Button>'
-					}</Code
-				>
-			</section>
+	<!-- Variants -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Variants</h2>
+		<div
+			class='grid grid-cols-1 md:grid-cols-3 gap-8 p-8 bg-white rounded-lg shadow'
+		>
+			<div class='flex flex-col items-center gap-4'>
+				<Btn variant='primary'>Primary</Btn>
+				<Code class='text-sm text-gray-600'>variant="primary"</Code>
+			</div>
+			<div class='flex flex-col items-center gap-4'>
+				<Btn variant='secondary'>Secondary</Btn>
+				<Code class='text-sm text-gray-600'>variant="secondary"</Code>
+			</div>
+			<div class='flex flex-col items-center gap-4'>
+				<Btn variant='outline'>Outline</Btn>
+				<Code class='text-sm text-gray-600'>variant="outline"</Code>
+			</div>
 		</div>
-	</body>
-</html>
+	</section>
+
+	<!-- Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+		<div
+			class='flex flex-wrap gap-8 p-8 bg-white rounded-lg shadow items-center'
+		>
+			<div class='flex flex-col items-center gap-4'>
+				<Btn size='sm'>Small</Btn>
+				<Code class='text-sm text-gray-600'>size="sm"</Code>
+			</div>
+			<div class='flex flex-col items-center gap-4'>
+				<Btn size='md'>Medium</Btn>
+				<Code>size="md"</Code>
+			</div>
+			<div class='flex flex-col items-center gap-4'>
+				<Btn size='lg'>Large</Btn>
+				<Code>size="lg"</Code>
+			</div>
+		</div>
+	</section>
+
+	<!-- Combinations -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Combinations</h2>
+		<div
+			class='grid grid-cols-1 md:grid-cols-2 gap-4 p-8 bg-white rounded-lg shadow'
+		>
+			<Btn variant='secondary' size='sm'>Secondary Small</Btn>
+			<Btn variant='outline' size='md'>Outline Medium</Btn>
+			<Btn variant='secondary' size='lg'>Secondary Large</Btn>
+			<Btn variant='outline' size='sm'>Outline Small</Btn>
+		</div>
+	</section>
+
+	<!-- States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>States</h2>
+		<div class='flex flex-wrap gap-4 p-8 bg-white rounded-lg shadow'>
+			<Btn>Hover me</Btn>
+			<Btn disabled>Disabled</Btn>
+			<Btn variant='outline' disabled>Outline Disabled</Btn>
+		</div>
+	</section>
+
+	<!-- Full Width -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Full Width</h2>
+		<div class='p-8 bg-white rounded-lg shadow'>
+			<Btn class='w-full'>Full Width Button</Btn>
+		</div>
+	</section>
+
+	<!-- Code Examples -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+
+		<Code copyable language='astro'
+			>{
+				'---\nimport Button from "@component-museum/astro";\n---\n\n<!-- Basic button -->\n<Button>Click me</Button>\n\n<!-- With variants -->\n<Button variant="secondary">Secondary</Button>\n<Button variant="outline">Outline</Button>\n\n<!-- With sizes -->\n<Button size="sm">Small</Button>\n<Button size="md">Medium</Button>\n<Button size="lg">Large</Button>\n\n<!-- Combined -->\n<Button variant="outline" size="lg">Large Outline</Button>\n\n<!-- Disabled -->\n<Button disabled>Disabled</Button>\n\n<!-- Full width -->\n<Button class="w-full">Full Width</Button>'
+			}</Code
+		>
+	</section>
+</DocsLayout>
