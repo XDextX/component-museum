@@ -1,0 +1,39 @@
+---
+interface Props {
+	expanded?: boolean;
+	itemId: string;
+	[key: string]: any;
+}
+
+const { expanded, itemId, ...rest } = Astro.props as Props;
+---
+
+<button
+	class='tree-toggle'
+	aria-expanded={expanded ?? true}
+	aria-controls={itemId}
+>
+	<svg
+		class='tree-toggle-icon'
+		width='16'
+		height='16'
+		viewBox='0 0 16 16'
+		fill='currentColor'
+	>
+		<path
+			d='M6 4l4 4-4 4'
+			stroke='currentColor'
+			stroke-width='2'
+			fill='none'
+			stroke-linecap='round'></path>
+	</svg>
+</button>
+<script>
+	document.querySelectorAll('.tree-toggle').forEach((btn) => {
+		if (!(btn instanceof HTMLButtonElement)) return;
+		const list = btn.closest('.tree-node')?.nextElementSibling;
+		btn.addEventListener('click', (e) => {
+			list?.classList.toggle('hidden');
+		});
+	});
+</script>
