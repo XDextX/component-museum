@@ -1,0 +1,231 @@
+---
+import {
+	Radio as Comp,
+	FormField,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+---
+
+<SideBarLayout title='Radio Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Radio' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Radio Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp label='Option 1' name='basic' value='1' />
+				<Comp label='Option 2' name='basic' value='2' checked />
+				<Comp label='Option 3' name='basic' value='3' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Variants -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Default</h3>
+					<div class='space-y-3'>
+						<Comp label='Default option' variant='default' name='variant1' />
+						<Comp
+							label='Default checked'
+							variant='default'
+							name='variant1'
+							checked
+						/>
+					</div>
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Outlined</h3>
+					<div class='space-y-3'>
+						<Comp label='Outlined option' variant='outlined' name='variant2' />
+						<Comp
+							label='Outlined checked'
+							variant='outlined'
+							name='variant2'
+							checked
+						/>
+					</div>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>States</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Default</h3>
+					<Comp label='Default state' state='default' name='state1' checked />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Success</h3>
+					<Comp label='Success state' state='success' name='state2' checked />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Error</h3>
+					<Comp label='Error state' state='error' name='state3' checked />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Warning</h3>
+					<Comp label='Warning state' state='warning' name='state4' checked />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Radio Groups -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Radio Groups</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='font-medium mb-4'>Choose Plan</h3>
+					<div class='space-y-3'>
+						<Comp label='Basic - Free' name='plan' value='basic' checked />
+						<Comp label='Pro - $9/month' name='plan' value='pro' />
+						<Comp label='Enterprise - Contact us' name='plan' value='enterprise' />
+					</div>
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Select Delivery Method</h3>
+					<div class='space-y-3'>
+						<Comp
+							label='Standard Delivery (5-7 days)'
+							name='delivery'
+							value='standard'
+							checked
+						/>
+						<Comp
+							label='Express Delivery (2-3 days)'
+							name='delivery'
+							value='express'
+						/>
+						<Comp label='Next Day Delivery' name='delivery' value='nextday' />
+						<Comp label='Pickup at Store' name='delivery' value='pickup' disabled />
+					</div>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- In Forms -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>In Forms</h2>
+		<Card class='p-8'>
+			<form class='space-y-8 max-w-md'>
+				<FormField label='Subscription Preference'>
+					<div class='space-y-3'>
+						<Comp label='Monthly billing' name='billing' value='monthly' checked />
+						<Comp label='Annual billing (Save 20%)' name='billing' value='annual' />
+					</div>
+				</FormField>
+
+				<FormField label='Communication Preference'>
+					<div class='space-y-3'>
+						<Comp
+							label='Email notifications'
+							name='communication'
+							value='email'
+							checked
+						/>
+						<Comp label='SMS notifications' name='communication' value='sms' />
+						<Comp label='Push notifications' name='communication' value='push' />
+						<Comp label='No notifications' name='communication' value='none' />
+					</div>
+				</FormField>
+
+				<Button type='submit'>Submit</Button>
+			</form>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { Radio, FormField } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic radio group -->\n<div class="space-y-3">\n  <Radio label="Option 1" name="choice" value="1" />\n  <Radio label="Option 2" name="choice" value="2" checked />\n  <Radio label="Option 3" name="choice" value="3" />\n</div>\n\n<!-- In form -->\n<FormField label="Select Option">\n  <div class="space-y-3">\n    <Radio label="Yes" name="response" value="yes" />\n    <Radio label="No" name="response" value="no" />\n  </div>\n</FormField>\n\n<!-- With variant -->\n<Radio label="Outlined" variant="outlined" name="style" />\n\n<!-- With state -->\n<Radio label="Success" state="success" name="state" checked />\n\n<!-- Disabled -->\n<Radio label="Disabled option" name="disabled" disabled />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>label</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Radio button label text</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>checked</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Initial checked state</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>disabled</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Disable the radio</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>variant</code></td
+						>
+						<td>default | outlined</td>
+						<td><code>'default'</code></td>
+						<td>Radio style variant</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>name</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Radio group name (required for groups)</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>state</code></td
+						>
+						<td>default | success | error | warning</td>
+						<td><code>'default'</code></td>
+						<td>Radio state for validation</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
