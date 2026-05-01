@@ -282,23 +282,292 @@
      ============================================ */
 
   .input {
-    @apply w-full border rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply w-full rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* Input Variants - Style */
+  .input-outline {
+    @apply border border-gray-300 px-3 py-2;
+  }
+
+  .input-outline:focus {
+    @apply border-blue-500;
+  }
+
+  .input-filled {
+    @apply border-0 border-b-2 border-gray-300 bg-gray-100 px-3 py-2;
+  }
+
+  .input-filled:focus {
+    @apply border-blue-500 bg-gray-50;
+  }
+
+  .input-underline {
+    @apply border-0 border-b-2 border-gray-300 bg-transparent px-3 py-2;
+  }
+
+  .input-underline:focus {
+    @apply border-blue-500;
+  }
+
+  /* Input Sizes */
   .input-sm {
-    @apply px-2 py-1 text-sm border-gray-300;
+    @apply px-2 py-1 text-sm;
   }
 
   .input-md {
-    @apply px-3 py-2 text-base border-gray-300;
+    @apply px-3 py-2 text-base;
   }
 
   .input-lg {
-    @apply px-4 py-3 text-lg border-gray-300;
+    @apply px-4 py-3 text-lg;
   }
 
-  .input:focus {
+  /* Input States */
+  .input-success {
+    @apply border-green-500 focus:ring-green-500;
+  }
+
+  .input-success:focus {
+    @apply border-green-600;
+  }
+
+  .input-error {
+    @apply border-red-500 focus:ring-red-500;
+  }
+
+  .input-error:focus {
+    @apply border-red-600;
+  }
+
+  .input-warning {
+    @apply border-yellow-500 focus:ring-yellow-500;
+  }
+
+  .input-warning:focus {
+    @apply border-yellow-600;
+  }
+
+  /* ============================================
+     ADD MORE COMPONENTS HERE
+     ============================================ */
+
+  /* ============================================
+     FORM FIELD COMPONENT
+     ============================================ */
+
+  .form-field {
+    @apply flex flex-col gap-2;
+  }
+
+  .form-field-label {
+    @apply block text-sm font-medium text-gray-700;
+  }
+
+  .form-field-required {
+    @apply text-red-500;
+  }
+
+  .form-field-input {
+    @apply w-full;
+  }
+
+  .form-field-helper {
+    @apply text-sm text-gray-600;
+  }
+
+  .form-field-helper.error {
+    @apply text-red-600;
+  }
+
+  /* ============================================
+     SELECT COMPONENT
+     ============================================ */
+
+  .select {
+    @apply w-full rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-no-repeat;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-position: right 0.75rem center;
+    padding-right: 2.5rem;
+  }
+
+  /* Select Variants - Style */
+  .select-outline {
+    @apply border border-gray-300 px-3 py-2;
+  }
+
+  .select-outline:focus {
     @apply border-blue-500;
+  }
+
+  .select-filled {
+    @apply border-0 border-b-2 border-gray-300 bg-gray-100 px-3 py-2;
+  }
+
+  .select-filled:focus {
+    @apply border-blue-500 bg-gray-50;
+  }
+
+  .select-underline {
+    @apply border-0 border-b-2 border-gray-300 bg-transparent px-3 py-2;
+  }
+
+  .select-underline:focus {
+    @apply border-blue-500;
+  }
+
+  /* Select Sizes */
+  .select-sm {
+    @apply px-2 py-1 text-sm;
+  }
+
+  .select-md {
+    @apply px-3 py-2 text-base;
+  }
+
+  .select-lg {
+    @apply px-4 py-3 text-lg;
+  }
+
+  /* Select States */
+  .select-success {
+    @apply border-green-500 focus:ring-green-500;
+  }
+
+  .select-success:focus {
+    @apply border-green-600;
+  }
+
+  .select-error {
+    @apply border-red-500 focus:ring-red-500;
+  }
+
+  .select-error:focus {
+    @apply border-red-600;
+  }
+
+  .select-warning {
+    @apply border-yellow-500 focus:ring-yellow-500;
+  }
+
+  .select-warning:focus {
+    @apply border-yellow-600;
+  }
+
+  /* ============================================
+     CHECKBOX COMPONENT
+     ============================================ */
+
+  .checkbox-wrapper {
+    @apply flex items-center gap-2;
+  }
+
+  .checkbox {
+    @apply w-5 h-5 rounded cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed appearance-none border-2 border-gray-300 bg-white flex items-center justify-center;
+  }
+
+  .checkbox:checked {
+    @apply bg-blue-600 border-blue-600;
+  }
+
+  .checkbox:checked::after {
+    content: '✓';
+    @apply text-white text-xs font-bold;
+  }
+
+  .checkbox-default {
+    @apply rounded-md;
+  }
+
+  .checkbox-rounded {
+    @apply rounded-full;
+  }
+
+  .checkbox-label {
+    @apply cursor-pointer select-none text-sm font-medium text-gray-700;
+  }
+
+  /* Checkbox States */
+  .checkbox-success {
+    @apply border-green-300 focus:ring-green-500;
+  }
+
+  .checkbox-success:checked {
+    @apply bg-green-600 border-green-600;
+  }
+
+  .checkbox-error {
+    @apply border-red-300 focus:ring-red-500;
+  }
+
+  .checkbox-error:checked {
+    @apply bg-red-600 border-red-600;
+  }
+
+  .checkbox-warning {
+    @apply border-yellow-300 focus:ring-yellow-500;
+  }
+
+  .checkbox-warning:checked {
+    @apply bg-yellow-600 border-yellow-600;
+  }
+
+  /* ============================================
+     RADIO COMPONENT
+     ============================================ */
+
+  .radio-wrapper {
+    @apply flex items-center gap-2;
+  }
+
+  .radio {
+    @apply w-5 h-5 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed appearance-none border-2 border-gray-300 bg-white rounded-full flex items-center justify-center;
+  }
+
+  .radio:checked {
+    @apply bg-blue-600 border-blue-600;
+  }
+
+  .radio:checked::after {
+    content: '';
+    @apply w-2 h-2 bg-white rounded-full block;
+  }
+
+  .radio-default {
+    @apply border-gray-300;
+  }
+
+  .radio-outlined {
+    @apply border-2 border-gray-400;
+  }
+
+  .radio-label {
+    @apply cursor-pointer select-none text-sm font-medium text-gray-700;
+  }
+
+  /* Radio States */
+  .radio-success {
+    @apply border-green-300 focus:ring-green-500;
+  }
+
+  .radio-success:checked {
+    @apply bg-green-600 border-green-600;
+  }
+
+  .radio-error {
+    @apply border-red-300 focus:ring-red-500;
+  }
+
+  .radio-error:checked {
+    @apply bg-red-600 border-red-600;
+  }
+
+  .radio-warning {
+    @apply border-yellow-300 focus:ring-yellow-500;
+  }
+
+  .radio-warning:checked {
+    @apply bg-yellow-600 border-yellow-600;
   }
 
   /* ============================================
