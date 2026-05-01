@@ -4,6 +4,8 @@ interface Props {
 	placeholder?: string;
 	disabled?: boolean;
 	size?: 'sm' | 'md' | 'lg';
+	variant?: 'outline' | 'filled' | 'underline';
+	state?: 'default' | 'success' | 'error' | 'warning';
 	class?: string;
 	[key: string]: any;
 }
@@ -13,12 +15,16 @@ const {
 	placeholder = '',
 	disabled = false,
 	size = 'md',
+	variant = 'outline',
+	state = 'default',
 	class: className = '',
 	...rest
 } = Astro.props as Props;
 
 const sizeClass = `input-${size}`;
-const finalClass = `input ${sizeClass} ${className}`;
+const variantClass = `input-${variant}`;
+const stateClass = state !== 'default' ? `input-${state}` : '';
+const finalClass = `input ${sizeClass} ${variantClass} ${stateClass} ${className}`;
 ---
 
 <input
