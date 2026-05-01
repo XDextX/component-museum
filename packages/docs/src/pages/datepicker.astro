@@ -1,0 +1,224 @@
+---
+import {
+	Datepicker as Comp,
+	FormField,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+---
+
+<SideBarLayout title='Datepicker Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Datepicker' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Datepicker Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp placeholder='Select a date...' />
+				<Comp placeholder='Another date' value='2026-05-15' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Variants - Style -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Style Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Outline (default)</label>
+					<Comp variant='outline' placeholder='Outline datepicker' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Filled</label>
+					<Comp variant='filled' placeholder='Filled datepicker' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Underline</label>
+					<Comp variant='underline' placeholder='Underline datepicker' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp size='sm' placeholder='Small datepicker' />
+				<Comp size='md' placeholder='Medium datepicker' />
+				<Comp size='lg' placeholder='Large datepicker' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- State Variants -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>State Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Default</label>
+					<Comp state='default' placeholder='Default state' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Success</label>
+					<Comp state='success' placeholder='Success state' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Error</label>
+					<Comp state='error' placeholder='Error state' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Warning</label>
+					<Comp state='warning' placeholder='Warning state' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Interactive States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Interactive States</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp placeholder='Click to select date' />
+				<Comp disabled placeholder='Disabled datepicker' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Use Cases -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Common Use Cases</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='font-medium mb-4'>Birth Date</h3>
+					<Comp placeholder='Select your birth date' />
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Event Date</h3>
+					<Comp placeholder='Event date' />
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Date Range</h3>
+					<div class='space-y-2'>
+						<label class='block text-sm font-medium'>From:</label>
+						<Comp placeholder='Start date' />
+						<label class='block text-sm font-medium mt-3'>To:</label>
+						<Comp placeholder='End date' />
+					</div>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- In Forms -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>In Forms</h2>
+		<Card class='p-8'>
+			<form class='space-y-6 max-w-md'>
+				<FormField label='Date of Birth'>
+					<Comp name='dob' placeholder='Select your birth date' />
+				</FormField>
+
+				<FormField label='Event Date'>
+					<Comp name='event_date' placeholder='Select event date' />
+				</FormField>
+
+				<FormField label='Booking Date'>
+					<Comp name='booking_date' placeholder='Select booking date' />
+				</FormField>
+
+				<Button type='submit'>Submit</Button>
+			</form>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { Datepicker, FormField } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic datepicker -->\n<Datepicker placeholder="Select a date..." />\n\n<!-- With initial value -->\n<Datepicker placeholder="Select date" value="2026-05-15" />\n\n<!-- Sizes -->\n<Datepicker size="sm" placeholder="Small" />\n<Datepicker size="md" placeholder="Medium" />\n<Datepicker size="lg" placeholder="Large" />\n\n<!-- Variants -->\n<Datepicker variant="outline" placeholder="Outline" />\n<Datepicker variant="filled" placeholder="Filled" />\n<Datepicker variant="underline" placeholder="Underline" />\n\n<!-- States -->\n<Datepicker state="success" placeholder="Success" />\n<Datepicker state="error" placeholder="Error" />\n<Datepicker state="warning" placeholder="Warning" />\n\n<!-- In form -->\n<FormField label="Birth Date">\n  <Datepicker name="dob" placeholder="Select your birth date" />\n</FormField>\n\n<!-- Disabled -->\n<Datepicker disabled placeholder="Disabled datepicker" />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>value</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Initial date value (YYYY-MM-DD)</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>placeholder</code></td
+						>
+						<td>string</td>
+						<td>'Select date...'</td>
+						<td>Placeholder text</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>size</code></td
+						>
+						<td>sm | md | lg</td>
+						<td><code>'md'</code></td>
+						<td>Input size</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>variant</code></td
+						>
+						<td>outline | filled | underline</td>
+						<td><code>'outline'</code></td>
+						<td>Input style variant</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>state</code></td
+						>
+						<td>default | success | error | warning</td>
+						<td><code>'default'</code></td>
+						<td>Input state for validation</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>disabled</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Disable the datepicker</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>

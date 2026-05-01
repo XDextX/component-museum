@@ -1,0 +1,157 @@
+---
+interface Props {
+	value?: string;
+	placeholder?: string;
+	disabled?: boolean;
+	size?: 'sm' | 'md' | 'lg';
+	variant?: 'outline' | 'filled' | 'underline';
+	state?: 'default' | 'success' | 'error' | 'warning';
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	value = '',
+	placeholder = 'Select date...',
+	disabled = false,
+	size = 'md',
+	variant = 'outline',
+	state = 'default',
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const pickerId = `datepicker-${Math.random().toString(36).slice(2, 11)}`;
+const sizeClass = `input-${size}`;
+const variantClass = `input-${variant}`;
+const stateClass = state !== 'default' ? `input-${state}` : '';
+const finalClass = `input ${sizeClass} ${variantClass} ${stateClass} ${className}`;
+---
+
+<div class='datepicker-container' data-picker-id={pickerId}>
+	<input
+		type='text'
+		class={finalClass}
+		placeholder={placeholder}
+		disabled={disabled}
+		value={value}
+		readonly
+		{...rest}
+	/>
+	<div class='datepicker-popup'>
+		<div class='datepicker-header'>
+			<button class='datepicker-nav-btn datepicker-prev' type='button'> ← </button>
+			<div class='datepicker-month-year'></div>
+			<button class='datepicker-nav-btn datepicker-next' type='button'> → </button>
+		</div>
+		<div class='datepicker-weekdays'>
+			<div class='datepicker-weekday'>Sun</div>
+			<div class='datepicker-weekday'>Mon</div>
+			<div class='datepicker-weekday'>Tue</div>
+			<div class='datepicker-weekday'>Wed</div>
+			<div class='datepicker-weekday'>Thu</div>
+			<div class='datepicker-weekday'>Fri</div>
+			<div class='datepicker-weekday'>Sat</div>
+		</div>
+		<div class='datepicker-days'></div>
+	</div>
+</div>
+
+<script define:vars={{ pickerId }}>
+	const container = document.querySelector(`[data-picker-id="${pickerId}"]`);
+	const input = container.querySelector('input');
+	const popup = container.querySelector('.datepicker-popup');
+	const prevBtn = container.querySelector('.datepicker-prev');
+	const nextBtn = container.querySelector('.datepicker-next');
+	const monthYearDiv = container.querySelector('.datepicker-month-year');
+	const daysDiv = container.querySelector('.datepicker-days');
+
+	let currentDate = new Date();
+
+	function renderCalendar() {
+		const year = currentDate.getFullYear();
+		const month = currentDate.getMonth();
+
+		monthYearDiv.textContent = new Date(year, month).toLocaleString('default', {
+			month: 'long',
+			year: 'numeric',
+		});
+
+		const firstDay = new Date(year, month, 1).getDay();
+		const daysInMonth = new Date(year, month + 1, 0).getDate();
+		const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+		daysDiv.innerHTML = '';
+
+		for (let i = firstDay - 1; i >= 0; i--) {
+			const day = daysInPrevMonth - i;
+			const dayEl = document.createElement('button');
+			dayEl.className = 'datepicker-day datepicker-day-other';
+			dayEl.textContent = day;
+			dayEl.disabled = true;
+			daysDiv.appendChild(dayEl);
+		}
+
+		for (let day = 1; day <= daysInMonth; day++) {
+			const dayEl = document.createElement('button');
+			dayEl.className = 'datepicker-day';
+			dayEl.textContent = day;
+			dayEl.type = 'button';
+
+			const isToday =
+				day === new Date().getDate() &&
+				month === new Date().getMonth() &&
+				year === new Date().getFullYear();
+			if (isToday) dayEl.classList.add('datepicker-day-today');
+
+			dayEl.addEventListener('click', () => {
+				const selectedDate = new Date(year, month, day);
+				const formatted = selectedDate.toISOString().split('T')[0];
+				input.value = formatted;
+				popup.classList.remove('datepicker-popup-open');
+				input.dispatchEvent(new Event('change'));
+			});
+
+			daysDiv.appendChild(dayEl);
+		}
+
+		for (let day = 1; day <= 42 - firstDay - daysInMonth; day++) {
+			const dayEl = document.createElement('button');
+			dayEl.className = 'datepicker-day datepicker-day-other';
+			dayEl.textContent = day;
+			dayEl.disabled = true;
+			daysDiv.appendChild(dayEl);
+		}
+	}
+
+	input.addEventListener('click', () => {
+		popup.classList.toggle('datepicker-popup-open');
+		if (input.value) {
+			const parts = input.value.split('-');
+			currentDate = new Date(
+				parseInt(parts[0]),
+				parseInt(parts[1]) - 1,
+				parseInt(parts[2]),
+			);
+		} else {
+			currentDate = new Date();
+		}
+		renderCalendar();
+	});
+
+	prevBtn.addEventListener('click', () => {
+		currentDate.setMonth(currentDate.getMonth() - 1);
+		renderCalendar();
+	});
+
+	nextBtn.addEventListener('click', () => {
+		currentDate.setMonth(currentDate.getMonth() + 1);
+		renderCalendar();
+	});
+
+	document.addEventListener('click', (e) => {
+		if (!container.contains(e.target)) {
+			popup.classList.remove('datepicker-popup-open');
+		}
+	});
+</script>
