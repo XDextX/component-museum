@@ -32,7 +32,7 @@ const { expanded, itemId, ...rest } = Astro.props as Props;
 	document.querySelectorAll('.tree-toggle').forEach((btn) => {
 		if (!(btn instanceof HTMLButtonElement)) return;
 		const list = btn.closest('.tree-node')?.nextElementSibling;
-		btn.addEventListener('click', (e) => {
+		btn.addEventListener('click', () => {
 			list?.classList.toggle('hidden');
 		});
 	});
