@@ -1,0 +1,30 @@
+---
+interface Props {
+	type?: string;
+	placeholder?: string;
+	disabled?: boolean;
+	size?: 'sm' | 'md' | 'lg';
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	type = 'text',
+	placeholder = '',
+	disabled = false,
+	size = 'md',
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const sizeClass = `input-${size}`;
+const finalClass = `input ${sizeClass} ${className}`;
+---
+
+<input
+	type={type as any}
+	placeholder={placeholder}
+	disabled={disabled}
+	class={finalClass}
+	{...rest}
+/>

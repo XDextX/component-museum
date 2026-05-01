@@ -5,4 +5,5 @@ export { default as Alert } from './src/components/Alert/Alert.astro';
 export { default as Code } from './src/components/Code/Code.astro';
 export { default as Breadcrumb } from './src/components/Breadcrumb/Breadcrumb.astro';
 export { default as Tree } from './src/components/Tree/Tree.astro';
+export { default as Input } from './src/components/Input/Input.astro';
 
