@@ -20,6 +20,52 @@ import { SideBarLayout } from '../layouts';
 		</Card>
 	</section>
 
+	<!-- Variants - Style -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Style Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Outline (default)</label>
+					<Comp variant='outline' placeholder='Outline input' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Filled</label>
+					<Comp variant='filled' placeholder='Filled input' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Underline</label>
+					<Comp variant='underline' placeholder='Underline input' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Variants - State -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>State Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Default</label>
+					<Comp state='default' placeholder='Default input' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Success</label>
+					<Comp state='success' placeholder='Success input' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Error</label>
+					<Comp state='error' placeholder='Error input' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Warning</label>
+					<Comp state='warning' placeholder='Warning input' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
 	<!-- Sizes -->
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
@@ -119,6 +165,22 @@ import { SideBarLayout } from '../layouts';
 						<td>sm | md | lg</td>
 						<td><code>'md'</code></td>
 						<td>Input size</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>variant</code></td
+						>
+						<td>outline | filled | underline</td>
+						<td><code>'outline'</code></td>
+						<td>Input style variant</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>state</code></td
+						>
+						<td>default | success | error | warning</td>
+						<td><code>'default'</code></td>
+						<td>Input state for validation feedback</td>
 					</tr>
 					<tr>
 						<td class='py-3'
