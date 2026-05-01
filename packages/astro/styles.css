@@ -571,6 +571,38 @@
   }
 
   /* ============================================
+     LOOKUP COMPONENT
+     ============================================ */
+
+  .lookup-container {
+    @apply relative w-full;
+  }
+
+  .lookup-dropdown {
+    @apply absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden z-50;
+  }
+
+  .lookup-dropdown-open {
+    @apply block;
+  }
+
+  .lookup-option {
+    @apply w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors border-0 bg-transparent cursor-pointer text-sm font-medium text-gray-900;
+  }
+
+  .lookup-option:first-child {
+    @apply rounded-t-lg;
+  }
+
+  .lookup-option:last-child {
+    @apply rounded-b-lg;
+  }
+
+  .lookup-option:disabled {
+    @apply cursor-not-allowed opacity-50 hover:bg-transparent;
+  }
+
+  /* ============================================
      SLIDER COMPONENT
      ============================================ */
 
