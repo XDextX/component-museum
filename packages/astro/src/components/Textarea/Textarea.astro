@@ -1,0 +1,35 @@
+---
+interface Props {
+	placeholder?: string;
+	disabled?: boolean;
+	size?: 'sm' | 'md' | 'lg';
+	variant?: 'outline' | 'filled' | 'underline';
+	state?: 'default' | 'success' | 'error' | 'warning';
+	rows?: number;
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	placeholder = '',
+	disabled = false,
+	size = 'md',
+	variant = 'outline',
+	state = 'default',
+	rows = 4,
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const sizeClass = `textarea-${size}`;
+const variantClass = `textarea-${variant}`;
+const stateClass = state !== 'default' ? `textarea-${state}` : '';
+const finalClass = `textarea ${sizeClass} ${variantClass} ${stateClass} ${className}`;
+---
+
+<textarea
+	class={finalClass}
+	placeholder={placeholder}
+	disabled={disabled}
+	rows={rows}
+	{...rest}></textarea>

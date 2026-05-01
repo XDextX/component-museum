@@ -1,0 +1,225 @@
+---
+import {
+	Textarea as Comp,
+	FormField,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+---
+
+<SideBarLayout title='Textarea Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Textarea' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Textarea Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp placeholder='Enter your message...' />
+				<Comp placeholder='Enter longer text...' rows={6} />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Variants - Style -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Style Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Outline (default)</label>
+					<Comp variant='outline' placeholder='Outline textarea' rows={4} />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Filled</label>
+					<Comp variant='filled' placeholder='Filled textarea' rows={4} />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Underline</label>
+					<Comp variant='underline' placeholder='Underline textarea' rows={4} />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Variants - State -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>State Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Default</label>
+					<Comp state='default' placeholder='Default textarea' rows={4} />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Success</label>
+					<Comp state='success' placeholder='Success textarea' rows={4} />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Error</label>
+					<Comp state='error' placeholder='Error textarea' rows={4} />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Warning</label>
+					<Comp state='warning' placeholder='Warning textarea' rows={4} />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp size='sm' placeholder='Small textarea' rows={3} />
+				<Comp size='md' placeholder='Medium textarea' rows={3} />
+				<Comp size='lg' placeholder='Large textarea' rows={3} />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Rows Configuration -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Rows Configuration</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>2 rows</label>
+					<Comp placeholder='Short message' rows={2} />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>6 rows</label>
+					<Comp placeholder='Longer content' rows={6} />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>10 rows</label>
+					<Comp placeholder='Extended content area' rows={10} />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Interactive States</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp placeholder='Default textarea' rows={4} />
+				<Comp disabled placeholder='Disabled textarea' rows={4} />
+			</div>
+		</Card>
+	</section>
+
+	<!-- In Forms -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>In Forms</h2>
+		<Card class='p-8'>
+			<form class='space-y-6 max-w-2xl'>
+				<FormField label='Message'>
+					<Comp name='message' placeholder='Enter your message here...' rows={4} />
+				</FormField>
+
+				<FormField label='Comments'>
+					<Comp
+						name='comments'
+						placeholder='Enter any additional comments...'
+						rows={5}
+					/>
+				</FormField>
+
+				<FormField label='Description'>
+					<Comp
+						name='description'
+						placeholder='Describe your feedback...'
+						rows={6}
+					/>
+				</FormField>
+
+				<Button type='submit'>Submit</Button>
+			</form>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { Textarea, FormField } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic textarea -->\n<Textarea placeholder="Enter text..." />\n\n<!-- With rows -->\n<Textarea placeholder="Enter message..." rows={6} />\n\n<!-- Sizes -->\n<Textarea size="sm" placeholder="Small" rows={3} />\n<Textarea size="md" placeholder="Medium" rows={4} />\n<Textarea size="lg" placeholder="Large" rows={5} />\n\n<!-- Variants -->\n<Textarea variant="outline" placeholder="Outline" rows={4} />\n<Textarea variant="filled" placeholder="Filled" rows={4} />\n<Textarea variant="underline" placeholder="Underline" rows={4} />\n\n<!-- States -->\n<Textarea state="success" placeholder="Success" rows={4} />\n<Textarea state="error" placeholder="Error" rows={4} />\n<Textarea state="warning" placeholder="Warning" rows={4} />\n\n<!-- In form -->\n<FormField label="Message">\n  <Textarea name="message" placeholder="Enter your message..." rows={5} />\n</FormField>\n\n<!-- Disabled -->\n<Textarea disabled placeholder="Disabled textarea" rows={4} />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>placeholder</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Placeholder text</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>rows</code></td
+						>
+						<td>number</td>
+						<td><code>4</code></td>
+						<td>Number of visible rows</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>size</code></td
+						>
+						<td>sm | md | lg</td>
+						<td><code>'md'</code></td>
+						<td>Textarea size</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>variant</code></td
+						>
+						<td>outline | filled | underline</td>
+						<td><code>'outline'</code></td>
+						<td>Textarea style variant</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>state</code></td
+						>
+						<td>default | success | error | warning</td>
+						<td><code>'default'</code></td>
+						<td>Textarea state for validation feedback</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>disabled</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Disable the textarea</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
