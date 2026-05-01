@@ -38,6 +38,26 @@ export const Navigation = [
                 label: 'Input',
                 href: '/input',
             },
+            {
+                label: 'FormField',
+                href: '/formfield',
+            },
+            {
+                label: 'Form',
+                href: '/form',
+            },
+            {
+                label: 'Select',
+                href: '/select',
+            },
+            {
+                label: 'Checkbox',
+                href: '/checkbox',
+            },
+            {
+                label: 'Radio',
+                href: '/radio',
+            },
         ],
     },
 ];
