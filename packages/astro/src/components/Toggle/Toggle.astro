@@ -1,0 +1,44 @@
+---
+interface Props {
+	label?: string;
+	checked?: boolean;
+	disabled?: boolean;
+	size?: 'sm' | 'md' | 'lg';
+	state?: 'default' | 'success' | 'error' | 'warning';
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	label = '',
+	checked = false,
+	disabled = false,
+	size = 'md',
+	state = 'default',
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const toggleId = `toggle-${Math.random().toString(36).slice(2, 11)}`;
+const sizeClass = `toggle-${size}`;
+const stateClass = state !== 'default' ? `toggle-${state}` : '';
+const finalClass = `toggle ${sizeClass} ${stateClass} ${className}`;
+---
+
+<div class='toggle-wrapper'>
+	<input
+		id={toggleId}
+		type='checkbox'
+		class={finalClass}
+		checked={checked}
+		disabled={disabled}
+		{...rest}
+	/>
+	{
+		label && (
+			<label for={toggleId} class='toggle-label'>
+				{label}
+			</label>
+		)
+	}
+</div>

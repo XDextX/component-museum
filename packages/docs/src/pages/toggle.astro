@@ -1,0 +1,227 @@
+---
+import {
+	Toggle as Comp,
+	FormField,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+---
+
+<SideBarLayout title='Toggle Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Toggle' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Toggle Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp label='Enable notifications' />
+				<Comp label='Dark mode' checked />
+				<Comp label='Disabled toggle' disabled />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Small</label>
+					<div class='space-y-3'>
+						<Comp size='sm' label='Small off' />
+						<Comp size='sm' label='Small on' checked />
+					</div>
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Medium (default)</label>
+					<div class='space-y-3'>
+						<Comp size='md' label='Medium off' />
+						<Comp size='md' label='Medium on' checked />
+					</div>
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Large</label>
+					<div class='space-y-3'>
+						<Comp size='lg' label='Large off' />
+						<Comp size='lg' label='Large on' checked />
+					</div>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>State Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Default</h3>
+					<Comp label='Default state' state='default' checked />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Success</h3>
+					<Comp label='Success state' state='success' checked />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Error</h3>
+					<Comp label='Error state' state='error' checked />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Warning</h3>
+					<Comp label='Warning state' state='warning' checked />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Toggle States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Interactive States</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp label='Enabled' />
+				<Comp label='Disabled' disabled />
+				<Comp label='Checked and enabled' checked />
+				<Comp label='Checked and disabled' checked disabled />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Use Cases -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Common Use Cases</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='font-medium mb-4'>Feature Toggles</h3>
+					<div class='space-y-3'>
+						<Comp label='Enable beta features' checked />
+						<Comp label='Advanced settings' />
+						<Comp label='Experimental mode' />
+					</div>
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Preferences</h3>
+					<div class='space-y-3'>
+						<Comp label='Email notifications' checked />
+						<Comp label='SMS notifications' />
+						<Comp label='Push notifications' checked />
+					</div>
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Settings</h3>
+					<div class='space-y-3'>
+						<Comp label='Dark mode' checked />
+						<Comp label='Accessibility mode' />
+						<Comp label='Auto-save' checked />
+					</div>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- In Forms -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>In Forms</h2>
+		<Card class='p-8'>
+			<form class='space-y-8 max-w-md'>
+				<FormField label='Notification Settings'>
+					<div class='space-y-3'>
+						<Comp label='Email notifications' name='email' checked />
+						<Comp label='SMS notifications' name='sms' />
+						<Comp label='Push notifications' name='push' checked />
+					</div>
+				</FormField>
+
+				<FormField label='Privacy Settings'>
+					<div class='space-y-3'>
+						<Comp label='Public profile' name='public' />
+						<Comp label='Show online status' name='online' checked />
+						<Comp label='Allow messages' name='messages' checked />
+					</div>
+				</FormField>
+
+				<Button type='submit'>Save Settings</Button>
+			</form>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { Toggle, FormField } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic toggle -->\n<Toggle label="Enable feature" />\n\n<!-- Checked -->\n<Toggle label="Dark mode" checked />\n\n<!-- Sizes -->\n<Toggle size="sm" label="Small" />\n<Toggle size="md" label="Medium" />\n<Toggle size="lg" label="Large" />\n\n<!-- States -->\n<Toggle state="success" label="Success" checked />\n<Toggle state="error" label="Error" checked />\n<Toggle state="warning" label="Warning" checked />\n\n<!-- In form -->\n<FormField label="Preferences">\n  <div class="space-y-3">\n    <Toggle label="Email notifications" name="email" />\n    <Toggle label="SMS notifications" name="sms" />\n    <Toggle label="Push notifications" name="push" />\n  </div>\n</FormField>\n\n<!-- Disabled -->\n<Toggle label="Disabled toggle" disabled />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>label</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Toggle label text</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>checked</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Initial toggle state</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>disabled</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Disable the toggle</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>size</code></td
+						>
+						<td>sm | md | lg</td>
+						<td><code>'md'</code></td>
+						<td>Toggle size</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>state</code></td
+						>
+						<td>default | success | error | warning</td>
+						<td><code>'default'</code></td>
+						<td>Toggle state for validation</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
