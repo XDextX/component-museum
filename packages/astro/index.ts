@@ -11,4 +11,8 @@ export { default as Form } from './src/components/Form/Form.astro';
 export { default as Select } from './src/components/Select/Select.astro';
 export { default as Checkbox } from './src/components/Checkbox/Checkbox.astro';
 export { default as Radio } from './src/components/Radio/Radio.astro';
+export { default as Textarea } from './src/components/Textarea/Textarea.astro';
+export { default as Toggle } from './src/components/Toggle/Toggle.astro';
+export { default as Datepicker } from './src/components/Datepicker/Datepicker.astro';
+export { default as Slider } from './src/components/Slider/Slider.astro';
 

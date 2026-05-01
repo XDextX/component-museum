@@ -58,6 +58,22 @@ export const Navigation = [
                 label: 'Radio',
                 href: '/radio',
             },
+            {
+                label: 'Textarea',
+                href: '/textarea',
+            },
+            {
+                label: 'Toggle',
+                href: '/toggle',
+            },
+            {
+                label: 'Datepicker',
+                href: '/datepicker',
+            },
+            {
+                label: 'Slider',
+                href: '/slider',
+            },
         ],
     },
 ];
