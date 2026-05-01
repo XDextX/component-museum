@@ -38,7 +38,7 @@
      ============================================ */
 
   .badge {
-    @apply inline-block font-medium rounded-full transition-colors;
+    @apply inline-block font-medium rounded-full transition-colors whitespace-nowrap leading-tight;
   }
 
   /* Badge Variants */
@@ -68,7 +68,7 @@
 
   /* Badge Sizes */
   .badge-sm {
-    @apply px-2 py-0.5 text-xs justify-center;
+    @apply px-2 py-0.5 text-xs;
   }
 
   .badge-md {
