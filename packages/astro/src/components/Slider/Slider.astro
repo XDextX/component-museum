@@ -1,0 +1,90 @@
+---
+interface Props {
+	min?: number;
+	max?: number;
+	value?: number;
+	step?: number;
+	disabled?: boolean;
+	size?: 'sm' | 'md' | 'lg';
+	state?: 'default' | 'success' | 'error' | 'warning';
+	label?: string;
+	showValue?: boolean;
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	min = 0,
+	max = 100,
+	value = 50,
+	step = 1,
+	disabled = false,
+	size = 'md',
+	state = 'default',
+	label = '',
+	showValue = true,
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const sliderId = `slider-${Math.random().toString(36).slice(2, 11)}`;
+const sizeClass = `slider-${size}`;
+const stateClass = state !== 'default' ? `slider-${state}` : '';
+const finalClass = `slider ${sizeClass} ${stateClass} ${className}`;
+---
+
+<div class='slider-wrapper'>
+	{
+		label && (
+			<label for={sliderId} class='slider-label'>
+				{label}
+			</label>
+		)
+	}
+	<div class='slider-container'>
+		<input
+			id={sliderId}
+			type='range'
+			class={finalClass}
+			min={min}
+			max={max}
+			value={value}
+			step={step}
+			disabled={disabled}
+			{...rest}
+		/>
+		{
+			showValue && (
+				<div class='slider-value' data-slider-id={sliderId}>
+					{value}
+				</div>
+			)
+		}
+	</div>
+</div>
+
+<script define:vars={{ sliderId }}>
+	const slider = document.getElementById(sliderId);
+	const valueDisplay = document.querySelector(`[data-slider-id="${sliderId}"]`);
+
+	if (valueDisplay) {
+		slider.addEventListener('input', () => {
+			valueDisplay.textContent = slider.value;
+
+			const min = parseFloat(slider.min);
+			const max = parseFloat(slider.max);
+			const range = max - min;
+			const value = parseFloat(slider.value);
+			const percent = ((value - min) / range) * 100;
+
+			slider.style.setProperty('--slider-percent', `${percent}%`);
+		});
+
+		const min = parseFloat(slider.min);
+		const max = parseFloat(slider.max);
+		const range = max - min;
+		const value = parseFloat(slider.value);
+		const percent = ((value - min) / range) * 100;
+		slider.style.setProperty('--slider-percent', `${percent}%`);
+	}
+</script>

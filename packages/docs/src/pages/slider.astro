@@ -1,0 +1,268 @@
+---
+import {
+	Slider as Comp,
+	FormField,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+---
+
+<SideBarLayout title='Slider Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Slider' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Slider Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<Comp label='Simple slider' min={0} max={100} value={50} />
+				<Comp label='Price range' min={0} max={1000} value={500} step={10} />
+				<Comp label='Volume' min={0} max={100} value={75} />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Small</label>
+					<Comp size='sm' label='Small slider' min={0} max={100} value={50} />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Medium (default)</label>
+					<Comp size='md' label='Medium slider' min={0} max={100} value={50} />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Large</label>
+					<Comp size='lg' label='Large slider' min={0} max={100} value={50} />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- State Variants -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>State Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<Comp state='default' label='Default state' min={0} max={100} value={50} />
+				<Comp state='success' label='Success state' min={0} max={100} value={75} />
+				<Comp state='error' label='Error state' min={0} max={100} value={25} />
+				<Comp state='warning' label='Warning state' min={0} max={100} value={60} />
+			</div>
+		</Card>
+	</section>
+
+	<!-- With/Without Value Display -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Value Display</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Show Value</h3>
+					<Comp label='With value' min={0} max={100} value={50} showValue={true} />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Hide Value</h3>
+					<Comp
+						label='Without value'
+						min={0}
+						max={100}
+						value={50}
+						showValue={false}
+					/>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Interactive States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Interactive States</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<Comp label='Enabled slider' min={0} max={100} value={50} />
+				<Comp label='Disabled slider' min={0} max={100} value={50} disabled />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Use Cases -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Common Use Cases</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='font-medium mb-4'>Volume Control</h3>
+					<Comp label='Volume' min={0} max={100} value={75} showValue={true} />
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Price Range</h3>
+					<Comp
+						label='Max price'
+						min={0}
+						max={1000}
+						value={500}
+						step={10}
+						showValue={true}
+					/>
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Brightness</h3>
+					<Comp label='Brightness' min={0} max={100} value={80} showValue={true} />
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Quality/Compression</h3>
+					<Comp
+						label='Quality'
+						min={1}
+						max={100}
+						value={85}
+						step={5}
+						showValue={true}
+					/>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- In Forms -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>In Forms</h2>
+		<Card class='p-8'>
+			<form class='space-y-8 max-w-md'>
+				<FormField label='Budget'>
+					<Comp
+						name='budget'
+						min={100}
+						max={10000}
+						value={5000}
+						step={100}
+						showValue={true}
+					/>
+				</FormField>
+
+				<FormField label='Timeout (seconds)'>
+					<Comp
+						name='timeout'
+						min={5}
+						max={300}
+						value={30}
+						step={5}
+						showValue={true}
+					/>
+				</FormField>
+
+				<FormField label='Confidence Level'>
+					<Comp name='confidence' min={0} max={100} value={75} showValue={true} />
+				</FormField>
+
+				<Button type='submit'>Apply Settings</Button>
+			</form>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { Slider, FormField } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic slider -->\n<Slider label="Select value" min={0} max={100} value={50} />\n\n<!-- With custom step -->\n<Slider label="Price" min={0} max={1000} value={500} step={10} />\n\n<!-- Sizes -->\n<Slider size="sm" label="Small" min={0} max={100} value={50} />\n<Slider size="md" label="Medium" min={0} max={100} value={50} />\n<Slider size="lg" label="Large" min={0} max={100} value={50} />\n\n<!-- States -->\n<Slider state="success" label="Success" min={0} max={100} value={75} />\n<Slider state="error" label="Error" min={0} max={100} value={25} />\n<Slider state="warning" label="Warning" min={0} max={100} value={60} />\n\n<!-- Without value display -->\n<Slider label="Volume" min={0} max={100} value={50} showValue={false} />\n\n<!-- In form -->\n<FormField label="Budget">\n  <Slider name="budget" min={100} max={10000} value={5000} step={100} />\n</FormField>\n\n<!-- Disabled -->\n<Slider label="Disabled" min={0} max={100} value={50} disabled />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>min</code></td
+						>
+						<td>number</td>
+						<td><code>0</code></td>
+						<td>Minimum value</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>max</code></td
+						>
+						<td>number</td>
+						<td><code>100</code></td>
+						<td>Maximum value</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>value</code></td
+						>
+						<td>number</td>
+						<td><code>50</code></td>
+						<td>Initial value</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>step</code></td
+						>
+						<td>number</td>
+						<td><code>1</code></td>
+						<td>Step increment</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>label</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Slider label</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>showValue</code></td
+						>
+						<td>boolean</td>
+						<td><code>true</code></td>
+						<td>Display current value</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>size</code></td
+						>
+						<td>sm | md | lg</td>
+						<td><code>'md'</code></td>
+						<td>Slider size</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>state</code></td
+						>
+						<td>default | success | error | warning</td>
+						<td><code>'default'</code></td>
+						<td>Slider state</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
