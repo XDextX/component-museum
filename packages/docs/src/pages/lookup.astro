@@ -1,0 +1,274 @@
+---
+import {
+	Lookup as Comp,
+	FormField,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+
+const countries = [
+	{ label: 'Argentina', value: 'ar' },
+	{ label: 'Brazil', value: 'br' },
+	{ label: 'Canada', value: 'ca' },
+	{ label: 'Chile', value: 'cl' },
+	{ label: 'Colombia', value: 'co' },
+	{ label: 'Mexico', value: 'mx' },
+	{ label: 'United States', value: 'us' },
+];
+
+const technologies = [
+	{ label: 'Astro', value: 'astro' },
+	{ label: 'React', value: 'react' },
+	{ label: 'Vue', value: 'vue' },
+	{ label: 'Svelte', value: 'svelte' },
+	{ label: 'Next.js', value: 'nextjs' },
+	{ label: 'TypeScript', value: 'typescript' },
+	{ label: 'Tailwind CSS', value: 'tailwind' },
+];
+
+const fruits = [
+	{ label: 'Apple', value: 'apple' },
+	{ label: 'Banana', value: 'banana' },
+	{ label: 'Cherry', value: 'cherry' },
+	{ label: 'Date', value: 'date' },
+	{ label: 'Elderberry', value: 'elderberry' },
+	{ label: 'Fig', value: 'fig' },
+	{ label: 'Grape', value: 'grape' },
+];
+---
+
+<SideBarLayout title='Lookup Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Lookup' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Lookup Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp options={countries} placeholder='Select a country...' />
+				<Comp options={technologies} placeholder='Choose a technology...' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Searchable Options -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Searchable Options</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<label class='block text-sm font-medium mb-2'>Fruits (type to search)</label
+				>
+				<Comp options={fruits} placeholder='Search fruits...' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Small</label>
+					<Comp size='sm' options={countries} placeholder='Small lookup' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Medium (default)</label>
+					<Comp size='md' options={countries} placeholder='Medium lookup' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Large</label>
+					<Comp size='lg' options={countries} placeholder='Large lookup' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Variants -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Style Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Outline (default)</label>
+					<Comp variant='outline' options={countries} placeholder='Outline' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Filled</label>
+					<Comp variant='filled' options={countries} placeholder='Filled' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Underline</label>
+					<Comp variant='underline' options={countries} placeholder='Underline' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- State Variants -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>State Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Default</label>
+					<Comp state='default' options={countries} placeholder='Default' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Success</label>
+					<Comp state='success' options={countries} placeholder='Success' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Error</label>
+					<Comp state='error' options={countries} placeholder='Error' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Warning</label>
+					<Comp state='warning' options={countries} placeholder='Warning' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Interactive States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Interactive States</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp options={countries} placeholder='Enabled lookup' />
+				<Comp disabled options={countries} placeholder='Disabled lookup' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Use Cases -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Common Use Cases</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='font-medium mb-4'>Country Selection</h3>
+					<Comp options={countries} placeholder='Choose your country...' />
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Technology Stack</h3>
+					<Comp options={technologies} placeholder='Select technologies...' />
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Product Search</h3>
+					<Comp options={fruits} placeholder='Search products...' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- In Forms -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>In Forms</h2>
+		<Card class='p-8'>
+			<form class='space-y-6 max-w-md'>
+				<FormField label='Country'>
+					<Comp name='country' options={countries} placeholder='Select country' />
+				</FormField>
+
+				<FormField label='Favorite Fruit'>
+					<Comp name='fruit' options={fruits} placeholder='Choose a fruit' />
+				</FormField>
+
+				<FormField label='Technology'>
+					<Comp
+						name='technology'
+						options={technologies}
+						placeholder='Select technology'
+					/>
+				</FormField>
+
+				<Button type='submit'>Submit</Button>
+			</form>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { Lookup, FormField } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n\nconst countries = [\n  { label: "United States", value: "us" },\n  { label: "Canada", value: "ca" },\n  { label: "Mexico", value: "mx" },\n];\n---\n\n<!-- Basic lookup -->\n<Lookup options={countries} placeholder="Select country..." />\n\n<!-- Sizes -->\n<Lookup size="sm" options={countries} placeholder="Small" />\n<Lookup size="md" options={countries} placeholder="Medium" />\n<Lookup size="lg" options={countries} placeholder="Large" />\n\n<!-- Variants -->\n<Lookup variant="outline" options={countries} placeholder="Outline" />\n<Lookup variant="filled" options={countries} placeholder="Filled" />\n<Lookup variant="underline" options={countries} placeholder="Underline" />\n\n<!-- States -->\n<Lookup state="success" options={countries} placeholder="Success" />\n<Lookup state="error" options={countries} placeholder="Error" />\n<Lookup state="warning" options={countries} placeholder="Warning" />\n\n<!-- In form -->\n<FormField label="Country">\n  <Lookup name="country" options={countries} placeholder="Choose..." />\n</FormField>\n\n<!-- Disabled -->\n<Lookup disabled options={countries} placeholder="Disabled" />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>options</code></td
+						>
+						<td>Option[]</td>
+						<td>[]</td>
+						<td>Array of options to display</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>placeholder</code></td
+						>
+						<td>string</td>
+						<td>'Search...'</td>
+						<td>Placeholder text</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>size</code></td
+						>
+						<td>sm | md | lg</td>
+						<td><code>'md'</code></td>
+						<td>Input size</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>variant</code></td
+						>
+						<td>outline | filled | underline</td>
+						<td><code>'outline'</code></td>
+						<td>Input style variant</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>state</code></td
+						>
+						<td>default | success | error | warning</td>
+						<td><code>'default'</code></td>
+						<td>Input state</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>disabled</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Disable the lookup</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
