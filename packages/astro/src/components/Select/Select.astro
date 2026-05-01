@@ -1,0 +1,41 @@
+---
+import type { Option } from './types';
+
+interface Props {
+	options: Option[];
+	placeholder?: string;
+	disabled?: boolean;
+	size?: 'sm' | 'md' | 'lg';
+	variant?: 'outline' | 'filled' | 'underline';
+	state?: 'default' | 'success' | 'error' | 'warning';
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	options = [],
+	placeholder = 'Select an option',
+	disabled = false,
+	size = 'md',
+	variant = 'outline',
+	state = 'default',
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const sizeClass = `select-${size}`;
+const variantClass = `select-${variant}`;
+const stateClass = state !== 'default' ? `select-${state}` : '';
+const finalClass = `select ${sizeClass} ${variantClass} ${stateClass} ${className}`;
+---
+
+<select class={finalClass} disabled={disabled} {...rest}>
+	<option value='' disabled selected>{placeholder}</option>
+	{
+		options.map((option) => (
+			<option value={option.value} disabled={option.disabled}>
+				{option.label}
+			</option>
+		))
+	}
+</select>

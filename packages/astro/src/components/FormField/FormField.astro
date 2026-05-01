@@ -1,0 +1,36 @@
+---
+interface Props {
+	label: string;
+	required?: boolean;
+	helperText?: string;
+	error?: boolean;
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	label,
+	required = false,
+	helperText = '',
+	error = false,
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const fieldId = `field-${Math.random().toString(36).slice(2, 11)}`;
+---
+
+<div class={`form-field ${className}`} {...rest}>
+	<label for={fieldId} class='form-field-label'>
+		{label}
+		{required && <span class='form-field-required'>*</span>}
+	</label>
+	<div class='form-field-input'>
+		<slot />
+	</div>
+	{
+		helperText && (
+			<p class={`form-field-helper ${error ? 'error' : ''}`}>{helperText}</p>
+		)
+	}
+</div>

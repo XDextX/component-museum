@@ -1,0 +1,122 @@
+---
+import type { ValidationRule, FieldValidation } from './types';
+
+interface Props {
+	name: string;
+	validation?: FieldValidation;
+	onSubmit?: string;
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	name,
+	validation = {},
+	onSubmit = '',
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const formId = `form-${Math.random().toString(36).slice(2, 11)}`;
+---
+
+<form id={formId} class={`form ${className}`} {...rest} novalidate>
+	<slot />
+</form>
+
+<script define:vars={{ formId, validation, onSubmit }}>
+	const form = document.getElementById(formId);
+	const validationRules = validation;
+
+	function validateField(field, rules) {
+		const errors = [];
+		const value = field.value.trim();
+
+		rules.forEach((rule) => {
+			let isValid = true;
+
+			switch (rule.type) {
+				case 'required':
+					isValid = value.length > 0;
+					break;
+				case 'email':
+					isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+					break;
+				case 'minLength':
+					isValid = value.length >= rule.value;
+					break;
+				case 'maxLength':
+					isValid = value.length <= rule.value;
+					break;
+				case 'pattern':
+					isValid = new RegExp(rule.value).test(value);
+					break;
+			}
+
+			if (!isValid) {
+				errors.push(rule.message);
+			}
+		});
+
+		return errors;
+	}
+
+	function displayErrors(field, errors) {
+		const fieldContainer = field.closest('.form-field');
+		if (!fieldContainer) return;
+
+		const existingError = fieldContainer.querySelector('.field-error');
+		if (existingError) {
+			existingError.remove();
+		}
+
+		if (errors.length > 0) {
+			field.classList.add('input-error');
+			const errorDiv = document.createElement('div');
+			errorDiv.className = 'field-error';
+			errorDiv.textContent = errors[0];
+			fieldContainer.appendChild(errorDiv);
+		} else {
+			field.classList.remove('input-error');
+		}
+	}
+
+	function validateForm() {
+		let isValid = true;
+		const fields = form.querySelectorAll('input, textarea, select');
+
+		fields.forEach((field) => {
+			const fieldName = field.name || field.getAttribute('data-field');
+			const rules = validationRules[fieldName];
+
+			if (rules) {
+				const errors = validateField(field, rules);
+				displayErrors(field, errors);
+				if (errors.length > 0) isValid = false;
+			}
+		});
+
+		return isValid;
+	}
+
+	const fields = form.querySelectorAll('input, textarea, select');
+	fields.forEach((field) => {
+		field.addEventListener('blur', () => {
+			const fieldName = field.name || field.getAttribute('data-field');
+			const rules = validationRules[fieldName];
+			if (rules) {
+				const errors = validateField(field, rules);
+				displayErrors(field, errors);
+			}
+		});
+	});
+
+	form.addEventListener('submit', (e) => {
+		if (!validateForm()) {
+			e.preventDefault();
+		} else if (onSubmit) {
+			e.preventDefault();
+			new Function(onSubmit)();
+		}
+	});
+</script>
