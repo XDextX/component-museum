@@ -1,83 +1,86 @@
 ---
-import { Button as Btn, Code, Breadcrumb } from '@component-museum/astro';
-import DocsLayout from '../layouts/DocsLayout.astro';
+import { Button as Btn, Code, Breadcrumb, Card } from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
 ---
 
-<DocsLayout title='Button Stories'>
+<SideBarLayout title='Button Stories' navItems={Navigation}>
 	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Button' }]} />
 	<h1 class='text-4xl font-bold mb-12'>Button Component</h1>
 
 	<!-- Variants -->
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Variants</h2>
-		<div
-			class='grid grid-cols-1 md:grid-cols-3 gap-8 p-8 bg-white rounded-lg shadow'
-		>
-			<div class='flex flex-col items-center gap-4'>
-				<Btn variant='primary'>Primary</Btn>
-				<Code class='text-sm text-gray-600'>variant="primary"</Code>
+		<Card class='p-8'>
+			<div class='grid grid-cols-1 md:grid-cols-3 gap-8'>
+				<div class='flex flex-col items-center gap-4'>
+					<Btn variant='primary'>Primary</Btn>
+					<Code class='text-sm text-gray-600'>variant="primary"</Code>
+				</div>
+				<div class='flex flex-col items-center gap-4'>
+					<Btn variant='secondary'>Secondary</Btn>
+					<Code class='text-sm text-gray-600'>variant="secondary"</Code>
+				</div>
+				<div class='flex flex-col items-center gap-4'>
+					<Btn variant='outline'>Outline</Btn>
+					<Code class='text-sm text-gray-600'>variant="outline"</Code>
+				</div>
 			</div>
-			<div class='flex flex-col items-center gap-4'>
-				<Btn variant='secondary'>Secondary</Btn>
-				<Code class='text-sm text-gray-600'>variant="secondary"</Code>
-			</div>
-			<div class='flex flex-col items-center gap-4'>
-				<Btn variant='outline'>Outline</Btn>
-				<Code class='text-sm text-gray-600'>variant="outline"</Code>
-			</div>
-		</div>
+		</Card>
 	</section>
 
 	<!-- Sizes -->
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
-		<div
-			class='flex flex-wrap gap-8 p-8 bg-white rounded-lg shadow items-center'
-		>
-			<div class='flex flex-col items-center gap-4'>
-				<Btn size='sm'>Small</Btn>
-				<Code class='text-sm text-gray-600'>size="sm"</Code>
+		<Card class='p-8'>
+			<div class='flex flex-wrap gap-8 items-center'>
+				<div class='flex flex-col items-center gap-4'>
+					<Btn size='sm'>Small</Btn>
+					<Code class='text-sm text-gray-600'>size="sm"</Code>
+				</div>
+				<div class='flex flex-col items-center gap-4'>
+					<Btn size='md'>Medium</Btn>
+					<Code>size="md"</Code>
+				</div>
+				<div class='flex flex-col items-center gap-4'>
+					<Btn size='lg'>Large</Btn>
+					<Code>size="lg"</Code>
+				</div>
 			</div>
-			<div class='flex flex-col items-center gap-4'>
-				<Btn size='md'>Medium</Btn>
-				<Code>size="md"</Code>
-			</div>
-			<div class='flex flex-col items-center gap-4'>
-				<Btn size='lg'>Large</Btn>
-				<Code>size="lg"</Code>
-			</div>
-		</div>
+		</Card>
 	</section>
 
 	<!-- Combinations -->
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Combinations</h2>
-		<div
-			class='grid grid-cols-1 md:grid-cols-2 gap-4 p-8 bg-white rounded-lg shadow'
-		>
-			<Btn variant='secondary' size='sm'>Secondary Small</Btn>
-			<Btn variant='outline' size='md'>Outline Medium</Btn>
-			<Btn variant='secondary' size='lg'>Secondary Large</Btn>
-			<Btn variant='outline' size='sm'>Outline Small</Btn>
-		</div>
+		<Card class='p-8'>
+			<div class='grid grid-cols-1 md:grid-cols-2 gap-4'>
+				<Btn variant='secondary' size='sm'>Secondary Small</Btn>
+				<Btn variant='outline' size='md'>Outline Medium</Btn>
+				<Btn variant='secondary' size='lg'>Secondary Large</Btn>
+				<Btn variant='outline' size='sm'>Outline Small</Btn>
+			</div>
+		</Card>
 	</section>
 
 	<!-- States -->
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>States</h2>
-		<div class='flex flex-wrap gap-4 p-8 bg-white rounded-lg shadow'>
-			<Btn>Hover me</Btn>
-			<Btn disabled>Disabled</Btn>
-			<Btn variant='outline' disabled>Outline Disabled</Btn>
-		</div>
+		<Card class='p-8'>
+			<div class='flex flex-wrap gap-4'>
+				<Btn>Hover me</Btn>
+				<Btn disabled>Disabled</Btn>
+				<Btn variant='outline' disabled>Outline Disabled</Btn>
+			</div>
+		</Card>
 	</section>
 
 	<!-- Full Width -->
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Full Width</h2>
-		<div class='p-8 bg-white rounded-lg shadow'>
+		<Card class='p-8'>
 			<Btn class='w-full'>Full Width Button</Btn>
-		</div>
+		</Card>
 	</section>
 
 	<!-- Code Examples -->
@@ -90,4 +93,4 @@ import DocsLayout from '../layouts/DocsLayout.astro';
 			}</Code
 		>
 	</section>
-</DocsLayout>
+</SideBarLayout>

@@ -1,16 +1,17 @@
 ---
-import DocsLayout from '../layouts/DocsLayout.astro';
-import { Breadcrumb as Comp, Code } from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+import { Breadcrumb as Comp, Code, Card } from '@component-museum/astro';
 ---
 
-<DocsLayout title='Breadcrumb Stories'>
+<SideBarLayout title='Breadcrumb Stories' navItems={Navigation}>
 	<Comp items={[{ label: 'Home', href: '/' }, { label: 'Breadcrumb' }]} />
 	<h1 class='text-4xl font-bold mb-12'>Breadcrumb Component</h1>
 
 	<!-- Basic Usage -->
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
-		<div class='p-8 bg-white rounded-lg shadow'>
+		<Card class='p-8' variant='elevated'>
 			<Comp
 				items={[
 					{ label: 'Home', href: '/' },
@@ -18,14 +19,14 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 					{ label: 'Electronics' },
 				]}
 			/>
-		</div>
+		</Card>
 	</section>
 
 	<!-- With Different Separators -->
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Custom Separators</h2>
 		<div class='space-y-4'>
-			<div class='p-8 bg-white rounded-lg shadow'>
+			<Card class='p-8' variant='elevated'>
 				<h3 class='font-semibold mb-4'>Forward Slash (default)</h3>
 				<Comp
 					items={[
@@ -35,8 +36,8 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 						{ label: 'Article' },
 					]}
 				/>
-			</div>
-			<div class='p-8 bg-white rounded-lg shadow'>
+			</Card>
+			<Card class='p-8' variant='elevated'>
 				<h3 class='font-semibold mb-4'>Arrow Separator</h3>
 				<Comp
 					separator='→'
@@ -46,8 +47,8 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 						{ label: 'Tech' },
 					]}
 				/>
-			</div>
-			<div class='p-8 bg-white rounded-lg shadow'>
+			</Card>
+			<Card class='p-8' variant='elevated'>
 				<h3 class='font-semibold mb-4'>Chevron Separator</h3>
 				<Comp
 					separator='›'
@@ -57,7 +58,7 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 						{ label: 'Account' },
 					]}
 				/>
-			</div>
+			</Card>
 		</div>
 	</section>
 
@@ -65,7 +66,7 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Use Cases</h2>
 		<div class='space-y-4'>
-			<div class='p-8 bg-white rounded-lg shadow'>
+			<Card class='p-8' variant='elevated'>
 				<h3 class='font-semibold mb-4'>E-commerce Navigation</h3>
 				<Comp
 					items={[
@@ -75,8 +76,8 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 						{ label: 'Smartphones' },
 					]}
 				/>
-			</div>
-			<div class='p-8 bg-white rounded-lg shadow'>
+			</Card>
+			<Card class='p-8' variant='elevated'>
 				<h3 class='font-semibold mb-4'>Documentation Navigation</h3>
 				<Comp
 					items={[
@@ -89,8 +90,8 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 						{ label: 'npm Setup' },
 					]}
 				/>
-			</div>
-			<div class='p-8 bg-white rounded-lg shadow'>
+			</Card>
+			<Card class='p-8' variant='elevated'>
 				<h3 class='font-semibold mb-4'>File System Navigation</h3>
 				<Comp
 					separator='/'
@@ -101,7 +102,7 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 						{ label: 'Q2' },
 					]}
 				/>
-			</div>
+			</Card>
 		</div>
 	</section>
 
@@ -118,7 +119,7 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 	<!-- Props -->
 	<section class='mt-16'>
 		<h2 class='text-2xl font-bold mb-6'>Props</h2>
-		<div class='bg-white rounded-lg border border-gray-200 p-6'>
+		<Card class='p-6' variant='outlined'>
 			<table class='w-full text-sm'>
 				<thead>
 					<tr class='border-b'>
@@ -147,6 +148,6 @@ import { Breadcrumb as Comp, Code } from '@component-museum/astro';
 					</tr>
 				</tbody>
 			</table>
-		</div>
+		</Card>
 	</section>
-</DocsLayout>
+</SideBarLayout>

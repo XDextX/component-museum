@@ -1,12 +1,18 @@
 ---
-import DocsLayout from '../layouts/DocsLayout.astro';
-import { Alert as Comp, Code, Breadcrumb } from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+import {
+	Alert as Comp,
+	Code,
+	Breadcrumb,
+	Button,
+} from '@component-museum/astro';
 
 const copytext =
 	'---\nimport { Alert } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n<!-- Basic alert -->\n<Alert variant="info">\nThis is an info message.\n</Alert>\n\n<!-- With title -->\n<Alert variant="success" title="Success">\nOperation completed successfully.\n</Alert>\n\n<!-- Closable -->\n<Alert variant="warning" title="Warning" closable>\nThis alert can be dismissed by the user.\n</Alert>\n\n<!-- With ID for dynamic control -->\n<Alert id="myAlert" variant="info" title="Dynamic">\nThis alert can be controlled with JavaScript.\n</Alert>\n\n<!-- JavaScript control -->\n<script>\n// Show alert\nwindow.showAlert("myAlert");\n\n// Hide alert\nwindow.hideAlert("myAlert");\n\n// Toggle alert\nwindow.toggleAlert("myAlert");\n\n// Show after delay\nsetTimeout(() => {\nwindow.showAlert("myAlert");\n}, 1000);\n</script>`';
 ---
 
-<DocsLayout title='Alert Stories'>
+<SideBarLayout title='Alert Stories' navItems={Navigation}>
 	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Alert' }]} />
 	<h1 class='text-4xl font-bold mb-12'>Alert Component</h1>
 
@@ -71,24 +77,19 @@ const copytext =
 			Use JavaScript methods to show, hide, or toggle alerts programmatically.
 		</p>
 		<div class='mb-6 flex gap-3'>
-			<button
+			<Button
 				onclick='showAlert("demo-alert")'
-				class='px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700'
+				class='bg-green-600 hover:bg-green-700'
 			>
 				Show Alert
-			</button>
-			<button
+			</Button>
+			<Button
 				onclick='hideAlert("demo-alert")'
-				class='px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700'
+				class='bg-gray-600 hover:bg-gray-700'
 			>
 				Hide Alert
-			</button>
-			<button
-				onclick='toggleAlert("demo-alert")'
-				class='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'
-			>
-				Toggle Alert
-			</button>
+			</Button>
+			<Button onclick='toggleAlert("demo-alert")'>Toggle Alert</Button>
 		</div>
 		<Comp id='demo-alert' variant='info' title='Dynamic Alert'>
 			This alert is controlled by JavaScript buttons above.
@@ -122,4 +123,4 @@ const copytext =
 			{copytext}
 		</Code>
 	</section>
-</DocsLayout>
+</SideBarLayout>

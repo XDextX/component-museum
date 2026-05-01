@@ -1,6 +1,8 @@
 ---
-import { Tree as Comp, Code, Breadcrumb } from '@component-museum/astro';
+import { Tree as Comp, Code, Breadcrumb, Card } from '@component-museum/astro';
 import '../styles/global.css';
+import { SideBarLayout } from '../layouts';
+import { Navigation } from '../data/Navigation';
 
 const fileSystemTree = [
 	{
@@ -81,109 +83,97 @@ const organizationTree = [
 ];
 ---
 
-<html lang='en'>
-	<head>
-		<meta charset='utf-8' />
-		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
-		<link rel='icon' href='/favicon.ico' />
-		<meta name='viewport' content='width=device-width' />
-		<meta name='generator' content={Astro.generator} />
-		<title>Tree Stories</title>
-	</head>
-	<body class='bg-gray-50 p-8 '>
-		<div class='max-w-4xl mx-auto'>
-			<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Tree' }]} />
-			<h1 class='text-4xl font-bold mb-12'>Tree Component</h1>
+<SideBarLayout title='Tree Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Tree' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Tree Component</h1>
 
-			<!-- Basic Usage -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
-				<div class='p-8 bg-white rounded-lg shadow'>
-					<Comp
-						items={[
-							{
-								label: 'Parent 1',
-								children: [{ label: 'Child 1.1' }, { label: 'Child 1.2' }],
-							},
-							{ label: 'Parent 2', children: [{ label: 'Child 2.1' }] },
-							{ label: 'Parent 3' },
-						]}
-					/>
-				</div>
-			</section>
-
-			<!-- Use Cases -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Use Cases</h2>
-				<div class='space-y-4'>
-					<div class='p-8 bg-white rounded-lg shadow'>
-						<h3 class='font-semibold mb-4'>File System Navigation</h3>
-						<Comp items={fileSystemTree} />
-					</div>
-					<div class='p-8 bg-white rounded-lg shadow'>
-						<h3 class='font-semibold mb-4'>Site Navigation</h3>
-						<Comp items={siteNavigationTree} />
-					</div>
-					<div class='p-8 bg-white rounded-lg shadow'>
-						<h3 class='font-semibold mb-4'>Organization Structure</h3>
-						<Comp items={organizationTree} />
-					</div>
-				</div>
-			</section>
-
-			<!-- Code Examples -->
-			<section class='mb-16'>
-				<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
-				<Code language='astro' title='Complete Example' copyable>
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8' variant='elevated'>
+			<Comp
+				items={[
 					{
-						"---\nimport { Tree } from \"@component-museum/astro\";\nimport \"@component-museum/astro/styles.css\";\n\nconst items = [\n\t{\n\t\tlabel: 'Parent 1',\n\t\tchildren: [\n\t\t\t{ label: 'Child 1.1' },\n\t\t\t{ label: 'Child 1.2' },\n\t\t\t{\n\t\t\t\tlabel: 'Child 1.3',\n\t\t\t\tchildren: [\n\t\t\t\t\t{ label: 'Grandchild 1.3.1' },\n\t\t\t\t]\n\t\t\t},\n\t\t]\n\t},\n\t{\n\t\tlabel: 'Parent 2',\n\t\tchildren: [\n\t\t\t{ label: 'Child 2.1' },\n\t\t]\n\t},\n];\n---\n\n<!-- Basic tree -->\n<Tree items={items} />"
-					}
-				</Code>
-			</section>
+						label: 'Parent 1',
+						children: [{ label: 'Child 1.1' }, { label: 'Child 1.2' }],
+					},
+					{ label: 'Parent 2', children: [{ label: 'Child 2.1' }] },
+					{ label: 'Parent 3' },
+				]}
+			/>
+		</Card>
+	</section>
 
-			<!-- Props -->
-			<section>
-				<h2 class='text-2xl font-bold mb-6'>Props</h2>
-				<div class='bg-white rounded-lg border border-gray-200 p-6'>
-					<table class='w-full text-sm'>
-						<thead>
-							<tr class='border-b'>
-								<th class='text-left py-2 font-semibold'>Prop</th>
-								<th class='text-left py-2 font-semibold'>Type</th>
-								<th class='text-left py-2 font-semibold'>Default</th>
-								<th class='text-left py-2 font-semibold'>Description</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr class='border-b'>
-								<td class='py-3'
-									><code class='bg-gray-100 px-2 py-1 rounded'>items</code></td
-								>
-								<td>TreeItem[]</td>
-								<td><code>[]</code></td>
-								<td>Array of tree items with label and optional children</td>
-							</tr>
-							<tr>
-								<td class='py-3'
-									><code class='bg-gray-100 px-2 py-1 rounded'>expanded</code></td
-								>
-								<td>boolean</td>
-								<td><code>true</code></td>
-								<td>Whether children are expanded by default</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-
-				<div class='mt-8 bg-gray-50 rounded-lg border border-gray-200 p-6'>
-					<h3 class='font-semibold mb-3'>TreeItem Interface</h3>
-					<Code language='typescript'>
-						{
-							'interface TreeItem {\n  label: string;\n  children?: TreeItem[];\n  expanded?: boolean;\n}'
-						}
-					</Code>
-				</div>
-			</section>
+	<!-- Use Cases -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Use Cases</h2>
+		<div class='space-y-4'>
+			<Card class='p-8' variant='elevated'>
+				<h3 class='font-semibold mb-4'>File System Navigation</h3>
+				<Comp items={fileSystemTree} />
+			</Card>
+			<Card class='p-8' variant='elevated'>
+				<h3 class='font-semibold mb-4'>Site Navigation</h3>
+				<Comp items={siteNavigationTree} />
+			</Card>
+			<Card class='p-8' variant='elevated'>
+				<h3 class='font-semibold mb-4'>Organization Structure</h3>
+				<Comp items={organizationTree} />
+			</Card>
 		</div>
-	</body>
-</html>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				"---\nimport { Tree } from \"@component-museum/astro\";\nimport \"@component-museum/astro/styles.css\";\n\nconst items = [\n\t{\n\t\tlabel: 'Parent 1',\n\t\tchildren: [\n\t\t\t{ label: 'Child 1.1' },\n\t\t\t{ label: 'Child 1.2' },\n\t\t\t{\n\t\t\t\tlabel: 'Child 1.3',\n\t\t\t\tchildren: [\n\t\t\t\t\t{ label: 'Grandchild 1.3.1' },\n\t\t\t\t]\n\t\t\t},\n\t\t]\n\t},\n\t{\n\t\tlabel: 'Parent 2',\n\t\tchildren: [\n\t\t\t{ label: 'Child 2.1' },\n\t\t]\n\t},\n];\n---\n\n<!-- Basic tree -->\n<Tree items={items} />"
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6' variant='outlined'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>items</code></td
+						>
+						<td>TreeItem[]</td>
+						<td><code>[]</code></td>
+						<td>Array of tree items with label and optional children</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>expanded</code></td
+						>
+						<td>boolean</td>
+						<td><code>true</code></td>
+						<td>Whether children are expanded by default</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+
+		<Card class='mt-8 p-6' variant='outlined'>
+			<h3 class='font-semibold mb-3'>TreeItem Interface</h3>
+			<Code language='typescript'>
+				{
+					'interface TreeItem {\n\tlabel: string;\n\tchildren?: TreeItem[];\n\texpanded?: boolean;\n}'
+				}
+			</Code>
+		</Card>
+	</section>
+</SideBarLayout>

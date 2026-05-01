@@ -1,19 +1,19 @@
 ---
-import { Badge as Comp, Code, Breadcrumb } from '@component-museum/astro';
-import DocsLayout from '../layouts/DocsLayout.astro';
+import { Badge as Comp, Code, Breadcrumb, Card } from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
 ---
 
-<DocsLayout title='Badge Stories'>
-	<Breadcrumb items={[
-		{ label: 'Home', href: '/' },
-		{ label: 'Badge' }
-	]} />
+<SideBarLayout title='Badge Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Badge' }]} />
 	<h1 class='text-4xl font-bold mb-12'>Badge Component</h1>
 
 	<!-- Variants -->
-	<section class='mb-16'>
-		<h2 class='text-2xl font-bold mb-6'>Variants</h2>
-		<div class='flex flex-wrap gap-4 p-8 bg-white rounded-lg shadow'>
+	<Card class='mb-16 p-0 overflow-hidden' variant='elevated'>
+		<div class='bg-gray-300 p-2'>
+			<h2 class='text-2xl font-bold mb-6'>Variants</h2>
+		</div>
+		<div class='p-2 flex flex-wrap gap-4'>
 			<Comp variant='primary'>Primary</Comp>
 			<Comp variant='secondary'>Secondary</Comp>
 			<Comp variant='success'>Success</Comp>
@@ -21,14 +21,14 @@ import DocsLayout from '../layouts/DocsLayout.astro';
 			<Comp variant='danger'>Danger</Comp>
 			<Comp variant='info'>Info</Comp>
 		</div>
-	</section>
+	</Card>
 
 	<!-- Sizes -->
-	<section class='mb-16'>
-		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
-		<div
-			class='flex flex-wrap gap-6 p-8 bg-white rounded-lg shadow items-center'
-		>
+	<Card class='mb-16 p-0 overflow-hidden' variant='elevated'>
+		<div class='bg-gray-300 p-2'>
+			<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+		</div>
+		<div class='flex flex-wrap gap-6 p-8 shadow items-center'>
 			<div class='flex flex-col items-center gap-4'>
 				<Comp size='sm'>Small</Comp>
 				<Code class='text-sm text-gray-600'>size="sm"</Code>
@@ -42,26 +42,28 @@ import DocsLayout from '../layouts/DocsLayout.astro';
 				<Code class='text-sm text-gray-600'>size="lg"</Code>
 			</div>
 		</div>
-	</section>
+	</Card>
 
 	<!-- Combinations -->
-	<section class='mb-16'>
-		<h2 class='text-2xl font-bold mb-6'>Combinations</h2>
-		<div class='flex flex-wrap gap-4 p-8 bg-white rounded-lg shadow'>
+	<Card class='mb-16 p-0 overflow-hidden' variant='elevated'>
+		<div class='bg-gray-300 p-2'>
+			<h2 class='text-2xl font-bold mb-6'>Combinations</h2>
+		</div>
+		<div class='flex flex-wrap gap-4 p-8'>
 			<Comp variant='success' size='sm'>New</Comp>
 			<Comp variant='warning' size='md'>Pending</Comp>
 			<Comp variant='danger' size='lg'>Critical</Comp>
 			<Comp variant='info' size='sm'>Info</Comp>
 			<Comp variant='primary' size='lg'>Featured</Comp>
 		</div>
-	</section>
+	</Card>
 
 	<!-- Use Cases -->
-	<section class='mb-16'>
-		<h2 class='text-2xl font-bold mb-6'>Use Cases</h2>
-		<div
-			class='grid grid-cols-1 md:grid-cols-2 gap-4 p-8 bg-white rounded-lg shadow'
-		>
+	<Card class='mb-16 p-0 overflow-hidden' variant='elevated'>
+		<div class='bg-gray-300 p-2'>
+			<h2 class='text-2xl font-bold mb-6'>Use Cases</h2>
+		</div>
+		<div class='grid grid-cols-1 md:grid-cols-2 gap-4 p-8 shadow'>
 			<div class='border-l-4 border-green-500 pl-4'>
 				<h3 class='font-semibold mb-2'>Status Tags</h3>
 				<p class='text-sm text-gray-600 mb-3'>Mark item status</p>
@@ -79,7 +81,7 @@ import DocsLayout from '../layouts/DocsLayout.astro';
 				</div>
 			</div>
 		</div>
-	</section>
+	</Card>
 
 	<!-- Code Examples -->
 	<section>
@@ -91,4 +93,4 @@ import DocsLayout from '../layouts/DocsLayout.astro';
 			}
 		</Code>
 	</section>
-</DocsLayout>
+</SideBarLayout>
