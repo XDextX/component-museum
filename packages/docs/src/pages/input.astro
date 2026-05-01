@@ -1,0 +1,135 @@
+---
+import { Input as Comp, Code, Breadcrumb, Card } from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+---
+
+<SideBarLayout title='Input Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Input' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Input Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp placeholder='Enter text...' />
+				<Comp type='email' placeholder='Enter email...' />
+				<Comp type='password' placeholder='Enter password...' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp size='sm' placeholder='Small input' />
+				<Comp size='md' placeholder='Medium input' />
+				<Comp size='lg' placeholder='Large input' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>States</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp placeholder='Default input' />
+				<Comp disabled placeholder='Disabled input' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Input Types -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Input Types</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Text</label>
+					<Comp type='text' placeholder='Text input' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Email</label>
+					<Comp type='email' placeholder='Email input' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Password</label>
+					<Comp type='password' placeholder='Password input' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Number</label>
+					<Comp type='number' placeholder='Number input' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Search</label>
+					<Comp type='search' placeholder='Search input' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { Input } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic input -->\n<Input placeholder="Enter text..." />\n\n<!-- Email input -->\n<Input type="email" placeholder="Enter email..." />\n\n<!-- Password input -->\n<Input type="password" placeholder="Enter password..." />\n\n<!-- Sizes -->\n<Input size="sm" placeholder="Small" />\n<Input size="md" placeholder="Medium" />\n<Input size="lg" placeholder="Large" />\n\n<!-- Disabled -->\n<Input disabled placeholder="Disabled input" />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>type</code></td
+						>
+						<td>string</td>
+						<td><code>'text'</code></td>
+						<td>Input type (text, email, password, number, etc.)</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>placeholder</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Placeholder text</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>size</code></td
+						>
+						<td>sm | md | lg</td>
+						<td><code>'md'</code></td>
+						<td>Input size</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>disabled</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Disable the input</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
