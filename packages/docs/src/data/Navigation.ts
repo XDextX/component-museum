@@ -4,7 +4,7 @@ export const Navigation = [
         href: '/',
     },
     {
-        label: 'Components',
+        label: 'UI Base',
         children: [
             {
                 label: 'Button',
@@ -34,10 +34,11 @@ export const Navigation = [
                 label: 'Tree',
                 href: '/tree',
             },
-            {
-                label: 'Input',
-                href: '/input',
-            },
+        ],
+    },
+    {
+        label: 'Form Basics',
+        children: [
             {
                 label: 'FormField',
                 href: '/formfield',
@@ -47,9 +48,14 @@ export const Navigation = [
                 href: '/form',
             },
             {
-                label: 'Select',
-                href: '/select',
+                label: 'Input',
+                href: '/input',
             },
+        ],
+    },
+    {
+        label: 'Form Inputs',
+        children: [
             {
                 label: 'Checkbox',
                 href: '/checkbox',
@@ -59,6 +65,10 @@ export const Navigation = [
                 href: '/radio',
             },
             {
+                label: 'Select',
+                href: '/select',
+            },
+            {
                 label: 'Textarea',
                 href: '/textarea',
             },
@@ -66,6 +76,11 @@ export const Navigation = [
                 label: 'Toggle',
                 href: '/toggle',
             },
+        ],
+    },
+    {
+        label: 'Advanced Inputs',
+        children: [
             {
                 label: 'Datepicker',
                 href: '/datepicker',
@@ -73,6 +88,10 @@ export const Navigation = [
             {
                 label: 'Slider',
                 href: '/slider',
+            },
+            {
+                label: 'Lookup',
+                href: '/lookup',
             },
         ],
     },
