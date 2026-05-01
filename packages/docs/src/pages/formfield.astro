@@ -1,0 +1,198 @@
+---
+import {
+	FormField,
+	Input,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+---
+
+<SideBarLayout title='FormField Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'FormField' }]} />
+	<h1 class='text-4xl font-bold mb-12'>FormField Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-6 max-w-md'>
+				<FormField label='Email'>
+					<Input type='email' placeholder='Enter your email' />
+				</FormField>
+				<FormField label='Password'>
+					<Input type='password' placeholder='Enter your password' />
+				</FormField>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Required Field -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Required Fields</h2>
+		<Card class='p-8'>
+			<div class='space-y-6 max-w-md'>
+				<FormField label='Full Name' required>
+					<Input placeholder='John Doe' />
+				</FormField>
+				<FormField label='Email' required>
+					<Input type='email' placeholder='john@example.com' />
+				</FormField>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Helper Text -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Helper Text</h2>
+		<Card class='p-8'>
+			<div class='space-y-6 max-w-md'>
+				<FormField
+					label='Password'
+					helperText='At least 8 characters with uppercase and numbers'
+				>
+					<Input type='password' placeholder='Enter secure password' />
+				</FormField>
+				<FormField
+					label='Email'
+					helperText='We will send a confirmation link to this email'
+				>
+					<Input type='email' placeholder='your@email.com' />
+				</FormField>
+			</div>
+		</Card>
+	</section>
+
+	<!-- With Input Variants -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>With Input Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6 max-w-md'>
+				<FormField label='Username'>
+					<Input variant='filled' placeholder='username' />
+				</FormField>
+				<FormField label='Domain'>
+					<Input variant='underline' placeholder='example.com' />
+				</FormField>
+				<FormField label='Search'>
+					<Input variant='outline' type='search' placeholder='Search...' />
+				</FormField>
+			</div>
+		</Card>
+	</section>
+
+	<!-- With Input States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>With Input States</h2>
+		<Card class='p-8'>
+			<div class='space-y-6 max-w-md'>
+				<FormField label='Success' helperText='Email is available'>
+					<Input state='success' placeholder='available@email.com' />
+				</FormField>
+				<FormField
+					label='Error'
+					error
+					helperText='This email is already registered'
+				>
+					<Input state='error' placeholder='taken@email.com' />
+				</FormField>
+				<FormField label='Warning' helperText='This email might be invalid'>
+					<Input state='warning' placeholder='check@email.com' />
+				</FormField>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Form Example -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Complete Form Example</h2>
+		<Card class='p-8'>
+			<form class='space-y-6 max-w-md'>
+				<FormField label='Full Name' required>
+					<Input placeholder='John Doe' />
+				</FormField>
+				<FormField
+					label='Email'
+					required
+					helperText='We will send a confirmation link'
+				>
+					<Input type='email' placeholder='john@example.com' />
+				</FormField>
+				<FormField label='Password' required helperText='Minimum 8 characters'>
+					<Input type='password' placeholder='••••••••' />
+				</FormField>
+				<FormField label='Confirm Password' required>
+					<Input type='password' placeholder='••••••••' />
+				</FormField>
+				<div class='flex gap-2 pt-4'>
+					<Button type='submit' variant='primary'>Sign Up</Button>
+					<Button type='button' variant='outline'>Cancel</Button>
+				</div>
+			</form>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { FormField, Input, Button } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<form>\n  <!-- Basic field -->\n  <FormField label="Email">\n    <Input type="email" placeholder="your@email.com" />\n  </FormField>\n\n  <!-- Required field -->\n  <FormField label="Password" required>\n    <Input type="password" placeholder="••••••••" />\n  </FormField>\n\n  <!-- With helper text -->\n  <FormField \n    label="Username" \n    helperText="3-20 characters, alphanumeric only"\n  >\n    <Input placeholder="username" />\n  </FormField>\n\n  <!-- With error state -->\n  <FormField \n    label="Email" \n    error \n    helperText="This email is already registered"\n  >\n    <Input state="error" placeholder="email@example.com" />\n  </FormField>\n\n  <!-- With input variant -->\n  <FormField label="Search">\n    <Input variant="underline" type="search" placeholder="Search..." />\n  </FormField>\n\n  <Button type="submit">Submit</Button>\n</form>'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>label</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Field label text (required)</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>required</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Show required asterisk (*)</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>helperText</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Helper text below the input</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>error</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Style helper text as error (red color)</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
