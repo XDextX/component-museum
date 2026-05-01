@@ -1,0 +1,200 @@
+---
+import {
+	Checkbox as Comp,
+	FormField,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+---
+
+<SideBarLayout title='Checkbox Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Checkbox' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Checkbox Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-4'>
+				<Comp label='Accept terms and conditions' />
+				<Comp label='Subscribe to newsletter' checked />
+				<Comp label='Disabled checkbox' disabled />
+				<Comp label='Checked and disabled' checked disabled />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Variants -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Default</h3>
+					<div class='space-y-3'>
+						<Comp label='Default checkbox' variant='default' />
+						<Comp label='Default checked' variant='default' checked />
+					</div>
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Rounded</h3>
+					<div class='space-y-3'>
+						<Comp label='Rounded checkbox' variant='rounded' />
+						<Comp label='Rounded checked' variant='rounded' checked />
+					</div>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>States</h2>
+		<Card class='p-8'>
+			<div class='space-y-6'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Default</h3>
+					<Comp label='Default state' state='default' checked />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Success</h3>
+					<Comp label='Success state' state='success' checked />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Error</h3>
+					<Comp label='Error state' state='error' checked />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Warning</h3>
+					<Comp label='Warning state' state='warning' checked />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Checkbox Groups -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Checkbox Groups</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='font-medium mb-4'>Interests</h3>
+					<div class='space-y-3'>
+						<Comp label='Technology' checked />
+						<Comp label='Design' checked />
+						<Comp label='Business' />
+						<Comp label='Sports' />
+					</div>
+				</div>
+
+				<div>
+					<h3 class='font-medium mb-4'>Permissions</h3>
+					<div class='space-y-3'>
+						<Comp label='Read' checked />
+						<Comp label='Write' checked />
+						<Comp label='Delete' />
+						<Comp label='Admin' disabled />
+					</div>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- In Forms -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>In Forms</h2>
+		<Card class='p-8'>
+			<form class='space-y-6 max-w-md'>
+				<FormField label='Select Features'>
+					<div class='space-y-3'>
+						<Comp label='Feature A' name='features' value='a' checked />
+						<Comp label='Feature B' name='features' value='b' />
+						<Comp label='Feature C' name='features' value='c' />
+					</div>
+				</FormField>
+
+				<FormField label='Agreements'>
+					<div class='space-y-3'>
+						<Comp label='I agree to the terms and conditions' name='terms' checked />
+						<Comp label='I agree to the privacy policy' name='privacy' checked />
+					</div>
+				</FormField>
+
+				<Button type='submit'>Submit</Button>
+			</form>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { Checkbox, FormField } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<!-- Basic checkbox -->\n<Checkbox label="Accept terms" />\n\n<!-- Checked -->\n<Checkbox label="Subscribe" checked />\n\n<!-- With variant -->\n<Checkbox label="Rounded" variant="rounded" />\n\n<!-- With state -->\n<Checkbox label="Success" state="success" checked />\n\n<!-- In form group -->\n<FormField label="Select options">\n  <div class="space-y-3">\n    <Checkbox label="Option A" name="options" value="a" />\n    <Checkbox label="Option B" name="options" value="b" />\n    <Checkbox label="Option C" name="options" value="c" />\n  </div>\n</FormField>\n\n<!-- Disabled -->\n<Checkbox label="Disabled" disabled />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>label</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Checkbox label text</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>checked</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Initial checked state</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>disabled</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Disable the checkbox</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>variant</code></td
+						>
+						<td>default | rounded</td>
+						<td><code>'default'</code></td>
+						<td>Checkbox style variant</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>state</code></td
+						>
+						<td>default | success | error | warning</td>
+						<td><code>'default'</code></td>
+						<td>Checkbox state for validation</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
