@@ -1,0 +1,213 @@
+---
+import {
+	Form as Comp,
+	FormField,
+	Input,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+---
+
+<SideBarLayout title='Form Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Form' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Form Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<Comp name='basicForm' class='max-w-md space-y-6'>
+				<FormField label='Username'>
+					<Input placeholder='Enter username' />
+				</FormField>
+				<FormField label='Email'>
+					<Input type='email' placeholder='Enter email' />
+				</FormField>
+				<Button type='submit'>Submit</Button>
+			</Comp>
+		</Card>
+	</section>
+
+	<!-- With Validation -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Form Validation</h2>
+		<p class='text-gray-600 mb-4'>
+			Validation rules are checked on blur and on submit. Try submitting with empty
+			fields.
+		</p>
+		<Card class='p-8'>
+			<Comp
+				name='validatedForm'
+				validation={{
+					username: [{ type: 'required', message: 'Username is required' }],
+					email: [
+						{ type: 'required', message: 'Email is required' },
+						{ type: 'email', message: 'Please enter a valid email' },
+					],
+					password: [
+						{ type: 'required', message: 'Password is required' },
+						{
+							type: 'minLength',
+							value: 8,
+							message: 'Password must be at least 8 characters',
+						},
+					],
+					age: [
+						{ type: 'required', message: 'Age is required' },
+						{ type: 'minLength', value: 1, message: 'Age must be positive' },
+						{
+							type: 'maxLength',
+							value: 3,
+							message: 'Please enter a valid age',
+						},
+					],
+				}}
+				class='max-w-md space-y-6'
+			>
+				<FormField label='Username' required>
+					<Input name='username' placeholder='Enter username' />
+				</FormField>
+				<FormField label='Email' required>
+					<Input name='email' type='email' placeholder='Enter email' />
+				</FormField>
+				<FormField label='Password' required helperText='At least 8 characters'>
+					<Input name='password' type='password' placeholder='••••••••' />
+				</FormField>
+				<FormField label='Age'>
+					<Input name='age' type='number' placeholder='Enter age' />
+				</FormField>
+				<Button type='submit'>Sign Up</Button>
+			</Comp>
+		</Card>
+	</section>
+
+	<!-- Validation Types -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Validation Types</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Value</th>
+						<th class='text-left py-2 font-semibold'>Example</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3 font-medium'>required</td>
+						<td>-</td>
+						<td
+							><code class='bg-gray-100 px-2 py-1 rounded text-xs'
+								>{'{ type: "required", message: "Field is required" }'}</code
+							></td
+						>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3 font-medium'>email</td>
+						<td>-</td>
+						<td
+							><code class='bg-gray-100 px-2 py-1 rounded text-xs'
+								>{'{ type: "email", message: "Invalid email" }'}</code
+							></td
+						>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3 font-medium'>minLength</td>
+						<td>number</td>
+						<td
+							><code class='bg-gray-100 px-2 py-1 rounded text-xs'
+								>{'{ type: "minLength", value: 8, message: "Min 8 chars" }'}</code
+							></td
+						>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3 font-medium'>maxLength</td>
+						<td>number</td>
+						<td
+							><code class='bg-gray-100 px-2 py-1 rounded text-xs'
+								>{'{ type: "maxLength", value: 50, message: "Max 50 chars" }'}</code
+							></td
+						>
+					</tr>
+					<tr>
+						<td class='py-3 font-medium'>pattern</td>
+						<td>regex string</td>
+						<td
+							><code class='bg-gray-100 px-2 py-1 rounded text-xs'
+								>{
+									'{ type: "pattern", value: "^[A-Z]", message: "Start uppercase" }'
+								}</code
+							></td
+						>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { Form, FormField, Input, Button } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n---\n\n<Form\n  name="signupForm"\n  validation={{\n    email: [\n      { type: "required", message: "Email is required" },\n      { type: "email", message: "Invalid email" }\n    ],\n    password: [\n      { type: "required", message: "Password is required" },\n      { type: "minLength", value: 8, message: "Min 8 characters" }\n    ]\n  }}\n  class="space-y-6 max-w-md"\n>\n  <FormField label="Email" required>\n    <Input name="email" type="email" placeholder="your@email.com" />\n  </FormField>\n  \n  <FormField label="Password" required helperText="Minimum 8 characters">\n    <Input name="password" type="password" placeholder="••••••••" />\n  </FormField>\n  \n  <Button type="submit">Sign Up</Button>\n</Form>'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>name</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Form name identifier (required)</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>validation</code></td
+						>
+						<td>object</td>
+						<td><code>{}</code></td>
+						<td>Validation rules object</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>onSubmit</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>JavaScript callback on submit</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>class</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Custom CSS classes</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
