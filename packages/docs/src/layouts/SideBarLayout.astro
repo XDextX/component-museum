@@ -1,0 +1,24 @@
+---
+import { Card, Tree } from '@component-museum/astro';
+import DocsLayout from './DocsLayout.astro';
+
+interface Props {
+	title: string;
+	navItems?: any[];
+}
+const { title, navItems = [] } = Astro.props;
+---
+
+<DocsLayout title={title}>
+	<div class='flex gap-8'>
+		<aside class='w-64 shrink-0'>
+			<Card class='sticky top-4 p-4' variant='outlined'>
+				<h3 class='font-semibold mb-4'>Navigation</h3>
+				<Tree items={navItems} />
+			</Card>
+		</aside>
+		<main class='flex-1 min-w-0'>
+			<slot />
+		</main>
+	</div>
+</DocsLayout>
