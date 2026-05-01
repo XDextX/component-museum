@@ -15,4 +15,5 @@ export { default as Textarea } from './src/components/Textarea/Textarea.astro';
 export { default as Toggle } from './src/components/Toggle/Toggle.astro';
 export { default as Datepicker } from './src/components/Datepicker/Datepicker.astro';
 export { default as Slider } from './src/components/Slider/Slider.astro';
+export { default as Lookup } from './src/components/Lookup/Lookup.astro';
 
