@@ -1,0 +1,105 @@
+---
+import type { Option } from './types';
+
+interface Props {
+	options: Option[];
+	placeholder?: string;
+	disabled?: boolean;
+	size?: 'sm' | 'md' | 'lg';
+	variant?: 'outline' | 'filled' | 'underline';
+	state?: 'default' | 'success' | 'error' | 'warning';
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	options = [],
+	placeholder = 'Search...',
+	disabled = false,
+	size = 'md',
+	variant = 'outline',
+	state = 'default',
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const lookupId = `lookup-${Math.random().toString(36).slice(2, 11)}`;
+const sizeClass = `input-${size}`;
+const variantClass = `input-${variant}`;
+const stateClass = state !== 'default' ? `input-${state}` : '';
+const finalClass = `input ${sizeClass} ${variantClass} ${stateClass} ${className}`;
+---
+
+<div class='lookup-container' data-lookup-id={lookupId}>
+	<input
+		type='text'
+		class={finalClass}
+		placeholder={placeholder}
+		disabled={disabled}
+		autocomplete='off'
+		{...rest}
+	/>
+	<div class='lookup-dropdown'>
+		{
+			options.map((option) => (
+				<button
+					type='button'
+					class='lookup-option'
+					data-value={option.value}
+					disabled={option.disabled}
+				>
+					{option.label}
+				</button>
+			))
+		}
+	</div>
+</div>
+
+<script define:vars={{ lookupId, options }}>
+	const container = document.querySelector(`[data-lookup-id="${lookupId}"]`);
+	const input = container.querySelector('input');
+	const dropdown = container.querySelector('.lookup-dropdown');
+	const optionButtons = container.querySelectorAll('.lookup-option');
+
+	function filterOptions(searchTerm) {
+		const lowerSearch = searchTerm.toLowerCase();
+		optionButtons.forEach((btn) => {
+			const label = btn.textContent.toLowerCase();
+			const matches = label.includes(lowerSearch);
+			btn.style.display = matches ? '' : 'none';
+		});
+	}
+
+	function showDropdown() {
+		dropdown.classList.add('lookup-dropdown-open');
+		filterOptions(input.value);
+	}
+
+	function hideDropdown() {
+		dropdown.classList.remove('lookup-dropdown-open');
+	}
+
+	input.addEventListener('focus', showDropdown);
+	input.addEventListener('input', () => {
+		if (input.value) {
+			showDropdown();
+		}
+		filterOptions(input.value);
+	});
+
+	optionButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			if (!btn.disabled) {
+				input.value = btn.textContent;
+				input.dispatchEvent(new Event('change'));
+				hideDropdown();
+			}
+		});
+	});
+
+	document.addEventListener('click', (e) => {
+		if (!container.contains(e.target)) {
+			hideDropdown();
+		}
+	});
+</script>
