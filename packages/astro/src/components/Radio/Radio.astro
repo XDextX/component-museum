@@ -1,0 +1,44 @@
+---
+interface Props {
+	label?: string;
+	checked?: boolean;
+	disabled?: boolean;
+	variant?: 'default' | 'outlined';
+	state?: 'default' | 'success' | 'error' | 'warning';
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	label = '',
+	checked = false,
+	disabled = false,
+	variant = 'default',
+	state = 'default',
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const radioId = `radio-${Math.random().toString(36).slice(2, 11)}`;
+const variantClass = `radio-${variant}`;
+const stateClass = state !== 'default' ? `radio-${state}` : '';
+const finalClass = `radio ${variantClass} ${stateClass} ${className}`;
+---
+
+<div class='radio-wrapper'>
+	<input
+		id={radioId}
+		type='radio'
+		class={finalClass}
+		checked={checked}
+		disabled={disabled}
+		{...rest}
+	/>
+	{
+		label && (
+			<label for={radioId} class='radio-label'>
+				{label}
+			</label>
+		)
+	}
+</div>

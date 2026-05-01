@@ -1,0 +1,44 @@
+---
+interface Props {
+	label?: string;
+	checked?: boolean;
+	disabled?: boolean;
+	variant?: 'default' | 'rounded';
+	state?: 'default' | 'success' | 'error' | 'warning';
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	label = '',
+	checked = false,
+	disabled = false,
+	variant = 'default',
+	state = 'default',
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const checkboxId = `checkbox-${Math.random().toString(36).slice(2, 11)}`;
+const variantClass = `checkbox-${variant}`;
+const stateClass = state !== 'default' ? `checkbox-${state}` : '';
+const finalClass = `checkbox ${variantClass} ${stateClass} ${className}`;
+---
+
+<div class='checkbox-wrapper'>
+	<input
+		id={checkboxId}
+		type='checkbox'
+		class={finalClass}
+		checked={checked}
+		disabled={disabled}
+		{...rest}
+	/>
+	{
+		label && (
+			<label for={checkboxId} class='checkbox-label'>
+				{label}
+			</label>
+		)
+	}
+</div>
