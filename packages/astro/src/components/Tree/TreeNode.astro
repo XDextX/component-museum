@@ -35,7 +35,10 @@ const { items = [], class: className = '', ...rest } = Astro.props as Props;
 						)}
 					</div>
 					{hasChildren && (
-						<TNode items={item.children} class:list={'tree-children'} />
+						<TNode
+							items={item.children}
+							class:list={'tree-children' + (item.expanded ? '' : ' hidden')}
+						/>
 					)}
 				</li>
 			);
