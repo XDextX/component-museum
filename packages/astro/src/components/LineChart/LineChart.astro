@@ -212,8 +212,8 @@ const tickInterval = maxTick / yAxisTicks;
 
 			<!-- Labels (from first dataset's X-axis) -->
 			{
-				datasetLines[0] &&
-					datasetLines[0].points.map((point) => (
+				datasetLines.length>0 &&
+					datasetLines.at(0)?.points.map((point) => (
 						<text
 							x={point.x}
 							y={height - padding + 20}
@@ -227,10 +227,11 @@ const tickInterval = maxTick / yAxisTicks;
 			}
 		</svg>
 
-		<!-- Legend for multiple datasets -->
+		<!-- Legend -->
 		{
 			datasetLines.length > 1 && (
 				<div class='linechart-legend'>
+					<div class='linechart-legend-title'>Legend</div>
 					{
 						datasetLines.map((line) => (
 							<div class='linechart-legend-item'>

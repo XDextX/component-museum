@@ -193,10 +193,11 @@ const barSpacingInGroup = groupSpacing / (numDatasets + 1);
 			}
 		</svg>
 
-		<!-- Legend for multiple datasets -->
+		<!-- Legend -->
 		{
-			numDatasets > 1 && (
+			numDatasets > 0 && (
 				<div class='barchart-legend'>
+					<div class='barchart-legend-title'>Legend</div>
 					{
 						allDatasets.map((dataset, index) => (
 							<div class='barchart-legend-item'>
