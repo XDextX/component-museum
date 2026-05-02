@@ -31,6 +31,19 @@ const teamData = [
 	{ label: 'Team 4', value: 41 },
 	{ label: 'Team 5', value: 37 },
 ];
+
+const groupedDatasets = [
+	{
+		label: 'Q1',
+		values: [65, 59, 80, 81, 56],
+	},
+	{
+		label: 'Q2',
+		values: [75, 69, 85, 90, 65],
+	},
+];
+
+const groupedLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
 ---
 
 <SideBarLayout title='BarChart Stories' navItems={Navigation}>
@@ -91,9 +104,40 @@ const teamData = [
 				/>
 			</div>
 		</Card>
-	</section>
+		</section>
 
-	<!-- Code Examples -->
+		<!-- Grouped Bars -->
+		<section class='mb-16'>
+			<h2 class='text-2xl font-bold mb-6'>Grouped Bars (Multiple Datasets)</h2>
+			<Card class='p-8'>
+				<div class='space-y-8'>
+					<div>
+						<h3 class='text-sm font-medium mb-4'>Quarterly Comparison</h3>
+						<Comp datasets={groupedDatasets} labels={groupedLabels} title='Quarterly Performance' width={600} />
+					</div>
+					<div>
+						<h3 class='text-sm font-medium mb-4'>Product Comparison</h3>
+						<Comp
+							datasets={[
+								{
+									label: '2023',
+									values: [420, 310, 240, 290],
+								},
+								{
+									label: '2024',
+									values: [480, 380, 310, 350],
+								},
+							]}
+							labels={['Product A', 'Product B', 'Product C', 'Product D']}
+							title='Product Sales: 2023 vs 2024'
+							width={600}
+						/>
+					</div>
+				</div>
+			</Card>
+		</section>
+
+		<!-- Code Examples -->
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
 		<Code language='astro' title='Complete Example' copyable>
@@ -123,7 +167,23 @@ const teamData = [
 						>
 						<td>DataPoint[]</td>
 						<td>-</td>
-						<td>Array of data points {'{label, value}'}</td>
+						<td>Array of data points {'{label, value}'} (single series, legacy)</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>datasets</code></td
+						>
+						<td>Dataset[]</td>
+						<td>-</td>
+						<td>Array of datasets for grouped bars</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>labels</code></td
+						>
+						<td>string[]</td>
+						<td>-</td>
+						<td>X-axis category labels (required for datasets)</td>
 					</tr>
 					<tr class='border-b'>
 						<td class='py-3'
@@ -155,7 +215,7 @@ const teamData = [
 						>
 						<td>string[]</td>
 						<td>Default palette</td>
-						<td>Color array for bars</td>
+						<td>Color array for bars/datasets</td>
 					</tr>
 				</tbody>
 			</table>

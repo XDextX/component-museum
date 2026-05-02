@@ -1026,6 +1026,10 @@
     @apply text-lg font-semibold text-gray-900 m-0;
   }
 
+  .barchart-wrapper {
+    @apply flex gap-8 items-flex-start justify-center flex-wrap;
+  }
+
   .barchart-svg {
     @apply block;
   }
@@ -1036,6 +1040,22 @@
 
   .barchart-bar:hover {
     @apply opacity-100;
+  }
+
+  .barchart-legend {
+    @apply flex flex-col gap-2;
+  }
+
+  .barchart-legend-item {
+    @apply flex items-center gap-2;
+  }
+
+  .barchart-legend-color {
+    @apply w-4 h-4 rounded-sm flex-shrink-0;
+  }
+
+  .barchart-legend-label {
+    @apply text-sm font-medium text-gray-700;
   }
 
   /* ============================================
@@ -1050,6 +1070,10 @@
     @apply text-lg font-semibold text-gray-900 m-0;
   }
 
+  .linechart-wrapper {
+    @apply flex gap-8 items-flex-start justify-center flex-wrap;
+  }
+
   .linechart-svg {
     @apply block;
   }
@@ -1060,6 +1084,22 @@
 
   .linechart-point:hover {
     r: 6;
+  }
+
+  .linechart-legend {
+    @apply flex flex-col gap-2;
+  }
+
+  .linechart-legend-item {
+    @apply flex items-center gap-2;
+  }
+
+  .linechart-legend-color {
+    @apply w-3 h-3 rounded-full flex-shrink-0;
+  }
+
+  .linechart-legend-label {
+    @apply text-sm font-medium text-gray-700;
   }
 
   /* ============================================

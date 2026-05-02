@@ -1,41 +1,45 @@
 ---
-/**
- * DataPoint - Represents a single data point in the chart
- * @typedef {Object} DataPoint
- * @property {string} label - The label for the data point
- * @property {number} value - The numerical value of the data point
- */
+import type { DataPoint, Dataset } from './types';
 
 /**
  * BarChart Component
  *
- * A simple bar chart component that renders data as vertical bars using SVG.
+ * A bar chart component that renders data as vertical bars using SVG.
+ * Supports single or multiple datasets with grouped bars.
  * No external dependencies required - uses pure SVG rendering.
  *
  * @component
  * @example
+ * // Single dataset (legacy)
  * const data = [
  *   { label: 'Jan', value: 65 },
  *   { label: 'Feb', value: 59 },
- *   { label: 'Mar', value: 80 },
  * ];
- * return <BarChart data={data} title="Monthly Sales" />
+ * return <BarChart data={data} title="Sales" />
  *
- * @param {DataPoint[]} data - Array of data points to display
+ * @example
+ * // Multiple datasets (grouped bars)
+ * const datasets = [
+ *   { label: 'Product A', values: [65, 59, 80] },
+ *   { label: 'Product B', values: [30, 40, 50] },
+ * ];
+ * const labels = ['Jan', 'Feb', 'Mar'];
+ * return <BarChart datasets={datasets} labels={labels} title="Sales" />
+ *
+ * @param {DataPoint[]} [data] - Array of data points (single series, legacy)
+ * @param {Dataset[]} [datasets] - Array of datasets for grouped bars
+ * @param {string[]} [labels] - X-axis category labels (required for datasets)
  * @param {string} [title] - Optional title for the chart
  * @param {number} [height=300] - Height of the chart in pixels
  * @param {number} [width=500] - Width of the chart in pixels
- * @param {string[]} [colors] - Array of hex colors for the bars
+ * @param {string[]} [colors] - Array of hex colors for datasets
  * @param {string} [class] - Additional CSS classes
- * @returns {JSX.Element} The BarChart component
  */
-interface DataPoint {
-	label: string;
-	value: number;
-}
 
 interface Props {
-	data: DataPoint[];
+	data?: DataPoint[];
+	datasets?: Dataset[];
+	labels?: string[];
 	title?: string;
 	height?: number;
 	width?: number;
@@ -45,7 +49,9 @@ interface Props {
 }
 
 const {
-	data = [],
+	data = undefined,
+	datasets = undefined,
+	labels: providedLabels = undefined,
 	title = '',
 	height = 300,
 	width = 500,
@@ -54,99 +60,156 @@ const {
 	...rest
 } = Astro.props as Props;
 
+// Convert legacy format to grouped format
+let allDatasets: Dataset[] = [];
+let labels: string[] = [];
+
+if (data && data.length > 0) {
+	// Single dataset: convert to new format
+	allDatasets = [
+		{
+			label: '',
+			values: data.map((d) => d.value),
+		},
+	];
+	labels = data.map((d) => d.label);
+} else if (datasets && datasets.length > 0) {
+	// Multiple datasets
+	allDatasets = datasets;
+	labels = providedLabels || [];
+}
+
 const padding = 60;
 const chartWidth = width - padding * 2;
 const chartHeight = height - padding * 2;
 
-const maxValue = Math.max(...data.map((d) => d.value));
-const barWidth = chartWidth / (data.length * 1.5);
-const barSpacing = (chartWidth - barWidth * data.length) / (data.length + 1);
+// Calculate global max value across all datasets
+let globalMax = 0;
+allDatasets.forEach((dataset) => {
+	const max = Math.max(...dataset.values);
+	globalMax = Math.max(globalMax, max);
+});
 
 const yAxisTicks = 5;
-const maxTick = Math.ceil(maxValue / 10) * 10;
+const maxTick = Math.ceil(globalMax / 10) * 10;
 const tickInterval = maxTick / yAxisTicks;
+
+// Calculate bar dimensions for grouped bars
+const numLabels = labels.length;
+const numDatasets = allDatasets.length;
+const barWidth = numDatasets > 1 ? chartWidth / (numLabels * (numDatasets + 1.5)) : chartWidth / (numLabels * 1.5);
+const groupSpacing = (chartWidth - barWidth * numLabels * numDatasets) / (numLabels + 1);
+const barSpacingInGroup = groupSpacing / (numDatasets + 1);
 ---
 
 <div class={`barchart ${className}`} {...rest}>
 	{title && <h3 class='barchart-title'>{title}</h3>}
-	<svg {height} {width} class='barchart-svg'>
-		<!-- Y Axis -->
-		<line
-			x1={padding}
-			y1={padding}
-			x2={padding}
-			y2={height - padding}
-			stroke='#d1d5db'
-			stroke-width='2'></line>
-		<!-- X Axis -->
-		<line
-			x1={padding}
-			y1={height - padding}
-			x2={width - padding}
-			y2={height - padding}
-			stroke='#d1d5db'
-			stroke-width='2'></line>
+	<div class='barchart-wrapper'>
+		<svg {height} {width} class='barchart-svg'>
+			<!-- Y Axis -->
+			<line
+				x1={padding}
+				y1={padding}
+				x2={padding}
+				y2={height - padding}
+				stroke='#d1d5db'
+				stroke-width='2'></line>
+			<!-- X Axis -->
+			<line
+				x1={padding}
+				y1={height - padding}
+				x2={width - padding}
+				y2={height - padding}
+				stroke='#d1d5db'
+				stroke-width='2'></line>
 
-		<!-- Y Axis Ticks and Labels -->
-		{
-			Array.from({ length: yAxisTicks + 1 }).map((_, i) => {
-				const value = i * tickInterval;
-				const y = height - padding - (value / maxTick) * chartHeight;
-				return (
+			<!-- Y Axis Ticks and Labels -->
+			{
+				Array.from({ length: yAxisTicks + 1 }).map((_, i) => {
+					const value = i * tickInterval;
+					const y = height - padding - (value / maxTick) * chartHeight;
+					return (
+						<>
+							<line
+								x1={padding - 5}
+								y1={y}
+								x2={padding}
+								y2={y}
+								stroke='#d1d5db'
+								stroke-width='1'
+							/>
+							<text
+								x={padding - 10}
+								y={y + 5}
+								text-anchor='end'
+								font-size='12'
+								fill='#6b7280'
+							>
+								{Math.round(value)}
+							</text>
+						</>
+					);
+				})
+			}
+
+			<!-- Bars (grouped) -->
+			{
+				labels.map((label, labelIndex) => (
 					<>
-						<line
-							x1={padding - 5}
-							y1={y}
-							x2={padding}
-							y2={y}
-							stroke='#d1d5db'
-							stroke-width='1'
-						/>
-						<text
-							x={padding - 10}
-							y={y + 5}
-							text-anchor='end'
-							font-size='12'
-							fill='#6b7280'
-						>
-							{Math.round(value)}
-						</text>
-					</>
-				);
-			})
-		}
+						{
+							allDatasets.map((dataset, datasetIndex) => {
+								const value = dataset.values[labelIndex] || 0;
+								const barHeight = (value / maxTick) * chartHeight;
+								const groupX = padding + groupSpacing + labelIndex * (barWidth * numDatasets + groupSpacing);
+								const x = groupX + barSpacingInGroup + datasetIndex * (barWidth + barSpacingInGroup);
+								const y = height - padding - barHeight;
+								const color = colors[datasetIndex % colors.length];
 
-		<!-- Bars -->
-		{
-			data.map((item, index) => {
-				const barHeight = (item.value / maxTick) * chartHeight;
-				const x = padding + barSpacing + index * (barWidth + barSpacing);
-				const y = height - padding - barHeight;
-				const color = colors[index % colors.length];
-
-				return (
-					<>
-						<rect
-							{x}
-							{y}
-							width={barWidth}
-							height={barHeight}
-							fill={color}
-							opacity='0.8'
-							class='barchart-bar'
-						/>
+								return (
+									<rect
+										{x}
+										{y}
+										width={barWidth}
+										height={barHeight}
+										fill={color}
+										opacity='0.8'
+										class='barchart-bar'
+									/>
+								);
+							})
+						}
+						<!-- X-axis labels (show once at bottom) -->
 						<text
-							x={x + barWidth / 2}
+							x={padding + groupSpacing + labelIndex * (barWidth * numDatasets + groupSpacing) + (barWidth * numDatasets) / 2}
 							y={height - padding + 20}
 							text-anchor='middle'
 							font-size='12'
 							fill='#374151'
 						>
-							{item.label}
+							{label}
 						</text>
 					</>
-				);
-			})
+				))
+			}
+		</svg>
+
+		<!-- Legend for multiple datasets -->
+		{
+			numDatasets > 1 && (
+				<div class='barchart-legend'>
+					{
+						allDatasets.map((dataset, index) => (
+							<div class='barchart-legend-item'>
+								<div
+									class='barchart-legend-color'
+									style={`background-color: ${colors[index % colors.length]}`}
+								/>
+								<span class='barchart-legend-label'>{dataset.label}</span>
+							</div>
+						))
+					}
+				</div>
+			)
 		}
-	</svg>
+	</div>
 </div>

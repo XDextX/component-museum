@@ -33,6 +33,27 @@ const userGrowth = [
 	{ label: 'Month 5', value: 350 },
 	{ label: 'Month 6', value: 420 },
 ];
+
+const multiDatasets = [
+	{
+		label: 'Q1 Performance',
+		data: [
+			{ label: 'Jan', value: 15 },
+			{ label: 'Feb', value: 18 },
+			{ label: 'Mar', value: 22 },
+		],
+		color: '#3b82f6',
+	},
+	{
+		label: 'Q2 Performance',
+		data: [
+			{ label: 'Jan', value: 18 },
+			{ label: 'Feb', value: 24 },
+			{ label: 'Mar', value: 28 },
+		],
+		color: '#ef4444',
+	},
+];
 ---
 
 <SideBarLayout title='LineChart Stories' navItems={Navigation}>
@@ -85,7 +106,47 @@ const userGrowth = [
 		</Card>
 	</section>
 
-	<!-- Custom Sizes -->
+	<!-- Multiple Datasets -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Multiple Datasets</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Compare Trends</h3>
+					<Comp datasets={multiDatasets} title='Quarterly Performance Comparison' width={600} />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Multiple Series</h3>
+					<Comp
+						datasets={[
+							{
+								label: 'Product A',
+								data: [
+									{ label: 'Jan', value: 25 },
+									{ label: 'Feb', value: 30 },
+									{ label: 'Mar', value: 35 },
+									{ label: 'Apr', value: 40 },
+								],
+								color: '#10b981',
+							},
+							{
+								label: 'Product B',
+								data: [
+									{ label: 'Jan', value: 20 },
+									{ label: 'Feb', value: 28 },
+									{ label: 'Mar', value: 32 },
+									{ label: 'Apr', value: 45 },
+								],
+								color: '#f59e0b',
+							},
+						]}
+						title='Product Sales Comparison'
+						width={600}
+					/>
+				</div>
+			</div>
+		</Card>
+	</section>
 	<section class='mb-16'>
 		<h2 class='text-2xl font-bold mb-6'>Custom Sizes</h2>
 		<Card class='p-8'>
@@ -116,58 +177,74 @@ const userGrowth = [
 	<section>
 		<h2 class='text-2xl font-bold mb-6'>Props</h2>
 		<Card class='p-6'>
-			<table class='w-full text-sm'>
-				<thead>
-					<tr class='border-b'>
-						<th class='text-left py-2 font-semibold'>Prop</th>
-						<th class='text-left py-2 font-semibold'>Type</th>
-						<th class='text-left py-2 font-semibold'>Default</th>
-						<th class='text-left py-2 font-semibold'>Description</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr class='border-b'>
-						<td class='py-3'
-							><code class='bg-gray-100 px-2 py-1 rounded'>data</code></td
-						>
-						<td>DataPoint[]</td>
-						<td>-</td>
-						<td>Array of data points {'{label, value}'}</td>
-					</tr>
-					<tr class='border-b'>
-						<td class='py-3'
-							><code class='bg-gray-100 px-2 py-1 rounded'>title</code></td
-						>
-						<td>string</td>
-						<td>-</td>
-						<td>Chart title</td>
-					</tr>
-					<tr class='border-b'>
-						<td class='py-3'
-							><code class='bg-gray-100 px-2 py-1 rounded'>width</code></td
-						>
-						<td>number</td>
-						<td>500</td>
-						<td>Chart width in pixels</td>
-					</tr>
-					<tr class='border-b'>
-						<td class='py-3'
-							><code class='bg-gray-100 px-2 py-1 rounded'>height</code></td
-						>
-						<td>number</td>
-						<td>300</td>
-						<td>Chart height in pixels</td>
-					</tr>
-					<tr>
-						<td class='py-3'
-							><code class='bg-gray-100 px-2 py-1 rounded'>color</code></td
-						>
-						<td>string</td>
-						<td>#3b82f6</td>
-						<td>Line color</td>
-					</tr>
-				</tbody>
-			</table>
+				<table class='w-full text-sm'>
+					<thead>
+						<tr class='border-b'>
+							<th class='text-left py-2 font-semibold'>Prop</th>
+							<th class='text-left py-2 font-semibold'>Type</th>
+							<th class='text-left py-2 font-semibold'>Default</th>
+							<th class='text-left py-2 font-semibold'>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class='border-b'>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>data</code></td
+							>
+							<td>DataPoint[]</td>
+							<td>-</td>
+							<td>Array of data points {'{label, value}'} (single series, legacy)</td>
+						</tr>
+						<tr class='border-b'>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>datasets</code></td
+							>
+							<td>Dataset[]</td>
+							<td>-</td>
+							<td>Array of datasets for multi-series charts</td>
+						</tr>
+						<tr class='border-b'>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>title</code></td
+							>
+							<td>string</td>
+							<td>-</td>
+							<td>Chart title</td>
+						</tr>
+						<tr class='border-b'>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>width</code></td
+							>
+							<td>number</td>
+							<td>500</td>
+							<td>Chart width in pixels</td>
+						</tr>
+						<tr class='border-b'>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>height</code></td
+							>
+							<td>number</td>
+							<td>300</td>
+							<td>Chart height in pixels</td>
+						</tr>
+						<tr class='border-b'>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>color</code></td
+							>
+							<td>string</td>
+							<td>#3b82f6</td>
+							<td>Line color for single dataset (legacy)</td>
+						</tr>
+						<tr>
+							<td class='py-3'
+								><code class='bg-gray-100 px-2 py-1 rounded'>colors</code></td
+							>
+							<td>string[]</td>
+							<td>Default palette</td>
+							<td>Color palette for datasets without explicit colors</td>
+						</tr>
+					</tbody>
+				</table>
 		</Card>
 	</section>
 </SideBarLayout>

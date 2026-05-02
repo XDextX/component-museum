@@ -5,5 +5,6 @@ export interface DataPoint {
 
 export interface Dataset {
 	label: string;
-	values: number[];
+	data: DataPoint[];
+	color?: string;
 }
