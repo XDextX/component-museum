@@ -16,4 +16,7 @@ export { default as Toggle } from './src/components/Toggle/Toggle.astro';
 export { default as Datepicker } from './src/components/Datepicker/Datepicker.astro';
 export { default as Slider } from './src/components/Slider/Slider.astro';
 export { default as Lookup } from './src/components/Lookup/Lookup.astro';
+export { default as BarChart } from './src/components/BarChart/BarChart.astro';
+export { default as LineChart } from './src/components/LineChart/LineChart.astro';
+export { default as PieChart } from './src/components/PieChart/PieChart.astro';
 

@@ -1,0 +1,174 @@
+---
+import {
+	PieChart as Comp,
+	Code,
+	Breadcrumb,
+	Card,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+
+const marketShare = [
+	{ label: 'Product A', value: 35 },
+	{ label: 'Product B', value: 25 },
+	{ label: 'Product C', value: 20 },
+	{ label: 'Product D', value: 20 },
+];
+
+const browserUsage = [
+	{ label: 'Chrome', value: 60 },
+	{ label: 'Firefox', value: 20 },
+	{ label: 'Safari', value: 15 },
+	{ label: 'Edge', value: 5 },
+];
+
+const budgetAllocation = [
+	{ label: 'Development', value: 40 },
+	{ label: 'Marketing', value: 25 },
+	{ label: 'Operations', value: 20 },
+	{ label: 'HR', value: 15 },
+];
+---
+
+<SideBarLayout title='PieChart Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'PieChart' }]} />
+	<h1 class='text-4xl font-bold mb-12'>PieChart Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<Comp data={marketShare} title='Market Share' />
+		</Card>
+	</section>
+
+	<!-- Different Datasets -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Different Datasets</h2>
+		<Card class='p-8'>
+			<div class='space-y-12'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Browser Market Share</h3>
+					<Comp data={browserUsage} title='Browser Usage' />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Budget Distribution</h3>
+					<Comp data={budgetAllocation} title='Budget Allocation' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Different Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Different Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Small (250px)</label>
+					<div class='flex justify-center'>
+						<Comp data={marketShare} size={250} title='Small Chart' />
+					</div>
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Medium (350px)</label>
+					<div class='flex justify-center'>
+						<Comp data={marketShare} size={350} title='Medium Chart' />
+					</div>
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Large (450px)</label>
+					<div class='flex justify-center'>
+						<Comp data={marketShare} size={450} title='Large Chart' />
+					</div>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Custom Colors -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Custom Color Palettes</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Cool Colors</h3>
+					<Comp
+						data={browserUsage}
+						title='Browser Usage - Cool Palette'
+						colors={['#0ea5e9', '#06b6d4', '#14b8a6', '#10b981']}
+					/>
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Warm Colors</h3>
+					<Comp
+						data={budgetAllocation}
+						title='Budget - Warm Palette'
+						colors={['#f97316', '#f59e0b', '#eab308', '#d97706']}
+					/>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { PieChart } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n\nconst data = [\n  { label: "Product A", value: 35 },\n  { label: "Product B", value: 25 },\n  { label: "Product C", value: 20 },\n  { label: "Product D", value: 20 },\n];\n---\n\n<!-- Basic chart -->\n<PieChart data={data} title="Market Share" />\n\n<!-- Custom size -->\n<PieChart data={data} size={400} />\n\n<!-- Custom colors -->\n<PieChart\n  data={data}\n  colors={["#3b82f6", "#ef4444", "#10b981", "#f59e0b"]}\n/>'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>data</code></td
+						>
+						<td>DataPoint[]</td>
+						<td>-</td>
+						<td>Array of data points {'{label, value}'}</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>title</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Chart title</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>size</code></td
+						>
+						<td>number</td>
+						<td>300</td>
+						<td>Chart size in pixels (width and height)</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>colors</code></td
+						>
+						<td>string[]</td>
+						<td>Default palette</td>
+						<td>Color array for pie slices</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>

@@ -1,0 +1,154 @@
+---
+/**
+ * DataPoint - Represents a single data point in the chart
+ * @typedef {Object} DataPoint
+ * @property {string} label - The label for the data point
+ * @property {number} value - The numerical value of the data point
+ */
+
+/**
+ * PieChart Component
+ *
+ * A pie chart component that renders data as pie slices with percentages and a legend.
+ * Uses pure SVG rendering with no external dependencies.
+ *
+ * @component
+ * @example
+ * const data = [
+ *   { label: 'Product A', value: 35 },
+ *   { label: 'Product B', value: 25 },
+ *   { label: 'Product C', value: 40 },
+ * ];
+ * return <PieChart data={data} title="Market Share" />
+ *
+ * @param {DataPoint[]} data - Array of data points to display
+ * @param {string} [title] - Optional title for the chart
+ * @param {number} [size=300] - Size of the chart in pixels (width and height)
+ * @param {string[]} [colors] - Array of hex colors for the pie slices
+ * @param {string} [class] - Additional CSS classes
+ * @returns {JSX.Element} The PieChart component
+ */
+interface DataPoint {
+	label: string;
+	value: number;
+}
+
+interface Props {
+	data: DataPoint[];
+	title?: string;
+	size?: number;
+	colors?: string[];
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	data = [],
+	title = '',
+	size = 300,
+	colors = [
+		'#3b82f6',
+		'#ef4444',
+		'#10b981',
+		'#f59e0b',
+		'#8b5cf6',
+		'#ec4899',
+		'#06b6d4',
+		'#f97316',
+	],
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const total = data.reduce((sum, d) => sum + d.value, 0);
+const radius = size / 2 - 20;
+const centerX = size / 2;
+const centerY = size / 2;
+
+// Start at top of circle (-90°) for consistent slice positioning
+let currentAngle = -Math.PI / 2;
+const slices = data.map((item, index) => {
+	const sliceAngle = (item.value / total) * 2 * Math.PI;
+	const startAngle = currentAngle;
+	const endAngle = currentAngle + sliceAngle;
+
+	// SVG arc endpoints for the pie slice path
+	const x1 = centerX + radius * Math.cos(startAngle);
+	const y1 = centerY + radius * Math.sin(startAngle);
+	const x2 = centerX + radius * Math.cos(endAngle);
+	const y2 = centerY + radius * Math.sin(endAngle);
+
+	// Large arc flag: SVG requires this for arcs > 180°
+	const largeArc = sliceAngle > Math.PI ? 1 : 0;
+
+	const pathData = [
+		`M ${centerX} ${centerY}`,
+		`L ${x1} ${y1}`,
+		`A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`,
+		'Z',
+	].join(' ');
+
+	const midAngle = startAngle + sliceAngle / 2;
+	const labelX = centerX + radius * 0.7 * Math.cos(midAngle);
+	const labelY = centerY + radius * 0.7 * Math.sin(midAngle);
+	const percentage = ((item.value / total) * 100).toFixed(1);
+
+	currentAngle = endAngle;
+
+	return {
+		pathData,
+		color: colors[index % colors.length],
+		label: item.label,
+		value: item.value,
+		percentage,
+		labelX,
+		labelY,
+	};
+});
+---
+
+<div class={`piechart ${className}`} {...rest}>
+	{title && <h3 class='piechart-title'>{title}</h3>}
+	<div class='piechart-container'>
+		<svg width={size} height={size} class='piechart-svg'>
+			{
+				slices.map((slice) => (
+					<>
+						<path
+							d={slice.pathData}
+							fill={slice.color}
+							stroke='white'
+							stroke-width='2'
+							opacity='0.85'
+							class='piechart-slice'
+						/>
+						<text
+							x={slice.labelX}
+							y={slice.labelY}
+							text-anchor='middle'
+							dominant-baseline='middle'
+							font-size='12'
+							font-weight='600'
+							fill='white'
+							class='piechart-label'
+						>
+							{slice.percentage}%
+						</text>
+					</>
+				))
+			}
+		</svg>
+
+		<div class='piechart-legend'>
+			{
+				slices.map((slice) => (
+					<div class='legend-item'>
+						<div class='legend-color' style={`background-color: ${slice.color}`} />
+						<span class='legend-label'>{slice.label}</span>
+						<span class='legend-value'>{slice.value}</span>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</div>

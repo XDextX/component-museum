@@ -2,6 +2,12 @@
 import { Tree } from '@component-museum/astro';
 import HomeLayout from '../layouts/HomeLayout.astro';
 import '../styles/global.css';
+import { Navigation } from '../data/Navigation';
+
+const navItems = Navigation.filter((item) => item.children).map((item) => ({
+	...item,
+	expanded: true,
+}));
 ---
 
 <HomeLayout title='Component Museum'>
@@ -13,20 +19,7 @@ import '../styles/global.css';
 			</p>
 
 			<div class='bg-white rounded-lg shadow p-8'>
-				<Tree items={[
-					{
-						label: 'Components',
-						children: [
-							{ label: 'Button', href: '/button' },
-							{ label: 'Badge', href: '/badge' },
-							{ label: 'Card', href: '/card' },
-							{ label: 'Alert', href: '/alert' },
-							{ label: 'Code', href: '/code' },
-							{ label: 'Breadcrumb', href: '/breadcrumb' },
-							{ label: 'Tree', href: '/tree' },
-						],
-					},
-				]} />
+				<Tree items={navItems} />
 			</div>
 		</div>
 	</div>

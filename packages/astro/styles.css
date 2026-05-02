@@ -1015,6 +1015,107 @@
   }
 
   /* ============================================
+     BARCHART COMPONENT
+     ============================================ */
+
+  .barchart {
+    @apply w-full flex flex-col gap-4;
+  }
+
+  .barchart-title {
+    @apply text-lg font-semibold text-gray-900 m-0;
+  }
+
+  .barchart-svg {
+    @apply block;
+  }
+
+  .barchart-bar {
+    @apply transition-opacity duration-200 cursor-pointer;
+  }
+
+  .barchart-bar:hover {
+    @apply opacity-100;
+  }
+
+  /* ============================================
+     LINECHART COMPONENT
+     ============================================ */
+
+  .linechart {
+    @apply w-full flex flex-col gap-4;
+  }
+
+  .linechart-title {
+    @apply text-lg font-semibold text-gray-900 m-0;
+  }
+
+  .linechart-svg {
+    @apply block;
+  }
+
+  .linechart-point {
+    @apply cursor-pointer transition-all duration-200;
+  }
+
+  .linechart-point:hover {
+    r: 6;
+  }
+
+  /* ============================================
+     PIECHART COMPONENT
+     ============================================ */
+
+  .piechart {
+    @apply w-full flex flex-col gap-4;
+  }
+
+  .piechart-title {
+    @apply text-lg font-semibold text-gray-900 m-0;
+  }
+
+  .piechart-container {
+    @apply flex gap-8 items-center justify-center flex-wrap;
+  }
+
+  .piechart-svg {
+    @apply block;
+  }
+
+  .piechart-slice {
+    @apply cursor-pointer transition-opacity duration-200;
+  }
+
+  .piechart-slice:hover {
+    @apply opacity-100;
+  }
+
+  .piechart-label {
+    @apply pointer-events-none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  .piechart-legend {
+    @apply flex flex-col gap-2;
+  }
+
+  .legend-item {
+    @apply flex items-center gap-2 text-sm;
+  }
+
+  .legend-color {
+    @apply w-4 h-4 rounded-sm flex-shrink-0;
+  }
+
+  .legend-label {
+    @apply flex-1 text-gray-600;
+  }
+
+  .legend-value {
+    @apply font-semibold text-gray-900 min-w-10 text-right;
+  }
+
+  /* ============================================
      ADD MORE COMPONENTS HERE
      ============================================ */
 }

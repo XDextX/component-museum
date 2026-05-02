@@ -1,0 +1,173 @@
+---
+import {
+	LineChart as Comp,
+	Code,
+	Breadcrumb,
+	Card,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+
+const tempData = [
+	{ label: 'Jan', value: 15 },
+	{ label: 'Feb', value: 18 },
+	{ label: 'Mar', value: 22 },
+	{ label: 'Apr', value: 25 },
+	{ label: 'May', value: 28 },
+	{ label: 'Jun', value: 30 },
+];
+
+const stockData = [
+	{ label: 'Week 1', value: 120 },
+	{ label: 'Week 2', value: 135 },
+	{ label: 'Week 3', value: 125 },
+	{ label: 'Week 4', value: 145 },
+	{ label: 'Week 5', value: 155 },
+];
+
+const userGrowth = [
+	{ label: 'Month 1', value: 100 },
+	{ label: 'Month 2', value: 150 },
+	{ label: 'Month 3', value: 200 },
+	{ label: 'Month 4', value: 280 },
+	{ label: 'Month 5', value: 350 },
+	{ label: 'Month 6', value: 420 },
+];
+---
+
+<SideBarLayout title='LineChart Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'LineChart' }]} />
+	<h1 class='text-4xl font-bold mb-12'>LineChart Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<Comp data={tempData} title='Temperature Trend' />
+		</Card>
+	</section>
+
+	<!-- Different Datasets -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Different Datasets</h2>
+		<Card class='p-8'>
+			<div class='space-y-12'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Stock Price Movement</h3>
+					<Comp data={stockData} title='Stock Price' />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>User Growth Over Time</h3>
+					<Comp data={userGrowth} title='User Growth' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Different Colors -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Different Colors</h2>
+		<Card class='p-8' variant='elevated'>
+			<div class='space-y-8'>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Green Line</label>
+					<Comp data={tempData} color='#10b981' title='Green Trend' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Purple Line</label>
+					<Comp data={stockData} color='#8b5cf6' title='Purple Trend' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Red Line</label>
+					<Comp data={userGrowth} color='#ef4444' title='Red Trend' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Custom Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Custom Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Compact Chart</label>
+					<Comp data={tempData} width={400} height={250} title='Small Chart' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Wide Chart</label>
+					<Comp data={tempData} width={700} height={300} title='Wide Chart' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { LineChart } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n\nconst data = [\n  { label: "Jan", value: 15 },\n  { label: "Feb", value: 18 },\n  { label: "Mar", value: 22 },\n  { label: "Apr", value: 25 },\n  { label: "May", value: 28 },\n  { label: "Jun", value: 30 },\n];\n---\n\n<!-- Basic chart -->\n<LineChart data={data} title="Temperature Trend" />\n\n<!-- Custom color -->\n<LineChart data={data} color="#10b981" />\n\n<!-- Custom size -->\n<LineChart data={data} width={600} height={350} />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>data</code></td
+						>
+						<td>DataPoint[]</td>
+						<td>-</td>
+						<td>Array of data points {'{label, value}'}</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>title</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Chart title</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>width</code></td
+						>
+						<td>number</td>
+						<td>500</td>
+						<td>Chart width in pixels</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>height</code></td
+						>
+						<td>number</td>
+						<td>300</td>
+						<td>Chart height in pixels</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>color</code></td
+						>
+						<td>string</td>
+						<td>#3b82f6</td>
+						<td>Line color</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>

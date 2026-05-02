@@ -1,0 +1,164 @@
+---
+import {
+	BarChart as Comp,
+	Code,
+	Breadcrumb,
+	Card,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+
+const basicData = [
+	{ label: 'Jan', value: 65 },
+	{ label: 'Feb', value: 59 },
+	{ label: 'Mar', value: 80 },
+	{ label: 'Apr', value: 81 },
+	{ label: 'May', value: 56 },
+	{ label: 'Jun', value: 55 },
+];
+
+const salesData = [
+	{ label: 'Product A', value: 420 },
+	{ label: 'Product B', value: 310 },
+	{ label: 'Product C', value: 240 },
+	{ label: 'Product D', value: 290 },
+];
+
+const teamData = [
+	{ label: 'Team 1', value: 45 },
+	{ label: 'Team 2', value: 38 },
+	{ label: 'Team 3', value: 52 },
+	{ label: 'Team 4', value: 41 },
+	{ label: 'Team 5', value: 37 },
+];
+---
+
+<SideBarLayout title='BarChart Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'BarChart' }]} />
+	<h1 class='text-4xl font-bold mb-12'>BarChart Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<Comp data={basicData} title='Monthly Data' />
+		</Card>
+	</section>
+
+	<!-- Different Datasets -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Different Datasets</h2>
+		<Card class='p-8'>
+			<div class='space-y-12'>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Sales by Product</h3>
+					<Comp data={salesData} title='Product Sales' />
+				</div>
+				<div>
+					<h3 class='text-sm font-medium mb-4'>Team Performance</h3>
+					<Comp data={teamData} title='Team Metrics' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Custom Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Custom Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Compact (400x250)</label>
+					<Comp data={basicData} width={400} height={250} title='Compact Chart' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-4'>Large (700x400)</label>
+					<Comp data={basicData} width={700} height={400} title='Large Chart' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Custom Colors -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Custom Colors</h2>
+		<Card class='p-8'>
+			<div class='space-y-8'>
+				<Comp
+					data={salesData}
+					title='Custom Color Palette'
+					colors={['#8b5cf6', '#ec4899', '#14b8a6', '#f59e0b']}
+				/>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { BarChart } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n\nconst data = [\n  { label: "Jan", value: 65 },\n  { label: "Feb", value: 59 },\n  { label: "Mar", value: 80 },\n  { label: "Apr", value: 81 },\n  { label: "May", value: 56 },\n  { label: "Jun", value: 55 },\n];\n---\n\n<!-- Basic chart -->\n<BarChart data={data} title="Monthly Sales" />\n\n<!-- Custom size -->\n<BarChart data={data} width={600} height={350} />\n\n<!-- Custom colors -->\n<BarChart\n  data={data}\n  colors={["#3b82f6", "#ef4444", "#10b981", "#f59e0b"]}\n/>'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>data</code></td
+						>
+						<td>DataPoint[]</td>
+						<td>-</td>
+						<td>Array of data points {'{label, value}'}</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>title</code></td
+						>
+						<td>string</td>
+						<td>-</td>
+						<td>Chart title</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>width</code></td
+						>
+						<td>number</td>
+						<td>500</td>
+						<td>Chart width in pixels</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>height</code></td
+						>
+						<td>number</td>
+						<td>300</td>
+						<td>Chart height in pixels</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>colors</code></td
+						>
+						<td>string[]</td>
+						<td>Default palette</td>
+						<td>Color array for bars</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
