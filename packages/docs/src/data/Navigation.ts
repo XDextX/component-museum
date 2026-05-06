@@ -69,6 +69,10 @@ export const Navigation = [
 				href: '/select',
 			},
 			{
+				label: 'MultiSelect',
+				href: '/multiselect',
+			},
+			{
 				label: 'Textarea',
 				href: '/textarea',
 			},

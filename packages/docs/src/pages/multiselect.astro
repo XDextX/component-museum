@@ -1,0 +1,284 @@
+---
+import {
+	MultiSelect as Comp,
+	FormField,
+	Code,
+	Breadcrumb,
+	Card,
+	Button,
+} from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+
+const countryOptions = [
+	{ label: 'United States', value: 'us' },
+	{ label: 'Canada', value: 'ca' },
+	{ label: 'Mexico', value: 'mx' },
+	{ label: 'United Kingdom', value: 'uk' },
+	{ label: 'Australia', value: 'au' },
+];
+
+const categoryOptions = [
+	{ label: 'Electronics', value: 'electronics' },
+	{ label: 'Clothing', value: 'clothing' },
+	{ label: 'Books', value: 'books' },
+	{ label: 'Food', value: 'food' },
+	{ label: 'Sports', value: 'sports' },
+];
+
+const skillOptions = [
+	{ label: 'JavaScript', value: 'js' },
+	{ label: 'TypeScript', value: 'ts' },
+	{ label: 'React', value: 'react' },
+	{ label: 'Vue', value: 'vue' },
+	{ label: 'Astro', value: 'astro' },
+];
+---
+
+<SideBarLayout title='MultiSelect Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'MultiSelect' }]} />
+	<h1 class='text-4xl font-bold mb-12'>MultiSelect Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<div class='space-y-4 max-w-md'>
+				<Comp options={countryOptions} placeholder='Choose countries' />
+				<Comp options={categoryOptions} placeholder='Select categories' />
+			</div>
+		</Card>
+	</section>
+
+	<!-- Variants - Style -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Style Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6 max-w-md'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Outline (default)</label>
+					<Comp
+						variant='outline'
+						options={countryOptions}
+						placeholder='Outline multiselect'
+					/>
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Filled</label>
+					<Comp
+						variant='filled'
+						options={countryOptions}
+						placeholder='Filled multiselect'
+					/>
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Underline</label>
+					<Comp
+						variant='underline'
+						options={countryOptions}
+						placeholder='Underline multiselect'
+					/>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Variants - State -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>State Variants</h2>
+		<Card class='p-8'>
+			<div class='space-y-6 max-w-md'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Default</label>
+					<Comp state='default' options={countryOptions} placeholder='Default' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Success</label>
+					<Comp state='success' options={countryOptions} placeholder='Success' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Error</label>
+					<Comp state='error' options={countryOptions} placeholder='Error' />
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Warning</label>
+					<Comp state='warning' options={countryOptions} placeholder='Warning' />
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Sizes -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Sizes</h2>
+		<Card class='p-8'>
+			<div class='space-y-6 max-w-md'>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Small</label>
+					<Comp
+						size='sm'
+						options={categoryOptions}
+						placeholder='Small multiselect'
+					/>
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Medium (default)</label>
+					<Comp
+						size='md'
+						options={categoryOptions}
+						placeholder='Medium multiselect'
+					/>
+				</div>
+				<div>
+					<label class='block text-sm font-medium mb-2'>Large</label>
+					<Comp
+						size='lg'
+						options={categoryOptions}
+						placeholder='Large multiselect'
+					/>
+				</div>
+			</div>
+		</Card>
+	</section>
+
+	<!-- With FormField -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>With FormField</h2>
+		<Card class='p-8'>
+			<div class='space-y-6 max-w-md'>
+				<FormField label='Countries' required>
+					<Comp
+						options={countryOptions}
+						name='countries'
+						placeholder='Select countries'
+					/>
+				</FormField>
+				<FormField label='Categories' helperText='Choose multiple categories'>
+					<Comp
+						options={categoryOptions}
+						name='categories'
+						placeholder='Select categories'
+					/>
+				</FormField>
+				<FormField label='Skills' required>
+					<Comp options={skillOptions} name='skills' placeholder='Select skills' />
+				</FormField>
+			</div>
+		</Card>
+	</section>
+
+	<!-- States -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>States</h2>
+		<Card class='p-8'>
+			<div class='space-y-4 max-w-md'>
+				<Comp options={countryOptions} placeholder='Normal multiselect' />
+				<Comp
+					disabled
+					options={countryOptions}
+					placeholder='Disabled multiselect'
+				/>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Resizable Dropdown -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Resizable Dropdown</h2>
+		<Card class='p-8'>
+			<div class='space-y-4 max-w-md'>
+				<p class='text-sm text-gray-600 mb-4'>Drag the bottom edge of the dropdown to resize it</p>
+				<Comp
+					resizable
+					options={skillOptions}
+					placeholder='Drag to resize dropdown'
+				/>
+			</div>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Complete Example' copyable>
+			{
+				'---\nimport { MultiSelect, FormField } from "@component-museum/astro";\nimport "@component-museum/astro/styles.css";\n\nconst options = [\n  { label: "Option 1", value: "1" },\n  { label: "Option 2", value: "2" },\n  { label: "Option 3", value: "3" },\n];\n---\n\n<!-- Basic multiselect -->\n<MultiSelect options={options} placeholder="Choose options" />\n\n<!-- With FormField -->\n<FormField label="Categories" required>\n  <MultiSelect \n    name="categories"\n    options={options} \n    placeholder="Select categories" \n  />\n</FormField>\n\n<!-- With variant and state -->\n<MultiSelect \n  variant="filled" \n  state="success" \n  options={options} \n  placeholder="Success multiselect" \n/>\n\n<!-- Different sizes -->\n<MultiSelect size="sm" options={options} />\n<MultiSelect size="lg" options={options} />\n\n<!-- Disabled -->\n<MultiSelect disabled options={options} placeholder="Disabled" />'
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>options</code></td
+						>
+						<td>Option[]</td>
+						<td><code>[]</code></td>
+						<td>Array of options with label and value</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>placeholder</code></td
+						>
+						<td>string</td>
+						<td><code>'Select options'</code></td>
+						<td>Placeholder text</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>size</code></td
+						>
+						<td>sm | md | lg</td>
+						<td><code>'md'</code></td>
+						<td>MultiSelect size</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>variant</code></td
+						>
+						<td>outline | filled | underline</td>
+						<td><code>'outline'</code></td>
+						<td>MultiSelect style variant</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>state</code></td
+						>
+						<td>default | success | error | warning</td>
+						<td><code>'default'</code></td>
+						<td>MultiSelect state for validation</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>disabled</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Disable the multiselect</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>resizable</code></td
+						>
+						<td>boolean</td>
+						<td><code>false</code></td>
+						<td>Allow dropdown to be resized by dragging the bottom edge</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
