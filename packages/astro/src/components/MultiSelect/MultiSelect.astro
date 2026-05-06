@@ -1,0 +1,186 @@
+---
+import type { Option } from './types';
+import Checkbox from '../Checkbox/Checkbox.astro';
+
+interface Props {
+	options: Option[];
+	placeholder?: string;
+	disabled?: boolean;
+	size?: 'sm' | 'md' | 'lg';
+	variant?: 'outline' | 'filled' | 'underline';
+	state?: 'default' | 'success' | 'error' | 'warning';
+	resizable?: boolean;
+	class?: string;
+	[key: string]: any;
+}
+
+const {
+	options = [],
+	placeholder = 'Select options',
+	disabled = false,
+	size = 'md',
+	variant = 'outline',
+	state = 'default',
+	resizable = false,
+	class: className = '',
+	...rest
+} = Astro.props as Props;
+
+const sizeClass = `multiselect-${size}`;
+const variantClass = `multiselect-${variant}`;
+const stateClass = state !== 'default' ? `multiselect-${state}` : '';
+const finalClass = `multiselect ${sizeClass} ${variantClass} ${stateClass} ${className}`;
+const multiSelectId = `multiselect-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div class={finalClass} data-multiselect-id={multiSelectId} {...rest}>
+	<div class='multiselect-input-wrapper'>
+		<input
+			type='text'
+			class='multiselect-input'
+			placeholder={placeholder}
+			readonly
+			disabled={disabled}
+			data-multiselect-display={multiSelectId}
+		/>
+		<button
+			class='multiselect-toggle'
+			data-multiselect-toggle={multiSelectId}
+			disabled={disabled}
+			aria-label='Toggle options'
+			type='button'
+		>
+			▼
+		</button>
+	</div>
+
+	<div
+		class='multiselect-dropdown'
+		data-multiselect-dropdown={multiSelectId}
+		data-resizable={resizable}
+	>
+		{
+			options.map((option) => (
+				<div class='multiselect-option'>
+					<Checkbox
+						label={option.label}
+						value={option.value}
+						disabled={option.disabled}
+						data-multiselect-checkbox={multiSelectId}
+						data-option-label={option.label}
+					/>
+				</div>
+			))
+		}
+		{
+			resizable && (
+				<div
+					class='multiselect-resize-handle'
+					data-multiselect-resize={multiSelectId}
+				/>
+			)
+		}
+	</div>
+</div>
+
+<script define:vars={{ multiSelectId }}>
+	class MultiSelectController {
+		constructor() {
+			this.multiSelectId = multiSelectId;
+			this.container = document.querySelector(
+				`[data-multiselect-id="${this.multiSelectId}"]`,
+			);
+			this.input = this.container.querySelector(
+				`[data-multiselect-display="${this.multiSelectId}"]`,
+			);
+			this.dropdown = this.container.querySelector(
+				`[data-multiselect-dropdown="${this.multiSelectId}"]`,
+			);
+			this.toggleBtn = this.container.querySelector(
+				`[data-multiselect-toggle="${this.multiSelectId}"]`,
+			);
+			// Find checkboxes inside checkbox-wrapper divs
+			this.checkboxes = this.container.querySelectorAll(
+				`input[data-multiselect-checkbox="${this.multiSelectId}"]`,
+			);
+			this.resizable = this.dropdown.dataset.resizable === 'true';
+			this.isResizing = false;
+			this.startY = 0;
+			this.startHeight = 0;
+			this.doResize = this.doResize.bind(this);
+			this.stopResize = this.stopResize.bind(this);
+
+			this.init();
+		}
+
+		init() {
+			this.input.addEventListener('click', () => this.toggleDropdown());
+			this.toggleBtn.addEventListener('click', () => this.toggleDropdown());
+			this.checkboxes.forEach((checkbox) => {
+				checkbox.addEventListener('change', () => this.updateInput());
+			});
+			document.addEventListener('click', (e) => this.handleOutsideClick(e));
+
+			if (this.resizable) {
+				const resizeHandle = this.container.querySelector(
+					`[data-multiselect-resize="${this.multiSelectId}"]`,
+				);
+				if (resizeHandle) {
+					resizeHandle.addEventListener('mousedown', (e) => this.startResize(e));
+				}
+			}
+
+			this.updateInput();
+		}
+
+		toggleDropdown() {
+			this.dropdown.classList.toggle('multiselect-dropdown-open');
+			this.toggleBtn.classList.toggle('multiselect-toggle-open');
+		}
+
+		closeDropdown() {
+			this.dropdown.classList.remove('multiselect-dropdown-open');
+			this.toggleBtn.classList.remove('multiselect-toggle-open');
+		}
+
+		updateInput() {
+			const selectedLabels = Array.from(this.checkboxes)
+				.filter((cb) => cb.checked)
+				.map((cb) => cb.dataset.optionLabel);
+
+			this.input.value = selectedLabels.join(', ');
+		}
+
+		handleOutsideClick(e) {
+			if (!this.container.contains(e.target)) {
+				this.closeDropdown();
+			}
+		}
+
+		startResize(e) {
+			if (!this.resizable) return;
+			e.preventDefault();
+			this.isResizing = true;
+			this.startY = e.clientY;
+			this.startHeight = this.dropdown.offsetHeight;
+
+			document.addEventListener('mousemove', this.doResize);
+			document.addEventListener('mouseup', this.stopResize);
+		}
+
+		doResize(e) {
+			if (!this.isResizing) return;
+			const diff = e.clientY - this.startY;
+			const newHeight = Math.max(100, this.startHeight + diff);
+			this.dropdown.style.height = newHeight + 'px';
+		}
+
+		stopResize() {
+			this.isResizing = false;
+			document.removeEventListener('mousemove', this.doResize);
+			document.removeEventListener('mouseup', this.stopResize);
+		}
+	}
+
+	new MultiSelectController();
+</script>
