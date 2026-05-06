@@ -1164,6 +1164,214 @@
   }
 
   /* ============================================
-     ADD MORE COMPONENTS HERE
+     TABLE COMPONENT
      ============================================ */
+
+  .table-container {
+    @apply w-full flex flex-col gap-4;
+  }
+
+  .table-controls {
+    @apply flex flex-col gap-3;
+  }
+
+  .table-controls-top {
+    @apply flex gap-3 items-end flex-wrap;
+  }
+
+  .table-search-input {
+    @apply w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  }
+
+  .table-filters {
+    @apply flex flex-wrap gap-4;
+  }
+
+  .table-filter-group {
+    @apply flex flex-col gap-1;
+  }
+
+  .table-filter-header {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  .table-filter-label {
+    @apply text-xs font-semibold text-gray-700 uppercase tracking-wide;
+  }
+
+  .table-filter-clear-btn {
+    @apply h-auto py-1 px-2;
+  }
+
+  .table-wrapper {
+    @apply w-full overflow-x-auto border border-gray-300 rounded-lg;
+  }
+
+  .table {
+    @apply w-full border-collapse bg-white;
+  }
+
+  .table-th {
+    @apply bg-gray-50 text-xs font-semibold text-gray-900 px-4 py-3 text-left border-b border-gray-300 transition-colors;
+  }
+
+  .table-th.sortable {
+    @apply cursor-pointer hover:bg-gray-100;
+  }
+
+  .table-th-content {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  .table-sort-icon {
+    @apply text-gray-400 transition-colors;
+  }
+
+  .table-th.sortable:hover .table-sort-icon {
+    @apply text-gray-600;
+  }
+
+  .table-sort-icon.active {
+    @apply text-blue-600;
+  }
+
+  .table-striped tbody tr:nth-child(even) {
+    @apply bg-gray-50;
+  }
+
+  .table-hoverable tbody tr {
+    @apply transition-colors;
+  }
+
+  .table-hoverable tbody tr:hover {
+    @apply bg-blue-50;
+  }
+
+  .table-td {
+    @apply px-4 py-3 text-sm text-gray-900 border-b border-gray-200;
+  }
+
+  .table-empty {
+    @apply text-center text-gray-500 py-8;
+  }
+
+  .table-pagination {
+    @apply flex items-center justify-center gap-4;
+  }
+
+  .table-page-info {
+    @apply text-sm text-gray-700 font-medium;
+  }
+
+  /* ============================================
+     MULTISELECT COMPONENT
+     ============================================ */
+
+  .multiselect {
+    @apply relative w-full;
+  }
+
+  .multiselect-input-wrapper {
+    @apply relative flex items-center;
+  }
+
+  .multiselect-input {
+    @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white;
+  }
+
+  .multiselect-toggle {
+    @apply absolute right-2 px-2 py-1 text-gray-600 hover:text-gray-900 bg-transparent border-0 cursor-pointer transition-colors text-xs;
+  }
+
+  .multiselect-toggle-open {
+    @apply text-blue-600;
+  }
+
+  .multiselect-dropdown {
+    @apply absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden z-50;
+  }
+
+  .multiselect-dropdown-open {
+    @apply block;
+  }
+
+  .multiselect-option {
+    @apply px-2 py-2 hover:bg-gray-50 transition-colors;
+  }
+
+  .multiselect-option .checkbox-wrapper {
+    @apply mb-0;
+  }
+
+  .multiselect-option .checkbox-label {
+    @apply text-sm text-gray-900 cursor-pointer;
+  }
+
+  .multiselect-resize-handle {
+    @apply h-1 bg-gray-300 hover:bg-blue-400 cursor-row-resize transition-colors border-t border-gray-200 sticky bottom-0;
+  }
+
+  /* MultiSelect Sizes */
+  .multiselect-sm .multiselect-input {
+    @apply px-2 py-1 text-xs;
+  }
+
+  .multiselect-md .multiselect-input {
+    @apply px-3 py-2 text-sm;
+  }
+
+  .multiselect-lg .multiselect-input {
+    @apply px-4 py-3 text-base;
+  }
+
+  /* MultiSelect Variants - Style */
+  .multiselect-outline .multiselect-input {
+    @apply border border-gray-300 px-3 py-2;
+  }
+
+  .multiselect-outline .multiselect-input:focus {
+    @apply border-blue-500;
+  }
+
+  .multiselect-filled .multiselect-input {
+    @apply border-0 border-b-2 border-gray-300 bg-gray-100 px-3 py-2;
+  }
+
+  .multiselect-filled .multiselect-input:focus {
+    @apply border-blue-500 bg-gray-50;
+  }
+
+  .multiselect-underline .multiselect-input {
+    @apply border-0 border-b-2 border-gray-300 bg-transparent px-3 py-2;
+  }
+
+  .multiselect-underline .multiselect-input:focus {
+    @apply border-blue-500;
+  }
+
+  /* MultiSelect States */
+  .multiselect-success .multiselect-input {
+    @apply border-green-500 focus:ring-green-500;
+  }
+
+  .multiselect-success .multiselect-input:focus {
+    @apply border-green-600;
+  }
+
+  .multiselect-error .multiselect-input {
+    @apply border-red-500 focus:ring-red-500;
+  }
+
+  .multiselect-error .multiselect-input:focus {
+    @apply border-red-600;
+  }
+
+  .multiselect-warning .multiselect-input {
+    @apply border-yellow-500 focus:ring-yellow-500;
+  }
+
+  .multiselect-warning .multiselect-input:focus {
+    @apply border-yellow-600;
+  }
 }
+
