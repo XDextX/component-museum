@@ -116,4 +116,13 @@ export const Navigation = [
 			},
 		],
 	},
+	{
+		label: 'Data Display',
+		children: [
+			{
+				label: 'Table',
+				href: '/table',
+			},
+		],
+	},
 ];

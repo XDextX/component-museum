@@ -1,0 +1,346 @@
+---
+import { Table as Comp, Code, Breadcrumb, Card } from '@component-museum/astro';
+import { Navigation } from '../data/Navigation';
+import { SideBarLayout } from '../layouts';
+
+const basicData = [
+	{ id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active' },
+	{ id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'Inactive' },
+	{ id: 3, name: 'Bob Wilson', email: 'bob@example.com', status: 'Active' },
+	{ id: 4, name: 'Alice Brown', email: 'alice@example.com', status: 'Pending' },
+	{
+		id: 5,
+		name: 'Charlie Davis',
+		email: 'charlie@example.com',
+		status: 'Active',
+	},
+];
+
+const basicColumns = [
+	{ key: 'id', label: 'ID' },
+	{ key: 'name', label: 'Name' },
+	{ key: 'email', label: 'Email' },
+	{ key: 'status', label: 'Status' },
+];
+
+const largeData = Array.from({ length: 25 }, (_, i) => ({
+	id: i + 1,
+	name: `User ${i + 1}`,
+	email: `user${i + 1}@example.com`,
+	status: ['Active', 'Inactive', 'Pending'][i % 3],
+	department: ['Sales', 'Engineering', 'Marketing'][i % 3],
+	joinDate: `2024-${String((i % 12) + 1).padStart(2, '0')}-15`,
+}));
+
+const largeColumns = [
+	{ key: 'id', label: 'ID' },
+	{ key: 'name', label: 'Name' },
+	{ key: 'email', label: 'Email' },
+	{ key: 'status', label: 'Status' },
+	{ key: 'department', label: 'Department' },
+	{ key: 'joinDate', label: 'Join Date' },
+];
+---
+
+<SideBarLayout title='Table Stories' navItems={Navigation}>
+	<Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Table' }]} />
+	<h1 class='text-4xl font-bold mb-12'>Table Component</h1>
+
+	<!-- Basic Usage -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Basic Usage</h2>
+		<Card class='p-8'>
+			<Comp columns={basicColumns} data={basicData} />
+		</Card>
+	</section>
+
+	<!-- With Sorting -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>With Sorting</h2>
+		<p class='text-gray-600 mb-4'>
+			Click on column headers to sort. Click again to reverse the sort direction.
+		</p>
+		<Card class='p-8'>
+			<Comp
+				columns={basicColumns.map((col) => ({ ...col, sortable: true }))}
+				data={basicData}
+			/>
+		</Card>
+	</section>
+
+	<!-- With Filtering -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>With Filtering</h2>
+		<p class='text-gray-600 mb-4'>
+			Use the filter dropdowns to filter data by column values.
+		</p>
+		<Card class='p-8'>
+			<Comp
+				columns={basicColumns.map((col) => ({ ...col, filterable: true }))}
+				data={basicData}
+				filterable={true}
+			/>
+		</Card>
+	</section>
+
+	<!-- With Search -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>With Search</h2>
+		<p class='text-gray-600 mb-4'>
+			Use the search input to filter data across all columns in real-time.
+		</p>
+		<Card class='p-8'>
+			<Comp columns={basicColumns} data={basicData} searchable={true} />
+		</Card>
+	</section>
+
+	<!-- With Pagination -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>With Pagination</h2>
+		<p class='text-gray-600 mb-4'>
+			Large datasets are paginated. Adjust pageSize to show more or fewer rows per
+			page.
+		</p>
+		<Card class='p-8'>
+			<Comp columns={largeColumns} data={largeData} pageSize={3} />
+		</Card>
+	</section>
+
+	<!-- All Features Combined -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>All Features Combined</h2>
+		<p class='text-gray-600 mb-4'>
+			Sorting, filtering, searching, and pagination all work together seamlessly.
+		</p>
+		<Card class='p-8'>
+			<Comp
+				columns={largeColumns.map((col) => ({
+					...col,
+					filterable: true,
+					sortable: true,
+					searchable: true,
+				}))}
+				data={largeData}
+				pageSize={8}
+				searchable={true}
+				filterable={true}
+				striped={true}
+				hoverable={true}
+			/>
+		</Card>
+	</section>
+
+	<!-- Minimal Table -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Minimal Table</h2>
+		<p class='text-gray-600 mb-4'>
+			Disable features as needed for a minimal table display.
+		</p>
+		<Card class='p-8'>
+			<Comp
+				columns={basicColumns.map((col) => ({
+					...col,
+					sortable: false,
+					filterable: false,
+				}))}
+				data={basicData}
+				searchable={false}
+				filterable={false}
+			/>
+		</Card>
+	</section>
+
+	<!-- Code Examples -->
+	<section class='mb-16'>
+		<h2 class='text-2xl font-bold mb-6'>Usage Examples</h2>
+		<Code language='astro' title='Basic Table with Sorting' copyable>
+			{
+				`---
+import { Table } from "@component-museum/astro";
+import "@component-museum/astro/styles.css";
+
+const columns = [
+  { key: "id", label: "ID", sortable: true },
+  { key: "name", label: "Name", sortable: true, filterable: true },
+  { key: "email", label: "Email", sortable: true },
+  { key: "status", label: "Status", sortable: true, filterable: true },
+];
+
+const data = [
+  { id: 1, name: "John Doe", email: "john@example.com", status: "Active" },
+  { id: 2, name: "Jane Smith", email: "jane@example.com", status: "Inactive" },
+  { id: 3, name: "Bob Wilson", email: "bob@example.com", status: "Active" },
+];
+---
+
+<Table columns={columns} data={data} pageSize={10} />`
+			}
+		</Code>
+		<Code language='astro' title='Table with All Features' copyable>
+			{
+				`---
+import { Table } from "@component-museum/astro";
+import "@component-museum/astro/styles.css";
+
+const columns = [
+  { key: "id", label: "ID", sortable: true },
+  { key: "name", label: "Name", sortable: true, filterable: true },
+  { key: "email", label: "Email", sortable: true },
+  { key: "status", label: "Status", sortable: true, filterable: true },
+];
+
+const data = [
+  { id: 1, name: "John Doe", email: "john@example.com", status: "Active" },
+  { id: 2, name: "Jane Smith", email: "jane@example.com", status: "Inactive" },
+  // ... more rows
+];
+---
+
+<Table
+  columns={columns}
+  data={data}
+  pageSize={10}
+  searchable={true}
+  filterable={true}
+  striped={true}
+  hoverable={true}
+/>`
+			}
+		</Code>
+	</section>
+
+	<!-- Props -->
+	<section>
+		<h2 class='text-2xl font-bold mb-6'>Props</h2>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Prop</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Default</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>columns</code></td
+						>
+						<td>Column[]</td>
+						<td>-</td>
+						<td
+							>Column definitions with {
+								'{key, label, sortable?, filterable?, width?}'
+							}</td
+						>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>data</code></td
+						>
+						<td>Record&lt;string, any&gt;[]</td>
+						<td>-</td>
+						<td>Array of row objects matching column keys</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>pageSize</code></td
+						>
+						<td>number</td>
+						<td>10</td>
+						<td>Number of rows displayed per page</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>searchable</code></td
+						>
+						<td>boolean</td>
+						<td>true</td>
+						<td>Enable the search input for global filtering</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>filterable</code></td
+						>
+						<td>boolean</td>
+						<td>true</td>
+						<td>Enable filter dropdowns for filterable columns</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>striped</code></td
+						>
+						<td>boolean</td>
+						<td>true</td>
+						<td>Apply alternating row background colors</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>hoverable</code></td
+						>
+						<td>boolean</td>
+						<td>true</td>
+						<td>Highlight row on hover</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+
+		<h3 class='text-xl font-bold mt-8 mb-4'>Column Type</h3>
+		<Card class='p-6'>
+			<table class='w-full text-sm'>
+				<thead>
+					<tr class='border-b'>
+						<th class='text-left py-2 font-semibold'>Property</th>
+						<th class='text-left py-2 font-semibold'>Type</th>
+						<th class='text-left py-2 font-semibold'>Required</th>
+						<th class='text-left py-2 font-semibold'>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>key</code></td
+						>
+						<td>string</td>
+						<td>Yes</td>
+						<td>Data property key for this column</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>label</code></td
+						>
+						<td>string</td>
+						<td>Yes</td>
+						<td>Column header display text</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>sortable</code></td
+						>
+						<td>boolean</td>
+						<td>No</td>
+						<td>Enable sorting for this column</td>
+					</tr>
+					<tr class='border-b'>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>filterable</code></td
+						>
+						<td>boolean</td>
+						<td>No</td>
+						<td>Enable filtering for this column</td>
+					</tr>
+					<tr>
+						<td class='py-3'
+							><code class='bg-gray-100 px-2 py-1 rounded'>width</code></td
+						>
+						<td>string</td>
+						<td>No</td>
+						<td>CSS width value for the column</td>
+					</tr>
+				</tbody>
+			</table>
+		</Card>
+	</section>
+</SideBarLayout>
