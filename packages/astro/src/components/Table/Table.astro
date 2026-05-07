@@ -5,34 +5,6 @@ import TableHeader from './TableHeader.astro';
 import TableBody from './TableBody.astro';
 import TablePagination from './TablePagination.astro';
 
-/**
- * Table Component
- *
- * A comprehensive data table component with sorting, pagination, search, and filtering.
- *
- * @component
- * @example
- * const columns = [
- *   { key: 'id', label: 'ID', sortable: true },
- *   { key: 'name', label: 'Name', sortable: true, filterable: true },
- *   { key: 'status', label: 'Status', sortable: true, filterable: true },
- * ];
- * const data = [
- *   { id: 1, name: 'John', status: 'Active' },
- *   { id: 2, name: 'Jane', status: 'Inactive' },
- * ];
- * return <Table columns={columns} data={data} />
- *
- * @param {Column[]} columns - Column definitions
- * @param {Record<string, any>[]} data - Array of row objects
- * @param {number} [pageSize=10] - Rows per page
- * @param {boolean} [searchable=true] - Enable search
- * @param {boolean} [filterable=true] - Enable filtering
- * @param {boolean} [striped=true] - Striped row colors
- * @param {boolean} [hoverable=true] - Hover row effect
- * @param {string} [class] - Additional CSS classes
- */
-
 interface Props {
 	columns: Column[];
 	data: Record<string, any>[];
