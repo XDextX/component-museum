@@ -402,30 +402,17 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 			this.state.filters = {};
 			this.state.currentPage = 1;
 
-			const searchInput = document.querySelector(
-				`[data-table-search="${this.tableId}"]`,
+			const searchInput = this.container.querySelector(
+				`[${ATTR.SEARCH}="${this.tableId}"]`,
 			);
 			if (searchInput) {
 				searchInput.value = '';
 			}
 
-			// Clear all MultiSelect filters
-			document
-				.querySelectorAll(`[data-table-filter="${this.tableId}"]`)
+			this.container
+				.querySelectorAll(`[${ATTR.FILTER}="${this.tableId}"]`)
 				.forEach((el) => {
-					const multiSelect = el.closest('.multiselect');
-					if (multiSelect) {
-						// Clear checkboxes
-						const checkboxes = multiSelect.querySelectorAll('input[type="checkbox"]');
-						checkboxes.forEach((cb) => {
-							cb.checked = false;
-						});
-						// Clear input display
-						const input = multiSelect.querySelector('.multiselect-input');
-						if (input) {
-							input.value = '';
-						}
-					}
+					this.clearMultiSelectFilter(el);
 				});
 
 			this.applyFiltersAndSort();
@@ -437,58 +424,65 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 			delete this.state.filters[column];
 			this.state.currentPage = 1;
 
-			// Find and uncheck all checkboxes in the MultiSelect for this column
-			const multiSelectContainer = document.querySelector(
-				`[data-table-filter="${this.tableId}"][data-column="${column}"]`,
+			const multiSelectContainer = this.container.querySelector(
+				`[${ATTR.FILTER}="${this.tableId}"][${ATTR.COLUMN}="${column}"]`,
 			);
 			if (multiSelectContainer) {
-				const multiSelect = multiSelectContainer.closest('.multiselect');
-				if (multiSelect) {
-					const checkboxes = multiSelect.querySelectorAll('input[type="checkbox"]');
-					checkboxes.forEach((cb) => {
-						cb.checked = false;
-					});
-					// Update the input display
-					const input = multiSelect.querySelector('.multiselect-input');
-					if (input) {
-						input.value = '';
-					}
-				}
+				this.clearMultiSelectFilter(multiSelectContainer);
 			}
 
 			this.applyFiltersAndSort();
 			this.render();
 		}
 
-		applyFiltersAndSort() {
-			let filtered = [...this.data];
+		clearMultiSelectFilter(filterElement) {
+			const multiSelect = filterElement.closest('.multiselect');
+			if (multiSelect) {
+				const checkboxes = multiSelect.querySelectorAll('input[type="checkbox"]');
+				checkboxes.forEach((cb) => {
+					cb.checked = false;
+				});
+				const input = multiSelect.querySelector('.multiselect-input');
+				if (input) {
+					input.value = '';
+				}
+			}
+		}
 
-			// Apply search
-			if (this.state.searchQuery) {
-				filtered = filtered.filter((row) =>
-					this.columns.some((col) =>
-						String(row[col.key] || '')
-							.toLowerCase()
-							.includes(this.state.searchQuery),
-					),
-				);
+		applyFiltersAndSort() {
+			const hasSearchQuery = this.state.searchQuery.length > 0;
+			const hasFilters = Object.keys(this.state.filters).length > 0;
+
+			let filtered = this.data;
+			if (hasSearchQuery || hasFilters) {
+				filtered = this.data.filter((row) => {
+					if (hasSearchQuery) {
+						const matchesSearch = this.columns.some((col) =>
+							String(row[col.key] || '')
+								.toLowerCase()
+								.includes(this.state.searchQuery),
+						);
+						if (!matchesSearch) return false;
+					}
+
+					if (hasFilters) {
+						const matchesFilters = Object.entries(this.state.filters).every(
+							([column, values]) => values.includes(String(row[column] || '')),
+						);
+						if (!matchesFilters) return false;
+					}
+
+					return true;
+				});
 			}
 
-			// Apply filters
-			Object.entries(this.state.filters).forEach(([column, values]) => {
-				filtered = filtered.filter((row) =>
-					values.includes(String(row[column] || '')),
-				);
-			});
-
-			// Apply sort (only if sortable is enabled)
 			if (this.sortable && this.state.sortBy) {
 				filtered.sort((a, b) => {
 					const aVal = a[this.state.sortBy];
 					const bVal = b[this.state.sortBy];
 
-					if (aVal < bVal) return this.state.sortDir === 'asc' ? -1 : 1;
-					if (aVal > bVal) return this.state.sortDir === 'asc' ? 1 : -1;
+					if (aVal < bVal) return this.state.sortDir === SORT_DIR.ASC ? -1 : 1;
+					if (aVal > bVal) return this.state.sortDir === SORT_DIR.ASC ? 1 : -1;
 					return 0;
 				});
 			}
