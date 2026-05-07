@@ -278,64 +278,57 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 		}
 
 		attachEventListeners() {
-			// Sort headers (only if sortable is enabled)
+			this.container = document.querySelector(`[${ATTR.ID}="${this.tableId}"]`);
+			
 			if (this.sortable) {
-				document
-					.querySelectorAll(`[data-table-sort="${this.tableId}"]`)
+				this.container
+					.querySelectorAll(`[${ATTR.SORT}="${this.tableId}"]`)
 					.forEach((el) => {
 						el.addEventListener('click', (e) => this.handleSort(e));
 					});
 			}
 
-			// Search input
-			const searchInput = document.querySelector(
-				`[data-table-search="${this.tableId}"]`,
+			const searchInput = this.container.querySelector(
+				`[${ATTR.SEARCH}="${this.tableId}"]`,
 			);
 			if (searchInput) {
 				searchInput.addEventListener('input', (e) => this.handleSearch(e));
 			}
 
-			// Filter selects/MultiSelects
-			document
-				.querySelectorAll(`[data-table-filter="${this.tableId}"]`)
+			this.container
+				.querySelectorAll(`[${ATTR.FILTER}="${this.tableId}"]`)
 				.forEach((el) => {
 					const multiSelect = el.closest('.multiselect');
 					if (multiSelect) {
-						// New MultiSelect with checkboxes
 						const checkboxes = multiSelect.querySelectorAll('input[type="checkbox"]');
 						checkboxes.forEach((checkbox) => {
 							checkbox.addEventListener('change', (e) => {
-								// Create a synthetic event-like object for handleFilter
 								this.handleFilter({
 									currentTarget: el,
 								});
 							});
 						});
 					} else {
-						// Fallback for native select
 						el.addEventListener('change', (e) => this.handleFilter(e));
 					}
 				});
 
-			// Clear all filters button
-			const clearBtn = document.querySelector(
-				`[data-table-clear="${this.tableId}"]`,
+			const clearBtn = this.container.querySelector(
+				`[${ATTR.CLEAR}="${this.tableId}"]`,
 			);
 			if (clearBtn) {
 				clearBtn.addEventListener('click', () => this.handleClearAll());
 			}
 
-			// Individual filter clear buttons
-			document
-				.querySelectorAll(`[data-table-filter-clear="${this.tableId}"]`)
+			this.container
+				.querySelectorAll(`[${ATTR.FILTER_CLEAR}="${this.tableId}"]`)
 				.forEach((el) => {
 					el.addEventListener('click', (e) => this.handleClearFilter(e));
 				});
 
-			// Pagination buttons (only if paginated is enabled)
 			if (this.paginated) {
-				document
-					.querySelectorAll(`[data-table-pagination="${this.tableId}"]`)
+				this.container
+					.querySelectorAll(`[${ATTR.PAGINATION}="${this.tableId}"]`)
 					.forEach((el) => {
 						el.addEventListener('click', (e) => this.handlePagination(e));
 					});
