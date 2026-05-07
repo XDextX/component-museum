@@ -249,8 +249,15 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 		sortable,
 		paginated,
 		initialState: JSON.stringify(initialState),
+		ATTR: JSON.stringify(ATTR),
+		PAGINATION_ACTION: JSON.stringify(PAGINATION_ACTION),
 	}}
 >
+	const SORT_DIR = { ASC: 'asc', DESC: 'desc' };
+	const SORT_ICON = { UP: '↑', DOWN: '↓', DEFAULT: '↕' };
+	const ATTR = JSON.parse(ATTR);
+	const PAGINATION_ACTION = JSON.parse(PAGINATION_ACTION);
+
 	class TableController {
 		constructor() {
 			this.tableId = tableId;
