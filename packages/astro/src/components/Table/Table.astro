@@ -503,9 +503,8 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 				pageData = this.filteredData;
 			}
 
-			// Update tbody
-			const tbody = document.querySelector(
-				`[data-table-id="${this.tableId}"] tbody`,
+			const tbody = this.container.querySelector(
+				`[${ATTR.ID}="${this.tableId}"] tbody`,
 			);
 			if (pageData.length === 0) {
 				tbody.innerHTML = `<tr><td colspan="${this.columns.length}" class="table-empty">No data available</td></tr>`;
@@ -520,37 +519,36 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 					.join('');
 			}
 
-			// Update pagination (only if paginated is enabled)
 			if (this.paginated) {
-				document.querySelector(
+				this.container.querySelector(
 					`[data-table-current-page="${this.tableId}"]`,
 				).textContent = this.state.currentPage;
-				document.querySelector(
+				this.container.querySelector(
 					`[data-table-total-pages="${this.tableId}"]`,
 				).textContent = totalPages || 1;
 
-				const prevBtn = document.querySelector(
-					`[data-table-pagination="${this.tableId}"][data-action="prev"]`,
+				const prevBtn = this.container.querySelector(
+					`[${ATTR.PAGINATION}="${this.tableId}"][${ATTR.ACTION}="prev"]`,
 				);
-				const nextBtn = document.querySelector(
-					`[data-table-pagination="${this.tableId}"][data-action="next"]`,
+				const nextBtn = this.container.querySelector(
+					`[${ATTR.PAGINATION}="${this.tableId}"][${ATTR.ACTION}="next"]`,
 				);
 				prevBtn.disabled = this.state.currentPage === 1;
 				nextBtn.disabled =
 					this.state.currentPage === totalPages || totalPages === 0;
 			}
 
-			// Update sort indicators (only if sortable is enabled)
 			if (this.sortable) {
-				document
-					.querySelectorAll(`[data-table-sort="${this.tableId}"] .table-sort-icon`)
+				this.container
+					.querySelectorAll(`[${ATTR.SORT}="${this.tableId}"] .table-sort-icon`)
 					.forEach((el) => {
 						const col = el.parentElement.parentElement.dataset.column;
 						if (col === this.state.sortBy) {
-							el.textContent = this.state.sortDir === 'asc' ? '↑' : '↓';
+							el.textContent =
+								this.state.sortDir === SORT_DIR.ASC ? SORT_ICON.UP : SORT_ICON.DOWN;
 							el.classList.add('active');
 						} else {
-							el.textContent = '↕';
+							el.textContent = SORT_ICON.DEFAULT;
 							el.classList.remove('active');
 						}
 					});
