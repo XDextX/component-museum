@@ -229,10 +229,7 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 
 			if (action === PAGINATION_ACTION.PREV && this.state.currentPage > 1) {
 				this.state.currentPage--;
-			} else if (
-				action === PAGINATION_ACTION.NEXT &&
-				this.state.currentPage < totalPages
-			) {
+			} else if (action === PAGINATION_ACTION.NEXT && this.state.currentPage < totalPages) {
 				this.state.currentPage++;
 			}
 			this.render();
@@ -243,18 +240,12 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 			this.state.filters = {};
 			this.state.currentPage = 1;
 
-			const searchInput = this.container.querySelector(
-				`[${ATTR.SEARCH}="${this.tableId}"]`,
-			);
-			if (searchInput) {
-				searchInput.value = '';
-			}
+			const searchInput = this.container.querySelector(`[${ATTR.SEARCH}="${this.tableId}"]`);
+			if (searchInput) searchInput.value = '';
 
-			this.container
-				.querySelectorAll(`[${ATTR.FILTER}="${this.tableId}"]`)
-				.forEach((el) => {
-					this.clearMultiSelectFilter(el);
-				});
+			this.container.querySelectorAll(`[${ATTR.FILTER}="${this.tableId}"]`).forEach((el) => {
+				this.clearMultiSelectFilter(el);
+			});
 
 			this.applyFiltersAndSort();
 			this.render();
@@ -265,12 +256,8 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 			delete this.state.filters[column];
 			this.state.currentPage = 1;
 
-			const multiSelectContainer = this.container.querySelector(
-				`[${ATTR.FILTER}="${this.tableId}"][${ATTR.COLUMN}="${column}"]`,
-			);
-			if (multiSelectContainer) {
-				this.clearMultiSelectFilter(multiSelectContainer);
-			}
+			const multiSelectContainer = this.container.querySelector(`[${ATTR.FILTER}="${this.tableId}"][${ATTR.COLUMN}="${column}"]`);
+			if (multiSelectContainer) this.clearMultiSelectFilter(multiSelectContainer);
 
 			this.applyFiltersAndSort();
 			this.render();
@@ -279,14 +266,9 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 		clearMultiSelectFilter(filterElement) {
 			const multiSelect = filterElement.closest('.multiselect');
 			if (multiSelect) {
-				const checkboxes = multiSelect.querySelectorAll('input[type="checkbox"]');
-				checkboxes.forEach((cb) => {
-					cb.checked = false;
-				});
+				multiSelect.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
 				const input = multiSelect.querySelector('.multiselect-input');
-				if (input) {
-					input.value = '';
-				}
+				if (input) input.value = '';
 			}
 		}
 
@@ -299,16 +281,14 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 				filtered = this.data.filter((row) => {
 					if (hasSearchQuery) {
 						const matchesSearch = this.columns.some((col) =>
-							String(row[col.key] || '')
-								.toLowerCase()
-								.includes(this.state.searchQuery),
+							String(row[col.key] || '').toLowerCase().includes(this.state.searchQuery)
 						);
 						if (!matchesSearch) return false;
 					}
 
 					if (hasFilters) {
-						const matchesFilters = Object.entries(this.state.filters).every(
-							([column, values]) => values.includes(String(row[column] || '')),
+						const matchesFilters = Object.entries(this.state.filters).every(([column, values]) =>
+							values.includes(String(row[column] || ''))
 						);
 						if (!matchesFilters) return false;
 					}
