@@ -86,6 +86,23 @@ const initialState: TableState = {
 	searchQuery: '',
 	filters: {},
 };
+
+// Constants for data attributes and UI
+const ATTR = {
+	ID: 'data-table-id',
+	SEARCH: 'data-table-search',
+	SORT: 'data-table-sort',
+	FILTER: 'data-table-filter',
+	CLEAR: 'data-table-clear',
+	FILTER_CLEAR: 'data-table-filter-clear',
+	PAGINATION: 'data-table-pagination',
+	COLUMN: 'data-column',
+	ACTION: 'data-action',
+	CURRENT_PAGE: 'data-table-current-page',
+	TOTAL_PAGES: 'data-table-total-pages',
+};
+
+const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 ---
 
 <div class={`table-container ${className}`} {...rest} data-table-id={tableId}>
@@ -202,7 +219,7 @@ const initialState: TableState = {
 					variant='outline'
 					size='sm'
 					data-table-pagination={tableId}
-					data-action='prev'
+					data-action={PAGINATION_ACTION.PREV}
 				>
 					← Previous
 				</Button>
@@ -214,7 +231,7 @@ const initialState: TableState = {
 					variant='outline'
 					size='sm'
 					data-table-pagination={tableId}
-					data-action='next'
+					data-action={PAGINATION_ACTION.NEXT}
 				>
 					Next →
 				</Button>
