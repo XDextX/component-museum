@@ -338,10 +338,11 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 		handleSort(e) {
 			const column = e.currentTarget.dataset.column;
 			if (this.state.sortBy === column) {
-				this.state.sortDir = this.state.sortDir === 'asc' ? 'desc' : 'asc';
+				this.state.sortDir =
+					this.state.sortDir === SORT_DIR.ASC ? SORT_DIR.DESC : SORT_DIR.ASC;
 			} else {
 				this.state.sortBy = column;
-				this.state.sortDir = 'asc';
+				this.state.sortDir = SORT_DIR.ASC;
 			}
 			this.state.currentPage = 1;
 			this.applyFiltersAndSort();
@@ -385,9 +386,12 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 			const action = e.currentTarget.dataset.action;
 			const totalPages = Math.ceil(this.filteredData.length / this.pageSize);
 
-			if (action === 'prev' && this.state.currentPage > 1) {
+			if (action === PAGINATION_ACTION.PREV && this.state.currentPage > 1) {
 				this.state.currentPage--;
-			} else if (action === 'next' && this.state.currentPage < totalPages) {
+			} else if (
+				action === PAGINATION_ACTION.NEXT &&
+				this.state.currentPage < totalPages
+			) {
 				this.state.currentPage++;
 			}
 			this.render();
