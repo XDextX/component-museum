@@ -1,0 +1,30 @@
+---
+import type { Column } from './types';
+
+interface Props {
+	columns: Column[];
+	data: Record<string, any>[];
+}
+
+const { columns, data } = Astro.props;
+---
+
+<tbody>
+	{
+		data.length === 0 ? (
+			<tr>
+				<td colspan={columns.length} class='table-empty'>
+					No data available
+				</td>
+			</tr>
+		) : (
+			data.map((row) => (
+				<tr>
+					{columns.map((col) => (
+						<td class='table-td'>{row[col.key]}</td>
+					))}
+				</tr>
+			))
+		)
+	}
+</tbody>

@@ -1,0 +1,36 @@
+---
+import type { Column } from './types';
+
+interface Props {
+	tableId: string;
+	columns: Column[];
+	sortable?: boolean;
+}
+
+const { tableId, columns, sortable = true } = Astro.props;
+---
+
+<thead>
+	<tr>
+		{
+			columns.map((col) => (
+				<th
+					class={`table-th ${sortable && col.sortable ? 'sortable' : ''}`}
+					data-table-sort={sortable && col.sortable ? tableId : undefined}
+					data-column={col.key}
+					style={col.width ? `width: ${col.width}` : ''}
+					{...(sortable && col.sortable && { 'aria-sort': 'none' })}
+				>
+					<div class='table-th-content'>
+						{col.label}
+						{sortable && col.sortable && (
+							<span class='table-sort-icon' aria-hidden='true'>
+								↕
+							</span>
+						)}
+					</div>
+				</th>
+			))
+		}
+	</tr>
+</thead>

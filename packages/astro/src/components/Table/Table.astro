@@ -1,7 +1,9 @@
 ---
 import type { Column, TableState } from './types';
-import Button from '../Button/Button.astro';
-import MultiSelect from '../MultiSelect/MultiSelect.astro';
+import TableControls from './TableControls.astro';
+import TableHeader from './TableHeader.astro';
+import TableBody from './TableBody.astro';
+import TablePagination from './TablePagination.astro';
 
 /**
  * Table Component
@@ -106,142 +108,24 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 ---
 
 <div class={`table-container ${className}`} {...rest} data-table-id={tableId}>
-	<!-- Search and Filter Controls -->
-	{
-		(searchable || filterable) && (
-			<div class='table-controls'>
-				<div class='table-controls-top'>
-					{searchable && (
-						<input
-							type='search'
-							class='table-search-input'
-							placeholder='Search...'
-							data-table-search={tableId}
-							aria-label='Search table data'
-						/>
-					)}
-					{(searchable || filterable) && (
-						<Button
-							variant='secondary'
-							size='sm'
-							data-table-clear={tableId}
-							title='Clear all filters and search'
-						>
-							Clear Filters
-						</Button>
-					)}
-				</div>
-				{filterable && (
-					<div class='table-filters'>
-						{columns.map((col) =>
-							col.filterable ? (
-								<div class='table-filter-group'>
-									<div class='table-filter-header'>
-										<label class='table-filter-label'>{col.label}</label>
-										<Button
-											variant='outline'
-											size='sm'
-											data-table-filter-clear={tableId}
-											data-column={col.key}
-											title={`Clear ${col.label} filter`}
-											class='table-filter-clear-btn'
-										>
-											✕
-										</Button>
-									</div>
-									<MultiSelect
-										options={filterSelectOptions[col.key]}
-										placeholder={`Filter by ${col.label}`}
-										variant='outline'
-										size='sm'
-										data-table-filter={tableId}
-										data-column={col.key}
-									/>
-								</div>
-							) : null,
-						)}
-					</div>
-				)}
-			</div>
-		)
-	}
+	<TableControls
+		{tableId}
+		{columns}
+		{searchable}
+		{filterable}
+		{filterSelectOptions}
+	/>
 
-	<!-- Table -->
 	<div class='table-wrapper'>
 		<table
 			class={`table ${striped ? 'table-striped' : ''} ${hoverable ? 'table-hoverable' : ''}`}
 		>
-			<thead>
-				<tr>
-					{
-						columns.map((col) => (
-							<th
-								class={`table-th ${sortable && col.sortable ? 'sortable' : ''}`}
-								data-table-sort={sortable && col.sortable ? tableId : undefined}
-								data-column={col.key}
-								style={col.width ? `width: ${col.width}` : ''}
-								{...(sortable && col.sortable && { 'aria-sort': 'none' })}
-							>
-								<div class='table-th-content'>
-									{col.label}
-									{sortable && col.sortable && <span class='table-sort-icon' aria-hidden='true'>↕</span>}
-								</div>
-							</th>
-						))
-					}
-				</tr>
-			</thead>
-			<tbody>
-				{
-					data.length === 0 ? (
-						<tr>
-							<td colspan={columns.length} class='table-empty'>
-								No data available
-							</td>
-						</tr>
-					) : (
-						data.map((row, idx) => (
-							<tr>
-								{columns.map((col) => (
-									<td class='table-td'>{row[col.key]}</td>
-								))}
-							</tr>
-						))
-					)
-				}
-			</tbody>
+			<TableHeader {tableId} {columns} {sortable} />
+			<TableBody {columns} data={data} />
 		</table>
 	</div>
 
-	<!-- Pagination -->
-	{
-		paginated && (
-			<div class='table-pagination'>
-				<Button
-					variant='outline'
-					size='sm'
-					data-table-pagination={tableId}
-					data-action={PAGINATION_ACTION.PREV}
-					aria-label='Previous page'
-				>
-					← Previous
-				</Button>
-				<div class='table-page-info' role='status' aria-live='polite'>
-					Page <span data-table-current-page={tableId}>1</span> of
-					<span data-table-total-pages={tableId}>1</span>
-				</div>
-				<Button
-					variant='outline'
-					size='sm'
-					data-table-pagination={tableId}
-					data-action={PAGINATION_ACTION.NEXT}
-					aria-label='Next page'
-				>
-					Next →
-				</Button>
-			</div>
-		)
-	}
+	<TablePagination {tableId} {paginated} />
 </div>
 
 <script
@@ -253,14 +137,14 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 		sortable,
 		paginated,
 		initialState: JSON.stringify(initialState),
-		ATTR: JSON.stringify(ATTR),
-		PAGINATION_ACTION: JSON.stringify(PAGINATION_ACTION),
+		ATTRs: JSON.stringify(ATTR),
+		PAGINATION_ACTIONs: JSON.stringify(PAGINATION_ACTION),
 	}}
 >
 	const SORT_DIR = { ASC: 'asc', DESC: 'desc' };
 	const SORT_ICON = { UP: '↑', DOWN: '↓', DEFAULT: '↕' };
-	const ATTR = JSON.parse(ATTR);
-	const PAGINATION_ACTION = JSON.parse(PAGINATION_ACTION);
+	const ATTR = JSON.parse(ATTRs);
+	const PAGINATION_ACTION = JSON.parse(PAGINATION_ACTIONs);
 
 	function debounce(fn, delay) {
 		let timeoutId;
@@ -271,7 +155,15 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 	}
 
 	class TableController {
-		constructor() {
+		constructor(
+			tableId,
+			columns,
+			data,
+			pageSize,
+			sortable,
+			paginated,
+			initialState,
+		) {
 			this.tableId = tableId;
 			this.columns = JSON.parse(columns);
 			this.data = JSON.parse(data);
@@ -293,8 +185,8 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 				}
 				this.attachEventListeners();
 				this.render();
-			} catch (error) {
-				console.error('TableController initialization failed:', error);
+			} catch (err) {
+				// console.error('TableController initialization failed:', err);
 			}
 		}
 
@@ -312,7 +204,10 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 					`[${ATTR.SEARCH}="${this.tableId}"]`,
 				);
 				if (searchInput) {
-					searchInput.addEventListener('input', debounce((e) => this.handleSearch(e), 300));
+					searchInput.addEventListener(
+						'input',
+						debounce((e) => this.handleSearch(e), 300),
+					);
 				}
 
 				this.container
@@ -320,7 +215,9 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 					.forEach((el) => {
 						const multiSelect = el.closest('.multiselect');
 						if (multiSelect) {
-							const checkboxes = multiSelect.querySelectorAll('input[type="checkbox"]');
+							const checkboxes = multiSelect.querySelectorAll(
+								'input[type="checkbox"]',
+							);
 							checkboxes.forEach((checkbox) => {
 								checkbox.addEventListener('change', (e) => {
 									this.handleFilter({
@@ -353,8 +250,8 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 							el.addEventListener('click', (e) => this.handlePagination(e));
 						});
 				}
-			} catch (error) {
-				console.error('Error attaching event listeners:', error);
+			} catch (err) {
+				// console.error('Error attaching event listeners:', err);
 			}
 		}
 
@@ -572,8 +469,10 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 						`[${ATTR.PAGINATION}="${this.tableId}"][${ATTR.ACTION}="next"]`,
 					);
 					if (prevBtn) prevBtn.disabled = this.state.currentPage === 1;
-					if (nextBtn) nextBtn.disabled =
-						this.state.currentPage === totalPages || totalPages === 0;
+					if (nextBtn) {
+						nextBtn.disabled =
+							this.state.currentPage === totalPages || totalPages === 0;
+					}
 				}
 
 				if (this.sortable) {
@@ -591,12 +490,20 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 							}
 						});
 				}
-			} catch (error) {
-				console.error('Error rendering table:', error);
+			} catch (err) {
+				//console.error('Error rendering table:', err);
 			}
 		}
 	}
 
 	// Initialize table
-	new TableController();
+	new TableController(
+		tableId,
+		columns,
+		data,
+		pageSize,
+		sortable,
+		paginated,
+		initialState,
+	);
 </script>

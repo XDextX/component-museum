@@ -1,0 +1,41 @@
+---
+import Button from '../Button/Button.astro';
+
+interface Props {
+	tableId: string;
+	paginated?: boolean;
+}
+
+const { tableId, paginated = true } = Astro.props;
+
+const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
+---
+
+{
+	paginated && (
+		<div class='table-pagination'>
+			<Button
+				variant='outline'
+				size='sm'
+				data-table-pagination={tableId}
+				data-action={PAGINATION_ACTION.PREV}
+				aria-label='Previous page'
+			>
+				← Previous
+			</Button>
+			<div class='table-page-info' role='status' aria-live='polite'>
+				Page <span data-table-current-page={tableId}>1</span> of
+				<span data-table-total-pages={tableId}>1</span>
+			</div>
+			<Button
+				variant='outline'
+				size='sm'
+				data-table-pagination={tableId}
+				data-action={PAGINATION_ACTION.NEXT}
+				aria-label='Next page'
+			>
+				Next →
+			</Button>
+		</div>
+	)
+}

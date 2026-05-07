@@ -1,0 +1,74 @@
+---
+import type { Column } from './types';
+import Button from '../Button/Button.astro';
+import MultiSelect from '../MultiSelect/MultiSelect.astro';
+
+interface Props {
+	tableId: string;
+	columns: Column[];
+	searchable?: boolean;
+	filterable?: boolean;
+	filterSelectOptions: Record<string, Array<{ label: string; value: string }>>;
+}
+
+const { tableId, columns, searchable = true, filterable = true, filterSelectOptions } = Astro.props;
+---
+
+{
+	(searchable || filterable) && (
+		<div class='table-controls'>
+			<div class='table-controls-top'>
+				{searchable && (
+					<input
+						type='search'
+						class='table-search-input'
+						placeholder='Search...'
+						data-table-search={tableId}
+						aria-label='Search table data'
+					/>
+				)}
+				{(searchable || filterable) && (
+					<Button
+						variant='secondary'
+						size='sm'
+						data-table-clear={tableId}
+						title='Clear all filters and search'
+					>
+						Clear Filters
+					</Button>
+				)}
+			</div>
+			{filterable && (
+				<div class='table-filters'>
+					{columns.map((col) =>
+						col.filterable ? (
+							<div class='table-filter-group'>
+								<div class='table-filter-header'>
+									<label class='table-filter-label'>{col.label}</label>
+									<Button
+										variant='outline'
+										size='sm'
+										data-table-filter-clear={tableId}
+										data-column={col.key}
+										title={`Clear ${col.label} filter`}
+										class='table-filter-clear-btn'
+									>
+										✕
+									</Button>
+								</div>
+								<MultiSelect
+									options={filterSelectOptions[col.key]}
+									placeholder={`Filter by ${col.label}`}
+									variant='outline'
+									size='sm'
+									data-table-filter={tableId}
+									data-column={col.key}
+								/>
+							</div>
+						) : null,
+					)}
+				</div>
+			)}
+		</div>
+	)
+}
