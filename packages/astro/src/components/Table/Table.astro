@@ -100,23 +100,23 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 	<TablePagination {tableId} {paginated} />
 </div>
 
-<script
-	define:vars={{
-		tableId,
-		columns: JSON.stringify(columns),
-		data: JSON.stringify(data),
-		pageSize,
-		sortable,
-		paginated,
-		initialState: JSON.stringify(initialState),
-		ATTRs: JSON.stringify(ATTR),
-		PAGINATION_ACTIONs: JSON.stringify(PAGINATION_ACTION),
-	}}
->
+<script define:vars={{ tableId, columns: JSON.stringify(columns), data: JSON.stringify(data), pageSize, sortable, paginated, initialState: JSON.stringify(initialState) }}>
 	const SORT_DIR = { ASC: 'asc', DESC: 'desc' };
 	const SORT_ICON = { UP: '↑', DOWN: '↓', DEFAULT: '↕' };
-	const ATTR = JSON.parse(ATTRs);
-	const PAGINATION_ACTION = JSON.parse(PAGINATION_ACTIONs);
+	const ATTR = {
+		ID: 'data-table-id',
+		SEARCH: 'data-table-search',
+		SORT: 'data-table-sort',
+		FILTER: 'data-table-filter',
+		CLEAR: 'data-table-clear',
+		FILTER_CLEAR: 'data-table-filter-clear',
+		PAGINATION: 'data-table-pagination',
+		COLUMN: 'data-column',
+		ACTION: 'data-action',
+		CURRENT_PAGE: 'data-table-current-page',
+		TOTAL_PAGES: 'data-table-total-pages',
+	};
+	const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 
 	function debounce(fn, delay) {
 		let timeoutId;
