@@ -63,7 +63,6 @@ const {
 const tableId = `table-${Math.random().toString(36).substr(2, 9)}`;
 
 // Extract unique values for each filterable column
-const filterOptions: Record<string, string[]> = {};
 const filterSelectOptions: Record<
 	string,
 	Array<{ label: string; value: string }>
@@ -72,7 +71,6 @@ const filterSelectOptions: Record<
 columns.forEach((col) => {
 	if (col.filterable) {
 		const values = new Set(data.map((row) => String(row[col.key] || '')));
-		filterOptions[col.key] = Array.from(values).sort();
 		filterSelectOptions[col.key] = Array.from(values)
 			.sort()
 			.map((value) => ({ label: value, value }));
