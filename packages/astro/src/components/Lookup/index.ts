@@ -1,0 +1,1 @@
+export { default as Lookup } from './Lookup.astro';
