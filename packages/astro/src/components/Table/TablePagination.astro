@@ -39,3 +39,22 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 		</div>
 	)
 }
+
+<script define:vars={{ tableId }}>
+	const container = document.querySelector(`[data-table-id="${tableId}"]`);
+
+	container.querySelectorAll(`[data-table-pagination="${tableId}"]`).forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const action = btn.dataset.action;
+			container.dispatchEvent(new CustomEvent('table:pagination', { detail: { action }, bubbles: true }));
+		});
+	});
+
+	container.addEventListener('table:state-update', (e) => {
+		const { state, totalPages } = e.detail;
+		const currentPageSpan = container.querySelector(`[data-table-current-page="${tableId}"]`);
+		const totalPagesSpan = container.querySelector(`[data-table-total-pages="${tableId}"]`);
+		if (currentPageSpan) currentPageSpan.textContent = state.currentPage;
+		if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
+	});
+</script>

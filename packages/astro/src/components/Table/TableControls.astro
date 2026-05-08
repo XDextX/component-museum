@@ -12,6 +12,15 @@ interface Props {
 }
 
 const { tableId, columns, searchable = true, filterable = true, filterSelectOptions } = Astro.props;
+
+const ATTR = {
+	ID: 'data-table-id',
+	SEARCH: 'data-table-search',
+	FILTER: 'data-table-filter',
+	CLEAR: 'data-table-clear',
+	FILTER_CLEAR: 'data-table-filter-clear',
+	COLUMN: 'data-column',
+};
 ---
 
 {
@@ -72,3 +81,72 @@ const { tableId, columns, searchable = true, filterable = true, filterSelectOpti
 		</div>
 	)
 }
+
+<script define:vars={{ tableId }}>
+	function debounce(fn, delay) {
+		let timeoutId;
+		return function (...args) {
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(() => fn.apply(this, args), delay);
+		};
+	}
+
+	const container = document.querySelector(`[data-table-id="${tableId}"]`);
+
+	const searchInput = container.querySelector(`[data-table-search="${tableId}"]`);
+	if (searchInput) {
+		searchInput.addEventListener(
+			'input',
+			debounce((e) => {
+				container.dispatchEvent(new CustomEvent('table:search', { detail: e.target.value, bubbles: true }));
+			}, 300)
+		);
+	}
+
+	container.addEventListener('change', (e) => {
+		const checkbox = e.target;
+		if (checkbox.type === 'checkbox') {
+			const multiSelectDiv = checkbox.closest(`[data-table-filter="${tableId}"]`);
+			if (multiSelectDiv) {
+				const column = multiSelectDiv.dataset.column;
+				const selectedCheckboxes = multiSelectDiv.querySelectorAll('input[type="checkbox"]:checked');
+				const values = Array.from(selectedCheckboxes).map((cb) => cb.value);
+				container.dispatchEvent(
+					new CustomEvent('table:filter-change', {
+						detail: { column, values },
+						bubbles: true,
+					})
+				);
+			}
+		}
+	});
+
+	const clearBtn = container.querySelector(`[data-table-clear="${tableId}"]`);
+	if (clearBtn) {
+		clearBtn.addEventListener('click', () => {
+			container.dispatchEvent(new CustomEvent('table:clear-all', { bubbles: true }));
+			container.querySelectorAll(`[data-table-filter="${tableId}"]`).forEach((el) => {
+				const multiSelect = el.closest('.multiselect');
+				if (multiSelect) {
+					multiSelect.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+					const input = multiSelect.querySelector('.multiselect-input');
+					if (input) input.value = '';
+				}
+			});
+		});
+	}
+
+	container.querySelectorAll(`[data-table-filter-clear="${tableId}"]`).forEach((el) => {
+		el.addEventListener('click', () => {
+			const column = el.dataset.column;
+			const multiSelect = container.querySelector(`[data-table-filter="${tableId}"][data-column="${column}"]`)?.closest('.multiselect');
+			if (multiSelect) {
+				multiSelect.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+				const input = multiSelect.querySelector('.multiselect-input');
+				if (input) input.value = '';
+			}
+			container.dispatchEvent(new CustomEvent('table:clear-filter', { detail: { column }, bubbles: true }));
+		});
+	});
+</script>
+

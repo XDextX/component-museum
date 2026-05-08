@@ -8,6 +8,12 @@ interface Props {
 }
 
 const { tableId, columns, sortable = true } = Astro.props;
+
+const ATTR = {
+	ID: 'data-table-id',
+	SORT: 'data-table-sort',
+	COLUMN: 'data-column',
+};
 ---
 
 <thead>
@@ -16,7 +22,7 @@ const { tableId, columns, sortable = true } = Astro.props;
 			columns.map((col) => (
 				<th
 					class={`table-th ${sortable && col.sortable ? 'sortable' : ''}`}
-					data-table-sort={sortable && col.sortable ? tableId : undefined}
+					data-table-sort={sortable && col.sortable}
 					data-column={col.key}
 					style={col.width ? `width: ${col.width}` : ''}
 					{...(sortable && col.sortable && { 'aria-sort': 'none' })}
@@ -34,3 +40,33 @@ const { tableId, columns, sortable = true } = Astro.props;
 		}
 	</tr>
 </thead>
+
+<script define:vars={{ tableId }}>
+	const SORT_ICON = { UP: '↑', DOWN: '↓', DEFAULT: '↕' };
+	const container = document.querySelector(`[data-table-id="${tableId}"]`);
+
+	container.querySelectorAll(`[data-table-sort="${true}"]`).forEach((el) => {
+		el.addEventListener('click', () => {
+			const column = el.dataset.column;
+			container.dispatchEvent(
+				new CustomEvent('table:sort-change', { detail: { column }, bubbles: true }),
+			);
+		});
+	});
+
+	container.addEventListener('table:state-update', (e) => {
+		const { state } = e.detail;
+		container
+			.querySelectorAll(`[data-table-sort="${tableId}"] .table-sort-icon`)
+			.forEach((el) => {
+				const col = el.parentElement.parentElement.dataset.column;
+				if (col === state.sortBy) {
+					el.textContent = state.sortDir === 'asc' ? SORT_ICON.UP : SORT_ICON.DOWN;
+					el.classList.add('active');
+				} else {
+					el.textContent = SORT_ICON.DEFAULT;
+					el.classList.remove('active');
+				}
+			});
+	});
+</script>
