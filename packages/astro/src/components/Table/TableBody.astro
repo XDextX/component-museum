@@ -10,7 +10,7 @@ interface Props {
 const { tableId, columns, data } = Astro.props;
 ---
 
-<tbody data-table-id={tableId} data-table-body data-table-columns={JSON.stringify(columns)}>
+<tbody data-table-body={tableId} data-table-columns={JSON.stringify(columns)}>
 	{
 		data.length === 0 ? (
 			<tr>
@@ -34,7 +34,7 @@ const { tableId, columns, data } = Astro.props;
 	const DEBUG = false; // Cambiar a true para ver logs de debug
 
 	document.querySelectorAll('[data-table-body]').forEach((tbody) => {
-		const tableId = tbody.getAttribute('data-table-id');
+		const tableId = tbody.getAttribute('data-table-body');
 		const columnsStr = tbody.getAttribute('data-table-columns');
 
 		if (!tableId || !columnsStr) {
@@ -54,8 +54,8 @@ const { tableId, columns, data } = Astro.props;
 
 		container.addEventListener('table:state-update', (e) => {
 			if (DEBUG) console.log('📊 TableBody recibiendo actualización');
-
-			const { state, filteredData } = e.detail;
+			const event = e as CustomEvent;
+			const { state, filteredData } = event.detail;
 			const pageSize = state.pageSize;
 
 			let pageData = filteredData;
@@ -75,9 +75,9 @@ const { tableId, columns, data } = Astro.props;
 				emptyRow.appendChild(emptyCell);
 				tbody.appendChild(emptyRow);
 			} else {
-				pageData.forEach((row) => {
+				pageData.forEach((row: any) => {
 					const tr = document.createElement('tr');
-					cols.forEach((col) => {
+					cols.forEach((col: any) => {
 						const td = document.createElement('td');
 						td.className = 'table-td';
 						td.textContent = row[col.key] || '';
