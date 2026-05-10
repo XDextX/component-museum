@@ -11,21 +11,18 @@ interface Props {
 	filterSelectOptions: Record<string, Array<{ label: string; value: string }>>;
 }
 
-const { tableId, columns, searchable = true, filterable = true, filterSelectOptions } = Astro.props;
-
-const ATTR = {
-	ID: 'data-table-id',
-	SEARCH: 'data-table-search',
-	FILTER: 'data-table-filter',
-	CLEAR: 'data-table-clear',
-	FILTER_CLEAR: 'data-table-filter-clear',
-	COLUMN: 'data-column',
-};
+const {
+	tableId,
+	columns,
+	searchable = true,
+	filterable = true,
+	filterSelectOptions,
+} = Astro.props;
 ---
 
 {
 	(searchable || filterable) && (
-		<div class='table-controls'>
+		<div class='table-controls' data-table-controls={tableId}>
 			<div class='table-controls-top'>
 				{searchable && (
 					<input
@@ -82,71 +79,129 @@ const ATTR = {
 	)
 }
 
-<script define:vars={{ tableId }}>
-	function debounce(fn, delay) {
-		let timeoutId;
-		return function (...args) {
+<script>
+	const DEBUG = true; // Cambiar a true para ver logs de debug
+
+	function debounce(fn: Function, delay: number) {
+		let timeoutId: number;
+		return function (...args: any[]) {
 			clearTimeout(timeoutId);
-			timeoutId = setTimeout(() => fn.apply(this, args), delay);
+			timeoutId = setTimeout(() => fn.apply(args), delay);
 		};
 	}
 
-	const container = document.querySelector(`[data-table-id="${tableId}"]`);
+	document.querySelectorAll('[data-table-controls]').forEach((controls) => {
+		const tableId = controls.getAttribute('data-table-controls');
+		if (!tableId) return;
 
-	const searchInput = container.querySelector(`[data-table-search="${tableId}"]`);
-	if (searchInput) {
-		searchInput.addEventListener(
-			'input',
-			debounce((e) => {
-				container.dispatchEvent(new CustomEvent('table:search', { detail: e.target.value, bubbles: true }));
-			}, 300)
-		);
-	}
+		if (DEBUG) console.log('🎛️ TableControls inicializando para tabla:', tableId);
 
-	container.addEventListener('change', (e) => {
-		const checkbox = e.target;
-		if (checkbox.type === 'checkbox') {
-			const multiSelectDiv = checkbox.closest(`[data-table-filter="${tableId}"]`);
-			if (multiSelectDiv) {
-				const column = multiSelectDiv.dataset.column;
-				const selectedCheckboxes = multiSelectDiv.querySelectorAll('input[type="checkbox"]:checked');
-				const values = Array.from(selectedCheckboxes).map((cb) => cb.value);
-				container.dispatchEvent(
-					new CustomEvent('table:filter-change', {
-						detail: { column, values },
-						bubbles: true,
-					})
-				);
-			}
+		const container = document.querySelector(`[data-table-id="${tableId}"]`);
+		if (!container) {
+			if (DEBUG) console.warn('⚠️ Contenedor no encontrado para tabla:', tableId);
+			return;
 		}
-	});
 
-	const clearBtn = container.querySelector(`[data-table-clear="${tableId}"]`);
-	if (clearBtn) {
-		clearBtn.addEventListener('click', () => {
-			container.dispatchEvent(new CustomEvent('table:clear-all', { bubbles: true }));
-			container.querySelectorAll(`[data-table-filter="${tableId}"]`).forEach((el) => {
-				const multiSelect = el.closest('.multiselect');
-				if (multiSelect) {
-					multiSelect.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-					const input = multiSelect.querySelector('.multiselect-input');
-					if (input) input.value = '';
+		const searchInput = controls.querySelector(
+			`[data-table-search="${tableId}"]`,
+		);
+		if (searchInput) {
+			if (DEBUG) console.log('🔍 Search input encontrado');
+			searchInput.addEventListener(
+				'input',
+				debounce((e: any) => {
+					if (DEBUG) console.log('🔍 Search input event:', e.target.value);
+					container.dispatchEvent(
+						new CustomEvent('table:search', {
+							detail: e.target.value,
+							bubbles: true,
+						}),
+					);
+				}, 300),
+			);
+		}
+
+		controls.addEventListener('change', (e) => {
+			const checkbox = e.target;
+			if (checkbox instanceof HTMLInputElement && checkbox.type === 'checkbox') {
+				const multiSelectDiv = checkbox.closest(`[data-table-filter="${tableId}"]`);
+				if (multiSelectDiv) {
+					if (DEBUG) console.log('🔘 Filtro cambiado');
+					const column = multiSelectDiv.getAttribute('data-column');
+					const selectedCheckboxes = multiSelectDiv.querySelectorAll(
+						'input[type="checkbox"]:checked',
+					);
+					const values = Array.from(selectedCheckboxes).map(
+						(cb) => (cb as HTMLInputElement).value,
+					);
+					container.dispatchEvent(
+						new CustomEvent('table:filter-change', {
+							detail: { column, values },
+							bubbles: true,
+						}),
+					);
 				}
-			});
-		});
-	}
-
-	container.querySelectorAll(`[data-table-filter-clear="${tableId}"]`).forEach((el) => {
-		el.addEventListener('click', () => {
-			const column = el.dataset.column;
-			const multiSelect = container.querySelector(`[data-table-filter="${tableId}"][data-column="${column}"]`)?.closest('.multiselect');
-			if (multiSelect) {
-				multiSelect.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
-				const input = multiSelect.querySelector('.multiselect-input');
-				if (input) input.value = '';
 			}
-			container.dispatchEvent(new CustomEvent('table:clear-filter', { detail: { column }, bubbles: true }));
 		});
+
+		const clearBtn = controls.querySelector(`[data-table-clear="${tableId}"]`);
+		if (clearBtn) {
+			if (DEBUG) console.log('🧹 Clear button encontrado');
+			clearBtn.addEventListener('click', () => {
+				if (DEBUG) console.log('🧹 Clear all clicked');
+				container.dispatchEvent(
+					new CustomEvent('table:clear-all', { bubbles: true }),
+				);
+				controls
+					.querySelectorAll(`[data-table-filter="${tableId}"]`)
+					.forEach((el) => {
+						const multiSelect = el.closest('.multiselect');
+						if (multiSelect) {
+							multiSelect.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+								if (cb instanceof HTMLInputElement) {
+									cb.checked = false;
+								}
+							});
+							const input = multiSelect.querySelector(
+								'.multiselect-input',
+							) as HTMLInputElement | null;
+							if (input) input.value = '';
+						}
+					});
+			});
+		}
+
+		controls
+			.querySelectorAll(`[data-table-filter-clear="${tableId}"]`)
+			.forEach((el) => {
+				el.addEventListener('click', () => {
+					const column = el.getAttribute('data-column');
+					if (DEBUG) console.log('❌ Clear filter clicked para columna:', column);
+					const multiSelect = controls
+						.querySelector(
+							`[data-table-filter="${tableId}"][data-column="${column}"]`,
+						)
+						?.closest('.multiselect');
+					if (multiSelect) {
+						multiSelect.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+							if (cb instanceof HTMLInputElement) {
+								cb.checked = false;
+							}
+						});
+						const input = multiSelect.querySelector(
+							'.multiselect-input',
+						) as HTMLInputElement | null;
+						if (input) input.value = '';
+					}
+					container.dispatchEvent(
+						new CustomEvent('table:clear-filter', {
+							detail: { column },
+							bubbles: true,
+						}),
+					);
+				});
+			});
+
+		if (DEBUG) console.log('✨ TableControls inicializado correctamente');
 	});
 </script>
-
