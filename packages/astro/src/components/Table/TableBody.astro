@@ -30,42 +30,64 @@ const { tableId, columns, data } = Astro.props;
 	}
 </tbody>
 
-<script define:vars={{ tableId, columns: JSON.stringify(columns) }}>
-	const container = document.querySelector(`[data-table-id="${tableId}"]`);
-	const cols = JSON.parse(columns);
+<script>
+	const DEBUG = false; // Cambiar a true para ver logs de debug
 
-	container.addEventListener('table:state-update', (e) => {
-		const { state, filteredData } = e.detail;
-		const pageSize = state.pageSize;
+	document.querySelectorAll('[data-table-body]').forEach((tbody) => {
+		const tableId = tbody.getAttribute('data-table-id');
+		const columnsStr = tbody.getAttribute('data-table-columns');
 
-		let pageData = filteredData;
-		if (filteredData.length > 0) {
-			const start = (state.currentPage - 1) * pageSize;
-			pageData = filteredData.slice(start, start + pageSize);
+		if (!tableId || !columnsStr) {
+			if (DEBUG) console.warn('⚠️ Faltan atributos en TableBody');
+			return;
 		}
 
-		const tbody = container.querySelector('tbody');
-		tbody.innerHTML = '';
+		if (DEBUG) console.log('📊 TableBody inicializando para tabla:', tableId);
 
-		if (pageData.length === 0) {
-			const emptyRow = document.createElement('tr');
-			const emptyCell = document.createElement('td');
-			emptyCell.setAttribute('colspan', cols.length);
-			emptyCell.className = 'table-empty';
-			emptyCell.textContent = 'No data available';
-			emptyRow.appendChild(emptyCell);
-			tbody.appendChild(emptyRow);
-		} else {
-			pageData.forEach((row) => {
-				const tr = document.createElement('tr');
-				cols.forEach((col) => {
-					const td = document.createElement('td');
-					td.className = 'table-td';
-					td.textContent = row[col.key] || '';
-					tr.appendChild(td);
+		const container = document.querySelector(`[data-table-id="${tableId}"]`);
+		if (!container) {
+			if (DEBUG) console.warn('⚠️ Contenedor no encontrado');
+			return;
+		}
+
+		const cols = JSON.parse(columnsStr);
+
+		container.addEventListener('table:state-update', (e) => {
+			if (DEBUG) console.log('📊 TableBody recibiendo actualización');
+
+			const { state, filteredData } = e.detail;
+			const pageSize = state.pageSize;
+
+			let pageData = filteredData;
+			if (filteredData.length > 0) {
+				const start = (state.currentPage - 1) * pageSize;
+				pageData = filteredData.slice(start, start + pageSize);
+			}
+
+			tbody.innerHTML = '';
+
+			if (pageData.length === 0) {
+				const emptyRow = document.createElement('tr');
+				const emptyCell = document.createElement('td');
+				emptyCell.setAttribute('colspan', String(cols.length));
+				emptyCell.className = 'table-empty';
+				emptyCell.textContent = 'No data available';
+				emptyRow.appendChild(emptyCell);
+				tbody.appendChild(emptyRow);
+			} else {
+				pageData.forEach((row) => {
+					const tr = document.createElement('tr');
+					cols.forEach((col) => {
+						const td = document.createElement('td');
+						td.className = 'table-td';
+						td.textContent = row[col.key] || '';
+						tr.appendChild(td);
+					});
+					tbody.appendChild(tr);
 				});
-				tbody.appendChild(tr);
-			});
-		}
+			}
+		});
+
+		if (DEBUG) console.log('✨ TableBody inicializado correctamente');
 	});
 </script>
