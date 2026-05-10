@@ -41,25 +41,46 @@ const ATTR = {
 	</tr>
 </thead>
 
-<script define:vars={{ tableId }}>
+<script>
 	const SORT_ICON = { UP: '↑', DOWN: '↓', DEFAULT: '↕' };
-	const container = document.querySelector(`[data-table-id="${tableId}"]`);
+	const DEBUG = false; // Cambiar a true para ver logs de debug
 
-	container.querySelectorAll(`[data-table-sort="${true}"]`).forEach((el) => {
-		el.addEventListener('click', () => {
-			const column = el.dataset.column;
-			container.dispatchEvent(
-				new CustomEvent('table:sort-change', { detail: { column }, bubbles: true }),
-			);
+	document.querySelectorAll('[data-table-header]').forEach((thead) => {
+		const tableId = thead.getAttribute('data-table-id');
+
+		if (!tableId) {
+			if (DEBUG) console.warn('⚠️ Falta tableId en TableHeader');
+			return;
+		}
+
+		if (DEBUG) console.log('↕️ TableHeader inicializando para tabla:', tableId);
+
+		const container = document.querySelector(`[data-table-id="${tableId}"]`);
+		if (!container) {
+			if (DEBUG) console.warn('⚠️ Contenedor no encontrado');
+			return;
+		}
+
+		thead.querySelectorAll(`[data-table-sortable="${tableId}"]`).forEach((el) => {
+			el.addEventListener('click', () => {
+				const column = el.getAttribute('data-column');
+				if (DEBUG) console.log('↕️ Sort clicked en columna:', column);
+				container.dispatchEvent(
+					new CustomEvent('table:sort-change', {
+						detail: { column },
+						bubbles: true,
+					}),
+				);
+			});
 		});
-	});
 
-	container.addEventListener('table:state-update', (e) => {
-		const { state } = e.detail;
-		container
-			.querySelectorAll(`[data-table-sort="${tableId}"] .table-sort-icon`)
-			.forEach((el) => {
-				const col = el.parentElement.parentElement.dataset.column;
+		container.addEventListener('table:state-update', (e) => {
+			if (DEBUG) console.log('↕️ TableHeader recibiendo actualización');
+			const { state } = e.detail;
+			thead.querySelectorAll('.table-sort-icon').forEach((el) => {
+				const th = el.closest('th');
+				if (!th) return;
+				const col = th.getAttribute('data-column');
 				if (col === state.sortBy) {
 					el.textContent = state.sortDir === 'asc' ? SORT_ICON.UP : SORT_ICON.DOWN;
 					el.classList.add('active');
@@ -68,5 +89,8 @@ const ATTR = {
 					el.classList.remove('active');
 				}
 			});
+		});
+
+		if (DEBUG) console.log('✨ TableHeader inicializado correctamente');
 	});
 </script>
