@@ -30,7 +30,7 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 			<Button
 				variant='outline'
 				size='sm'
-				data-table-pagination={tableId}
+				data-pagination-action={tableId}
 				data-action={PAGINATION_ACTION.NEXT}
 				aria-label='Next page'
 			>
@@ -40,21 +40,44 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 	)
 }
 
-<script define:vars={{ tableId }}>
-	const container = document.querySelector(`[data-table-id="${tableId}"]`);
+<script>
+	const DEBUG = false; // Cambiar a true para ver logs de debug
 
-	container.querySelectorAll(`[data-table-pagination="${tableId}"]`).forEach((btn) => {
-		btn.addEventListener('click', () => {
-			const action = btn.dataset.action;
-			container.dispatchEvent(new CustomEvent('table:pagination', { detail: { action }, bubbles: true }));
+	document.querySelectorAll('[data-table-pagination]').forEach((pagination) => {
+		const tableId = pagination.getAttribute('data-table-id');
+
+		if (!tableId) {
+			if (DEBUG) console.warn('⚠️ Falta tableId en TablePagination');
+			return;
+		}
+
+		if (DEBUG) console.log('📄 TablePagination inicializando para tabla:', tableId);
+
+		const container = document.querySelector(`[data-table-id="${tableId}"]`);
+		if (!container) {
+			if (DEBUG) console.warn('⚠️ Contenedor no encontrado');
+			return;
+		}
+
+		pagination.querySelectorAll(`[data-pagination-action="${tableId}"]`).forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const action = btn.getAttribute('data-action');
+				if (DEBUG) console.log('📄 Pagination action:', action);
+				container.dispatchEvent(
+					new CustomEvent('table:pagination', { detail: { action }, bubbles: true }),
+				);
+			});
 		});
-	});
 
-	container.addEventListener('table:state-update', (e) => {
-		const { state, totalPages } = e.detail;
-		const currentPageSpan = container.querySelector(`[data-table-current-page="${tableId}"]`);
-		const totalPagesSpan = container.querySelector(`[data-table-total-pages="${tableId}"]`);
-		if (currentPageSpan) currentPageSpan.textContent = state.currentPage;
-		if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
+		container.addEventListener('table:state-update', (e) => {
+			if (DEBUG) console.log('📄 TablePagination recibiendo actualización');
+			const { state, totalPages } = e.detail;
+			const currentPageSpan = pagination.querySelector(`[data-table-current-page="${tableId}"]`);
+			const totalPagesSpan = pagination.querySelector(`[data-table-total-pages="${tableId}"]`);
+			if (currentPageSpan) currentPageSpan.textContent = String(state.currentPage);
+			if (totalPagesSpan) totalPagesSpan.textContent = String(totalPages);
+		});
+
+		if (DEBUG) console.log('✨ TablePagination inicializado correctamente');
 	});
 </script>
