@@ -10,7 +10,7 @@ interface Props {
 const { tableId, columns, data } = Astro.props;
 ---
 
-<tbody>
+<tbody data-table-id={tableId} data-table-body data-table-columns={JSON.stringify(columns)}>
 	{
 		data.length === 0 ? (
 			<tr>

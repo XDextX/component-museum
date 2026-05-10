@@ -16,13 +16,13 @@ const ATTR = {
 };
 ---
 
-<thead>
+<thead data-table-id={tableId} data-table-header data-sortable={sortable}>
 	<tr>
 		{
 			columns.map((col) => (
 				<th
 					class={`table-th ${sortable && col.sortable ? 'sortable' : ''}`}
-					data-table-sort={sortable && col.sortable}
+					data-table-sortable={sortable && col.sortable ? tableId : undefined}
 					data-column={col.key}
 					style={col.width ? `width: ${col.width}` : ''}
 					{...(sortable && col.sortable && { 'aria-sort': 'none' })}

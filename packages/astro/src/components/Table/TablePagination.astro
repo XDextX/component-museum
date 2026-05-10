@@ -13,11 +13,11 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 
 {
 	paginated && (
-		<div class='table-pagination'>
+		<div class='table-pagination' data-table-id={tableId} data-table-pagination>
 			<Button
 				variant='outline'
 				size='sm'
-				data-table-pagination={tableId}
+				data-pagination-action={tableId}
 				data-action={PAGINATION_ACTION.PREV}
 				aria-label='Previous page'
 			>
