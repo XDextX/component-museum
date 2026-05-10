@@ -1,6 +1,5 @@
 ---
 import type { Column, TableState } from './types';
-import { TableStateManager } from './TableStateManager.js';
 import TableControls from './TableControls.astro';
 import TableHeader from './TableHeader.astro';
 import TableBody from './TableBody.astro';
@@ -122,7 +121,7 @@ const ATTR = {
 		TOTAL_PAGES: 'data-table-total-pages',
 	};
 
-	import { TableStateManager } from './TableStateManager.js';
+	import { TableStateManager } from '../../TableStateManager.js';
 
 	const container = document.querySelector(`[${ATTR.ID}="${tableId}"]`);
 
