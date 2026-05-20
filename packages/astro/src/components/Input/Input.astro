@@ -33,4 +33,16 @@ const finalClass = `input ${sizeClass} ${variantClass} ${stateClass} ${className
 	disabled={disabled}
 	class={finalClass}
 	{...rest}
+	data-input-id={Math.random().toString(36).substr(2, 9)}
 />
+<script>
+	import { InputController } from './InputController.mts';
+
+	document.querySelectorAll('[data-input-id]').forEach((input) => {
+		if (input instanceof HTMLInputElement) {
+			new InputController(input);
+		} else {
+			console.warn('⚠️ No se encontró input para multiselect');
+		}
+	});
+</script>
