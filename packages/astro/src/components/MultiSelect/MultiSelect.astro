@@ -1,6 +1,7 @@
 ---
 import type { Option } from './types';
 import Checkbox from '../Checkbox/Checkbox.astro';
+import { Input } from '../Input';
 
 interface Props {
 	options: Option[];
@@ -33,7 +34,7 @@ const multiSelectId = `multiselect-${Math.random().toString(36).substr(2, 9)}`;
 
 <div class={finalClass} data-multiselect-id={multiSelectId} {...rest}>
 	<div class='multiselect-input-wrapper'>
-		<input
+		<Input
 			type='text'
 			class='multiselect-input'
 			placeholder={placeholder}
