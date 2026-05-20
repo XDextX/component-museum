@@ -9,7 +9,6 @@ interface Props {
 	size?: 'sm' | 'md' | 'lg';
 	variant?: 'outline' | 'filled' | 'underline';
 	state?: 'default' | 'success' | 'error' | 'warning';
-	resizable?: boolean;
 	class?: string;
 	[key: string]: any;
 }
@@ -21,7 +20,6 @@ const {
 	size = 'md',
 	variant = 'outline',
 	state = 'default',
-	resizable = false,
 	class: className = '',
 	...rest
 } = Astro.props as Props;
@@ -54,11 +52,7 @@ const multiSelectId = `multiselect-${Math.random().toString(36).substr(2, 9)}`;
 		</button>
 	</div>
 
-	<div
-		class='multiselect-dropdown'
-		data-multiselect-dropdown={multiSelectId}
-		data-resizable={resizable}
-	>
+	<div class='multiselect-dropdown' data-multiselect-dropdown={multiSelectId}>
 		{
 			options.map((option) => (
 				<div class='multiselect-option'>
