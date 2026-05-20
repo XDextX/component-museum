@@ -32,6 +32,8 @@ const finalClass = `checkbox ${variantClass} ${stateClass} ${className}`;
 		class={finalClass}
 		checked={checked}
 		disabled={disabled}
+		data-checkbox-id={checkboxId}
+		data-checkbox-label={label}
 		{...rest}
 	/>
 	{
@@ -42,3 +44,14 @@ const finalClass = `checkbox ${variantClass} ${stateClass} ${className}`;
 		)
 	}
 </div>
+<script>
+	import { CheckboxController } from './CheckboxController';
+
+	document.querySelectorAll('[data-checkbox-id]').forEach((checkbox) => {
+		if (checkbox instanceof HTMLInputElement) {
+			new CheckboxController(checkbox);
+		} else {
+			console.warn('⚠️ No se encontró checkbox para multiselect');
+		}
+	});
+</script>
