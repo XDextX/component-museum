@@ -1,6 +1,5 @@
 import { ComponentController } from "../../lib/ComponentController";
-import EVENTS from "../../lib/events";
-import { debug } from "../Table/TableControls";
+import EVENTS, { type InputDetail } from "../../lib/events";
 
 export class InputController extends ComponentController {
     constructor(input: HTMLInputElement) {
@@ -21,16 +20,15 @@ export class InputController extends ComponentController {
             this.senseInput();
         });
         this.container.addEventListener(EVENTS.MUSEUM.INPUT.CHANGE, (e) => {
-            debug('log', 'cambio en input:', e);
-            this.input.value = (e as CustomEvent).detail?.value || '';
+            this.input.value = (e as CustomEvent<InputDetail>).detail.value;
             this.senseInput();
         });
     }
 
     private senseInput() {
-        this.emmit(EVENTS.MUSEUM.INPUT.INPUT, {
+        this.emmit<{ detail: InputDetail }>(EVENTS.MUSEUM.INPUT.INPUT, {
             detail: {
-                inputId: this.inputId,
+                inputId: this.inputId!,
                 value: this.input.value,
             },
         });
