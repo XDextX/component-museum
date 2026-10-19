@@ -1287,6 +1287,14 @@
     @apply text-blue-600;
   }
 
+  .multiselect-clear {
+    @apply absolute right-8 px-2 py-1 text-gray-600 hover:text-red-600 bg-transparent border-0 cursor-pointer transition-colors text-xs;
+  }
+
+  .multiselect-clear:disabled {
+    @apply opacity-50 cursor-not-allowed hover:text-gray-600;
+  }
+
   .multiselect-dropdown {
     @apply absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden z-50;
   }

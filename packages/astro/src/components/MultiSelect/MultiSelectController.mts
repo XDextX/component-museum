@@ -4,103 +4,91 @@ import EVENTS, { type CheckboxDetail } from "../../lib/events";
 export class MultiSelectController extends ComponentController {
     constructor(container: HTMLElement) {
         super(container);
-        this.container = container
-        this.input = this.getElement<HTMLInputElement>(`[data-multiselect-display]`);
-        if (!this.input) {
+        const input = this.getElement<HTMLInputElement>(`[data-multiselect-display]`);
+        if (!input) {
             console.warn('⚠️ No se encontró input para multiselect');
             return;
         }
-        this.dropdown = this.getElement(`[data-multiselect-dropdown]`);
-        if (!this.dropdown) {
+        const dropdown = this.getElement(`[data-multiselect-dropdown]`);
+        if (!dropdown) {
             console.warn('⚠️ No se encontró dropdown para multiselect');
             return;
         }
+        this.input = input;
+        this.dropdown = dropdown;
         this.toggleBtn = this.getElement(`[data-multiselect-toggle]`);
+        this.clearBtn = this.getElement(`[data-multiselect-clear]`);
+        this.options = this.getElements<HTMLInputElement>(`[data-multiselect-checkbox]`)
+            .entries()
+            .toArray()
+            .map(([index, checkbox]) => checkbox);
         this.init();
-        this.DEBUG = true;
+        this.DEBUG = false;
     }
     private input: HTMLInputElement | null = null;
     private dropdown: HTMLElement | null = null;
     private toggleBtn: HTMLButtonElement | null = null;
+    private clearBtn: HTMLButtonElement | null = null;
     private value: string = "";
     private displayValue: string = "";
+    private options: HTMLInputElement[] = [];
 
 
     init() {
 
         this.container.addEventListener(EVENTS.MUSEUM.CHECKBOX.CHANGE, (e) => {
             const { detail } = e as CustomEvent<CheckboxDetail>;
-            this.updateInput(detail);
             this.updateValue(detail);
         });
         this.container.addEventListener(EVENTS.MUSEUM.MULTISELECT.CLEAR, () => {
-            this.value = '';
-            this.displayValue = '';
-            this.updateInput({ value: '', label: '' });
-            this.updateValue({ value: '', label: '' });
+            this.clear();
         });
         this.input?.addEventListener('click', () => this.toggleDropdown());
         this.toggleBtn?.addEventListener('click', () => this.toggleDropdown());
+        this.clearBtn?.addEventListener('click', () => this.clear());
         document.addEventListener('click', (e) => this.handleOutsideClick(e));
-        // this.updateInput();
     }
-    updateValue(e: Partial<CheckboxDetail>) {
+    private clear() {
+        this.options.forEach((option) => {
+            this.trigger(option, EVENTS.MUSEUM.CHECKBOX.CLEAR);
+        });
+        this.value = '';
+        this.displayValue = '';
+        this.updateValue({ value: '', label: '' });
+    }
+
+    private updateValue(e: Partial<CheckboxDetail>) {
         let value = this.value.split(',').filter((v) => v !== '');
         if (e.checked) {
             value.push(e.label!);
         } else {
-            this.debug("log", e)
             value = value.filter((v) => v !== e.label);
         }
         this.value = value.join(',');
+        this.displayValue = value.join(',');
+        // The display input shows the selection; the Input controller sets its value.
+        if (this.input) this.trigger(this.input, EVENTS.MUSEUM.INPUT.CHANGE, { detail: { value: this.displayValue } });
         this.emmit(EVENTS.MUSEUM.MULTISELECT.CHANGE, {
             detail: {
-                value: this.value.split(',').filter((v) => v !== ''),
+                value: value,
                 display: this.displayValue,
             },
         });
     }
-
-    toggleDropdown() {
+    private toggleDropdown() {
         this.dropdown?.classList.toggle('multiselect-dropdown-open');
         this.toggleBtn?.classList.toggle('multiselect-toggle-open');
     }
 
-    closeDropdown() {
+    private closeDropdown() {
         this.dropdown?.classList.remove('multiselect-dropdown-open');
         this.toggleBtn?.classList.remove('multiselect-toggle-open');
     }
 
-    updateInput(e: Partial<CheckboxDetail>) {
-        if (!this.input) return;
-        let value = this.input.value.split(',').filter((v) => v !== '');
-        if (value) {
-            if (e.checked) {
-                value.push(e.label!);
-            } else {
-                this.debug("log", e)
-                value = value.filter((v) => v !== e.label);
-            }
-        }
 
-        this.displayValue = value.join(',');
-        this.trigger(this.input, EVENTS.MUSEUM.INPUT.CHANGE, {
-            detail: {
-                value: this.displayValue,
-            },
-        });
-
-    }
-
-    handleOutsideClick(e: PointerEvent) {
+    private handleOutsideClick(e: PointerEvent) {
         if (!this.container?.contains(e.target as Node)) {
             this.closeDropdown();
         }
-    }
-    getElement<T extends HTMLElement>(selector: string): T | null {
-        return this.container?.querySelector(selector) as T;
-    }
-    getElements<T extends HTMLElement>(selector: string): NodeListOf<T> {
-        return this.container?.querySelectorAll(selector) as NodeListOf<T>;
     }
 }

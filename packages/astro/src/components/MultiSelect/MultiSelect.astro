@@ -43,6 +43,15 @@ const multiSelectId = `multiselect-${Math.random().toString(36).substr(2, 9)}`;
 			data-multiselect-display={multiSelectId}
 		/>
 		<button
+			class='multiselect-clear'
+			data-multiselect-clear={multiSelectId}
+			disabled={disabled}
+			aria-label='Clear selection'
+			type='button'
+		>
+			✕
+		</button>
+		<button
 			class='multiselect-toggle'
 			data-multiselect-toggle={multiSelectId}
 			disabled={disabled}
