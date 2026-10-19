@@ -22,6 +22,9 @@ de `Memory.md` lo decide el agente.
 - **La plantilla de spec y sus reglas viven en la skill `sdd`**, `.agents/skills/sdd/SKILL.md` — la
   única copia. Está en `.gitignore`, así que vive en cada máquina.
 - **Cada RF lleva el check que lo zanja.** Un requisito sin check es prosa que parece cobertura.
+- **Varias specs forman una entrega, y cada spec declara a cuál pertenece.** Cada spec se aprueba,
+  se implementa y se valida sola, pero la entrega solo se cierra, se mergea a `main` y se publica
+  en npm cuando la constitución se cumple entera, regla 5 incluida.
 - **Una spec nunca pasa por encima de la constitución ni de este archivo.** Una contradicción es el
   hallazgo: se resuelve primero en esos dos archivos y luego en el código.
 - **Cita la spec en los commits que produce.**

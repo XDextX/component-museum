@@ -5,7 +5,9 @@ Changed: 2026-10-19 · traducción al español y enmienda de la regla 10 · regl
 términos genéricos tras el reinicio (los nombres concretos, pendientes de la spec de
 arquitectura).
 Changed: 2026-10-19 · enmiendas de las reglas 5 (excepción temporal para Astro en Storybook) y
-10 (historias en español e inglés) · spec 003
+10 (historias en español e inglés) · spec de la galería
+Changed: 2026-10-19 · regla 10: su check cita el test de idiomas de las historias, sin número
+de spec · cambio de referencia, no de sentido
 
 **Propósito.** Este repo es el único hogar de los componentes con los que el dueño construye
 otros proyectos. Cada componente se publica como un paquete por cada framework que soporta, de
@@ -60,4 +62,4 @@ desarrolla y cede ante ellas en cualquier conflicto.
     versionado. Los documentos — esta constitución, `AGENTS.md`, las specs, los planes y las
     tareas — están en español; la documentación de las historias de la galería, de cara al
     público, en español y en inglés; el código y sus comentarios, en inglés. *Check:*
-    `git ls-files .env` está vacío; el test de idiomas de la spec 003; leer el diff.
+    `git ls-files .env` está vacío; el test de idiomas de las historias; leer el diff.
