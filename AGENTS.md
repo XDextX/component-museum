@@ -1,82 +1,92 @@
 # AGENTS.md
 
-Working rules, and nothing else. **A line that describes what the repo _is_ — an inventory, a
-lookup table, a how-to, a story — does not belong here.** A rule carries the failure it prevents
-whenever one is what makes it obeyable.
+Reglas de trabajo, y nada más. **Una línea que describe lo que el repo _es_ — un inventario, una
+tabla de consulta, un tutorial, una historia — no va aquí.** Una regla lleva el fallo que evita
+siempre que sea eso lo que la hace cumplible.
 
-**`docs/constitution.md` outranks this file.** It holds the non-negotiable rules and is never
-restated here. `docs/incidents.md` holds the history behind them.
+**`docs/constitution.md` manda sobre este archivo.** Contiene las reglas innegociables y nunca se
+repiten aquí. `docs/incidents.md` guarda la historia que hay detrás de ellas.
 
-**Language.** Every repo document is English, specs and JSDoc included; `Memory.md` is the agent's
-call.
+**Idioma.** Todo documento del repo está en español: la constitución, este archivo, las specs,
+los planes y las tareas. El código y sus comentarios, JSDoc incluido, están en inglés. El idioma
+de `Memory.md` lo decide el agente.
 
-## Workflow
+## Flujo de trabajo
 
-### Before writing code
+### Antes de escribir código
 
-- **A feature or a refactor starts with a spec**, in `specs/NNN-<name>/spec.md`. Read the
-  constitution and the active spec first.
-- A typo, a rename, a comment or a formatting fix does not need a spec. When it is not clear which
-  one a change is, **ask**.
-- **The spec template and its rules live in the `sdd` skill**, `.agents/skills/sdd/SKILL.md` — the
-  only copy. It is gitignored, so it lives per machine.
-- **Every RF carries the check that settles it.** A requirement with no check is prose that reads
-  like coverage.
-- **A spec never overrides the constitution or this file.** A contradiction is the finding: resolve
-  it in those two files first, then in the code.
-- **Reference the spec in the commits it produces.**
+- **Una funcionalidad o un refactor empieza con una spec**, en `specs/NNN-<nombre>/spec.md`. Lee
+  antes la constitución y la spec activa.
+- Una errata, un renombre, un comentario o un arreglo de formato no necesita spec. Cuando no está
+  claro cuál de los dos es un cambio, **pregunta**.
+- **La plantilla de spec y sus reglas viven en la skill `sdd`**, `.agents/skills/sdd/SKILL.md` — la
+  única copia. Está en `.gitignore`, así que vive en cada máquina.
+- **Cada RF lleva el check que lo zanja.** Un requisito sin check es prosa que parece cobertura.
+- **Una spec nunca pasa por encima de la constitución ni de este archivo.** Una contradicción es el
+  hallazgo: se resuelve primero en esos dos archivos y luego en el código.
+- **Cita la spec en los commits que produce.**
 
-### Verifying
+### Verificar
 
-- **There is no test runner yet.** Until one is chosen by its own spec, a change is verified by
-  building the touched package (`npm run build --workspace=<package>`) and opening every touched
-  docs page from a running dev server (`npm run dev`) — say which pages were opened.
-- **Validating a spec covers its non-functional requirements and edge cases, not only its RFs.**
-- **The working tree is CRLF.** Normalise before matching an anchor, or the probe finds nothing.
+- **Todavía no hay runner de tests.** Hasta que una spec propia elija uno, un cambio se verifica
+  compilando el paquete tocado y abriendo cada página de la galería tocada desde un servidor de
+  desarrollo en marcha — di qué páginas abriste. (Los comandos, pendientes de la spec de
+  arquitectura.)
+- **Validar una spec cubre sus requisitos no funcionales y sus casos límite, no solo sus RF.**
+- **El árbol de trabajo es CRLF.** Normaliza antes de buscar un ancla, o la sonda no encuentra
+  nada.
 
-### Visual work, one component at a time
+### Trabajo visual, un componente cada vez
 
-1. Change **one** component. Show it in both themes when the docs site has two.
-2. **Stop and wait for approval.** Do not commit an unapproved component, do not start the next.
-3. On approval, commit that component, then move on.
+1. Cambia **un** componente. Enséñalo en los dos temas cuando la galería tenga dos.
+2. **Para y espera la aprobación.** No hagas commit de un componente sin aprobar, no empieces el
+   siguiente.
+3. Con la aprobación, haz commit de ese componente y pasa al siguiente.
 
-### Before showing a proposal
+### Antes de enseñar una propuesta
 
-- **Re-read each proposal as a senior reviewer** looking for inconsistency and contradiction, and
-  say plainly what that turned up.
-- **Prefer a number to an adjective, and say which one you have.**
+- **Relee cada propuesta como un revisor sénior** que busca incoherencias y contradicciones, y di
+  claramente qué encontraste.
+- **Prefiere un número a un adjetivo, y di cuál tienes.**
 
-### Commands
+### Comandos
 
-- **Do not run `npx astro check`** until a spec decides type-checking is part of the policy.
-- **Do not add a linter, formatter or test runner to make a check pass** — constitution 5.
+- **No ejecutes el comprobador de tipos** hasta que una spec decida que la comprobación de tipos
+  forma parte de la política.
+- **No añadas un linter, un formateador ni un runner de tests para que pase un check** —
+  constitución, regla 9.
 
 ### Git
 
-- **NEVER push. NEVER commit unless asked.** Finishing a task does not imply committing.
-- **Commits follow Conventional Commits** (`feat:`, `fix:`, `docs:`, `refactor:`…), which
-  `sui-mono changelog` and `release` read to version the packages.
-- **A new spec is drafted from `main`, and gets its own branch once approved**: `spec/NNN-<name>`.
-- `AGENTS.md` and `docs/constitution.md` get their own `docs:` commit.
-- **`git checkout -- .` destroys uncommitted work silently.** Revert explicit paths only.
-- **`bloque/` is scratch and never tracked.**
+- **NUNCA hagas push. NUNCA hagas commit si no te lo piden.** Terminar una tarea no implica hacer
+  commit.
+- **Los commits siguen Conventional Commits** (`feat:`, `fix:`, `docs:`, `refactor:`…), que la
+  herramienta de changelog y versionado lee para versionar los paquetes (cuál, pendiente de la
+  spec de arquitectura).
+- **Una spec nueva se redacta desde `main`, y tiene su propia rama una vez aprobada**:
+  `spec/NNN-<nombre>`.
+- `AGENTS.md` y `docs/constitution.md` van en su propio commit `docs:`.
+- **`git checkout -- .` destruye el trabajo sin commitear sin avisar.** Revierte solo rutas
+  explícitas.
+- **`bloque/` es borrador y nunca se versiona.**
 
-### Memory
+### Memoria
 
-- **Read `Memory.md` before proposing anything**, and update it after each task.
-- **Keep `Memory.md` under 50 lines.** Summarise what is stale and delete it.
-- **Three homes, one rule each**: non-negotiable rules in `docs/constitution.md`, working rules
-  here, state and context in `Memory.md`. Never duplicate a rule across two.
+- **Lee `Memory.md` antes de proponer nada**, y actualízalo después de cada tarea.
+- **Mantén `Memory.md` por debajo de 50 líneas.** Resume lo obsoleto y bórralo.
+- **Tres hogares, una regla en cada uno**: las reglas innegociables en `docs/constitution.md`, las
+  de trabajo aquí, el estado y el contexto en `Memory.md`. Nunca dupliques una regla en dos.
 
-## Rules
+## Reglas
 
-### Sensitive data
+### Datos sensibles
 
-- **Never write paths with the real user name, emails, tokens or passwords into a repo document or
-  a commit message.** Use placeholders — `C:\Users\<user>\...`, `<email>`, `<token>`.
+- **Nunca escribas rutas con el nombre real del usuario, emails, tokens ni contraseñas en un
+  documento del repo ni en un mensaje de commit.** Usa marcadores — `C:\Users\<user>\...`,
+  `<email>`, `<token>`.
 
-### Agent tooling
+### Herramientas de agentes
 
-- **Agent tooling is never tracked** — `.agents/`, `.claude/`, `.opencode/`, `skills-lock.json`,
-  `opencode.json` and `opencode.jsonc` are per-machine. Re-run `powershell -File .agents/link.ps1`
-  after changing `.agents/`.
+- **Las herramientas de agentes nunca se versionan** — `.agents/`, `.claude/`, `.opencode/`,
+  `skills-lock.json`, `opencode.json` y `opencode.jsonc` son de cada máquina. Vuelve a ejecutar
+  `powershell -File .agents/link.ps1` después de cambiar `.agents/`.

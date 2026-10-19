@@ -1,4 +1,4 @@
-# Incidents
+# Incidentes
 
-The history behind the rules in `docs/constitution.md` and `AGENTS.md`: what broke, how it was
-found, which rule it produced. Empty until the first one.
+La historia que hay detrás de las reglas de `docs/constitution.md` y `AGENTS.md`: qué se rompió,
+cómo se descubrió y qué regla produjo. Vacío hasta el primero.
