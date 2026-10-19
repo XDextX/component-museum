@@ -12,7 +12,7 @@ export class ComponentController {
     getElements<T extends HTMLElement>(selector: string): NodeListOf<T> {
         return this.container?.querySelectorAll(selector) as NodeListOf<T>;
     }
-    emmit(event: string, detail: Record<string, any> = {}) {
+    emmit<T>(event: string, detail: T) {
         this.container.dispatchEvent(new CustomEvent(event, {
             bubbles: true,
             ...detail,
@@ -20,9 +20,9 @@ export class ComponentController {
     }
     debug(mode: 'log' | 'warn' | 'error', ...args: any[]) {
         if (!this.DEBUG) return;
-        if (mode === 'log') console.log(args);
-        else if (mode === 'warn') console.warn(args);
-        else if (mode === 'error') console.error(args);
+        if (mode === 'log') console.log(...args);
+        else if (mode === 'warn') console.warn(...args);
+        else if (mode === 'error') console.error(...args);
     }
     trigger(target: HTMLElement, event: string, detail: Record<string, any> = {}) {
         target.dispatchEvent(new CustomEvent(event, {
