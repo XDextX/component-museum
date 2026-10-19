@@ -1,3 +1,14 @@
 node_modules
 
 package-lock.json
+
+# Agent tooling and per-machine state (never tracked)
+.agents/
+.claude/
+.opencode/
+skills-lock.json
+opencode.json
+opencode.jsonc
+Memory.md
+bloque/
+.env
