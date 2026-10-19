@@ -1,140 +1,89 @@
+import { ComponentController } from "../../lib/ComponentController";
+import EVENTS, { type InputDetail, type MultiselectDetail, type ControllsDetail } from "../../lib/events";
 
-const DEBUG = true; // Cambiar a true para ver logs de debug
-export class ControlsController {
+export class ControlsController extends ComponentController {
 
-    constructor(table: HTMLElement) {
-        this.table = table;
-        this.tableId = table.getAttribute('data-table-id');
-        this.searchInput = table.querySelector<HTMLInputElement>('[data-table-search]');
-        this.clearBtn = table.querySelector<HTMLButtonElement>('[data-table-clear]');
-        this.filterSelects = table.querySelectorAll<HTMLElement>('[data-table-filter]');
-        this.filterCliearBtns = table.querySelectorAll<HTMLButtonElement>('[data-table-filter-clear]');
+    constructor(container: HTMLElement) {
+        super(container);
+        this.DEBUG = true;
+        this.searchInput = this.getElement<HTMLInputElement>(`[data-table-search]`);
+        this.clearBtn = this.getElement<HTMLButtonElement>(`[data-table-clear]`);
+        this.filterSelects = this.getElements<HTMLElement>(`[data-table-filter]`).entries().toArray().map(([index, select]) => select);
+        this.tableFilters = this.getElement<HTMLElement>(`[data-table-filters]`);
+        this.topControls = this.getElement<HTMLElement>(`[data-table-controls-top]`);
+        this.init();
     }
 
-    private tableId: string | null;
-    private table: HTMLElement;
     private searchInput: HTMLInputElement | null;
     private clearBtn: HTMLButtonElement | null;
-    private filterSelects: NodeListOf<HTMLElement>;
-    private filterCliearBtns: NodeListOf<HTMLElement>;
+    private tableFilters: HTMLElement | null;
+    private filterSelects: HTMLElement[] = [];
+    private topControls: HTMLElement | null;
+    private columnsFilter: [key: string, value: string[]][] = [];
+
 
     init() {
-        if (!this.table) {
-            debug('warn', '⚠️ Contenedor no encontrado para tabla:', this.tableId);
-            return;
-        }
-        this.initSearchInput();
-        this.initClearBtn();
-        this.initFilterClearBtns();
-        this.initFilterSelects();
-    }
-    private initClearBtn() {
-        if (!this.clearBtn) {
-            return;
-        }
-        this.clearBtn.addEventListener('click', () => {
-            debug('log', '🧹 Clear all clicked');
-            this.dispatchEvent('table:clear-all');
 
-            if (!this.filterSelects) {
-                debug('warn', '⚠️ No se encontraron filtros para tabla:', this.tableId);
-            }
-            this.filterSelects.forEach((el) => {
-                el.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-                    if (cb instanceof HTMLInputElement) {
-                        cb.checked = false;
-                    }
-                });
-                const input = el.querySelector(
-                    '[data-multiselect-display]',
-                ) as HTMLInputElement | null;
-                if (input) input.value = '';
-            });
-
-            this.searchInput && (this.searchInput.value = '');
-
+        this.clearBtn?.addEventListener('click', () => {
+            this.clearFilters();
         });
-    }
-    private dispatchEvent(event: string, detail: Record<string, any> = {}) {
-        this.table.dispatchEvent(new CustomEvent(event, {
-            bubbles: true,
-            ...detail,
-        }));
-    }
-    private initSearchInput() {
-        if (this.searchInput) {
-            this.searchInput.addEventListener('input', debounce((e: any) => {
-                debug('log', '🔍 Search input event:', e.target.value);
-                this.dispatchEvent('table:search', {
-                    detail: e.target.value,
-                });
-            }, 300));
-        }
-    }
-    private initFilterClearBtns() {
-        if (!this.filterCliearBtns) {
-            debug('warn', '⚠️ No se encontraron filtros para tabla:', this.tableId);
-            return;
-        }
-        this.filterCliearBtns.forEach((el) => {
-            const column = el.getAttribute('data-column');
-            const multiSelect = this.filterSelects.entries().find(([_, el]) => el.getAttribute('data-column') === column);
-            if (!multiSelect) {
-                debug('warn', '⚠️ No se encontró multiselect para columna:', column);
-                return;
-            }
-            const checkboxes = multiSelect[1].querySelectorAll('input[type="checkbox"]');
-            const input = multiSelect[1].querySelector(
-                '[data-multiselect-display]',
-            ) as HTMLInputElement | null;
-            el.addEventListener('click', () => {
-                debug('log', '❌ Clear filter clicked para columna:', column);
-                checkboxes.forEach((cb) => {
-                    if (cb instanceof HTMLInputElement) {
-                        cb.checked = false;
-                    }
-                    if (input) input.value = '';
+        this.topControls?.addEventListener(EVENTS.MUSEUM.INPUT.INPUT, (e) => {
+            const detail = (e as CustomEvent<InputDetail>).detail;
+            this.debounce((detail: InputDetail) => {
+                this.senseSearchInput(detail);
+            }, 300)(detail);
+        })
+        this.tableFilters?.addEventListener(EVENTS.MUSEUM.MULTISELECT.CHANGE, this.senseColumnsFilterHandler.bind(this));
 
-                });
-                this.dispatchEvent('table:clear-filter', {
-                    detail: { column },
-                });
-            })
+    }
+    senseColumnsFilterHandler(e: Event) {
+
+        const detail = (e as CustomEvent<MultiselectDetail>).detail;
+
+        const column = (e.target as HTMLElement).getAttribute('data-column')!;
+        if (this.columnsFilter.find(([col]) => col === column)) {
+            this.columnsFilter = this.columnsFilter.filter(([col]) => col !== column);
+        }
+        if (detail.value.length !== 0) {
+            this.columnsFilter.push([column, detail.value]);
+        }
+
+        this.emmit<{ detail: ControllsDetail }>(EVENTS.MUSEUM.TABLE.FILTER_CHANGE, {
+            detail: {
+                inputId: this.searchInput?.getAttribute('data-input-id') || '',
+                value: this.searchInput?.value || '',
+                columns: this.columnsFilter,
+            },
         });
 
-    }
-    private initFilterSelects() {
-        if (!this.filterSelects) {
-            debug('warn', '⚠️ No se encontraron filtros para tabla:', this.tableId);
-            return;
-        }
-        this.filterSelects.forEach((el) => {
-            el.querySelector('[data-multiselect-display]')?.addEventListener('change', () => {
-                const column = el.getAttribute('data-column');
-                debug('log', 'cambio en columna:', column);
-                this.dispatchEvent(
-                    'table:filter-change', {
-                    detail: { column },
-                });
-            });
-        });
-    }
-}
-
-export function debug(mode: 'log' | 'warn' | 'error', ...args: any[]) {
-    if (!DEBUG) return;
-    if (mode === 'log') console.log(args);
-    else if (mode === 'warn') console.warn(args);
-    else if (mode === 'error') console.error(args);
-}
-function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
-    let timeoutId: number;
-
-    return (...args: Parameters<T>) => {
-        clearTimeout(timeoutId);
-
-        timeoutId = window.setTimeout(() => {
-            fn(...args);
-        }, delay);
     };
+
+    clearFilters() {
+        this.filterSelects.forEach((select) => {
+            this.trigger(select, EVENTS.MUSEUM.MULTISELECT.CLEAR);
+        });
+        this.trigger(this.searchInput!, EVENTS.MUSEUM.INPUT.CLEAR);
+    }
+
+    private senseSearchInput(detail: InputDetail) {
+        this.emmit<{ detail: ControllsDetail }>(EVENTS.MUSEUM.TABLE.FILTER_CHANGE, {
+            detail: {
+                inputId: detail.inputId,
+                value: detail.value,
+                columns: this.columnsFilter,
+            },
+        });
+    }
+
+    debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
+        let timeoutId: number;
+
+        return (...args: Parameters<T>) => {
+            clearTimeout(timeoutId);
+
+            timeoutId = window.setTimeout(() => {
+                fn(...args);
+            }, delay);
+        };
+    }
 }

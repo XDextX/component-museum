@@ -33,7 +33,7 @@ const {
 	...rest
 } = Astro.props as Props;
 
-const tableId = `table-${Math.random().toString(36).substr(2, 9)}`;
+const tableId = `table-${Math.random().toString(36).slice(2, 9)}`;
 
 const filterSelectOptions: Record<
 	string,
@@ -48,48 +48,13 @@ columns.forEach((col) => {
 			.map((value) => ({ label: value, value }));
 	}
 });
-
-const initialState: TableState = {
-	sortBy: null,
-	sortDir: 'asc',
-	currentPage: 1,
-	pageSize,
-	searchQuery: '',
-	filters: {},
-};
-
-const ATTR = {
-	ID: 'data-table-id',
-	SEARCH: 'data-table-search',
-	SORT: 'data-table-sort',
-	FILTER: 'data-table-filter',
-	CLEAR: 'data-table-clear',
-	FILTER_CLEAR: 'data-table-filter-clear',
-	PAGINATION: 'data-table-pagination',
-	COLUMN: 'data-column',
-	ACTION: 'data-action',
-	CURRENT_PAGE: 'data-table-current-page',
-	TOTAL_PAGES: 'data-table-total-pages',
-	COLUMNS: 'data-table-columns',
-	DATA: 'data-table-data',
-	PAGE_SIZE: 'data-table-page-size',
-	SORTABLE: 'data-table-sortable',
-	PAGINATED: 'data-table-paginated',
-	INITIAL_STATE: 'data-table-initial-state',
-	ATTR_META: 'data-table-attr',
-};
 ---
 
 <div
 	data-table-id={tableId}
-	data-table-columns={JSON.stringify(columns)}
-	data-table-data={JSON.stringify(data)}
-	data-table-page-size={pageSize}
-	data-table-sortable={sortable}
-	data-table-paginated={paginated}
-	data-table-initial-state={JSON.stringify(initialState)}
-	data-table-attr={JSON.stringify(ATTR)}
 	class={`table-container ${className}`}
+	data-data={JSON.stringify(data)}
+	data-page-size={pageSize}
 	{...rest}
 >
 	<TableControls
@@ -98,6 +63,7 @@ const ATTR = {
 		{searchable}
 		{filterable}
 		{filterSelectOptions}
+		data-table-controls={tableId}
 	/>
 
 	<div class='table-wrapper'>
@@ -105,182 +71,24 @@ const ATTR = {
 			class={`table ${striped ? 'table-striped' : ''} ${hoverable ? 'table-hoverable' : ''}`}
 		>
 			<TableHeader {tableId} {columns} {sortable} />
-			<TableBody {tableId} {columns} data={data} />
+			<TableBody {tableId} {columns} data={data.slice(0, pageSize)} />
 		</table>
 	</div>
 
-	<TablePagination {tableId} {paginated} />
+	<TablePagination
+		{tableId}
+		{paginated}
+		totalPages={Math.ceil(data.length / pageSize)}
+		currentPage={1}
+		currentPage={1}
+	/>
 </div>
-
 <script>
-	const SORT_DIR = { ASC: 'asc', DESC: 'desc' };
-	const DEBUG = false; // Cambiar a true para ver logs de debug
+	import { TableController } from './TableController';
 
-	(async () => {
-		if (DEBUG) console.log('🔧 Table script iniciando...');
-
-		try {
-			const { TableStateManager } = await import('./TableStateManager.js');
-			if (DEBUG) console.log('✅ TableStateManager importado');
-
-			document.querySelectorAll(`[data-table-id]`).forEach((container) => {
-				if (DEBUG)
-					console.log(
-						'📋 Inicializando tabla:',
-						container.getAttribute('data-table-id'),
-					);
-
-				const attrMeta = container.getAttribute('data-table-attr');
-				if (!attrMeta) {
-					if (DEBUG) console.warn('⚠️ No hay data-table-attr');
-					return;
-				}
-
-				const ATTR = JSON.parse(attrMeta);
-				const columnsStr = container.getAttribute(ATTR.COLUMNS);
-				const dataStr = container.getAttribute(ATTR.DATA);
-				const pageSizeStr = container.getAttribute(ATTR.PAGE_SIZE);
-				const sortableStr = container.getAttribute(ATTR.SORTABLE);
-				const paginatedStr = container.getAttribute(ATTR.PAGINATED);
-				const initialStateStr = container.getAttribute(ATTR.INITIAL_STATE);
-				const tableId = container.getAttribute(ATTR.ID);
-
-				if (
-					!columnsStr ||
-					!dataStr ||
-					!pageSizeStr ||
-					!sortableStr ||
-					!paginatedStr ||
-					!initialStateStr ||
-					!tableId
-				) {
-					if (DEBUG) console.warn('⚠️ Faltan atributos requeridos');
-					return;
-				}
-
-				const columns = JSON.parse(columnsStr);
-				const data = JSON.parse(dataStr);
-				const pageSize = Number(pageSizeStr);
-				const sortable = sortableStr === 'true';
-				const paginated = paginatedStr === 'true';
-				const initialState = JSON.parse(initialStateStr);
-
-				if (DEBUG)
-					console.log('📊 Tabla configurada:', {
-						columns: columns.length,
-						data: data.length,
-						pageSize,
-					});
-
-				const notifyStateChange = (detail: any) => {
-					if (DEBUG) console.log('📢 notifyStateChange:', detail);
-					const evt = new CustomEvent('table:state-update', {
-						detail,
-						bubbles: true,
-					});
-					container.dispatchEvent(evt);
-				};
-
-				const manager = new TableStateManager(
-					columns,
-					data,
-					{
-						state: initialState,
-						pageSize,
-						sortable,
-						paginated,
-					},
-					notifyStateChange,
-				);
-
-				if (DEBUG) console.log('🎯 Manager creado, agregando listeners...');
-
-				container.addEventListener('table:search', (e) => {
-					if (DEBUG) console.log('🔍 table:search event recibido');
-					const event = e as CustomEvent;
-					manager.setState({
-						searchQuery: event.detail.toLowerCase(),
-						currentPage: 1,
-					});
-					manager.applyFiltersAndSort();
-				});
-
-				container.addEventListener('table:sort-change', (e) => {
-					if (DEBUG) console.log('↕️ table:sort-change event recibido');
-					const event = e as CustomEvent;
-					const { column } = event.detail;
-					if (manager.state.sortBy === column) {
-						manager.state.sortDir =
-							manager.state.sortDir === SORT_DIR.ASC ? SORT_DIR.DESC : SORT_DIR.ASC;
-					} else {
-						manager.state.sortBy = column;
-						manager.state.sortDir = SORT_DIR.ASC;
-					}
-
-					manager.setState({ ...manager.state, currentPage: 1 });
-					manager.applyFiltersAndSort();
-				});
-
-				container.addEventListener('table:filter-change', (e) => {
-					if (DEBUG) console.log('🔘 table:filter-change event recibido');
-					const event = e as CustomEvent;
-					const { column, values } = event.detail;
-					if (values.length === 0) {
-						delete manager.state.filters[column];
-					} else {
-						manager.state.filters[column] = values;
-					}
-					manager.setState({ ...manager.state, currentPage: 1 });
-					manager.applyFiltersAndSort();
-				});
-
-				container.addEventListener('table:pagination', (e) => {
-					if (DEBUG) console.log('📄 table:pagination event recibido');
-					const event = e as CustomEvent;
-					const { action } = event.detail;
-					const totalPages = Math.ceil(
-						manager.filteredData.length / manager.pageSize,
-					);
-					if (action === 'prev' && manager.state.currentPage > 1) {
-						manager.state.currentPage--;
-					} else if (action === 'next' && manager.state.currentPage < totalPages) {
-						manager.state.currentPage++;
-					}
-					notifyStateChange({
-						state: manager.state,
-						filteredData: manager.filteredData,
-						totalPages: Math.ceil(manager.filteredData.length / manager.pageSize),
-					});
-				});
-
-				container.addEventListener('table:clear-all', () => {
-					if (DEBUG) console.log('🧹 table:clear-all event recibido');
-					manager.setState({ searchQuery: '', filters: {}, currentPage: 1 });
-					manager.applyFiltersAndSort();
-					const searchEl = container.querySelector(`[${ATTR.SEARCH}="${tableId}"]`);
-					if (searchEl && searchEl instanceof HTMLInputElement) searchEl.value = '';
-				});
-
-				container.addEventListener('table:clear-filter', (e) => {
-					if (DEBUG) console.log('❌ table:clear-filter event recibido');
-					const event = e as CustomEvent;
-					const { column } = event.detail;
-					delete manager.state.filters[column];
-					manager.setState({ ...manager.state, currentPage: 1 });
-					manager.applyFiltersAndSort();
-				});
-
-				if (DEBUG) console.log('✨ Tabla inicializada correctamente');
-
-				manager.applyFiltersAndSort();
-				notifyStateChange({
-					state: manager.state,
-					filteredData: manager.filteredData,
-					totalPages: Math.ceil(manager.filteredData.length / manager.pageSize),
-				});
-			});
-		} catch (err) {
-			console.error('❌ Error inicializando tabla:', err);
+	document.querySelectorAll('[data-table-id]').forEach((container) => {
+		if (container instanceof HTMLElement) {
+			new TableController(container);
 		}
-	})();
+	});
 </script>

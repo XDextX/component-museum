@@ -21,8 +21,8 @@ const { tableId, columns, data } = Astro.props;
 		) : (
 			data.map((row) => (
 				<tr>
-					{columns.map((col) => (
-						<td class='table-td'>{row[col.key]}</td>
+					{columns.map(({ key }) => (
+						<td class='table-td'>{row[key]}</td>
 					))}
 				</tr>
 			))
@@ -31,63 +31,11 @@ const { tableId, columns, data } = Astro.props;
 </tbody>
 
 <script>
-	const DEBUG = false; // Cambiar a true para ver logs de debug
+	import { TableBodyController } from './TableBodyController.mts';
 
 	document.querySelectorAll('[data-table-body]').forEach((tbody) => {
-		const tableId = tbody.getAttribute('data-table-body');
-		const columnsStr = tbody.getAttribute('data-table-columns');
-
-		if (!tableId || !columnsStr) {
-			if (DEBUG) console.warn('⚠️ Faltan atributos en TableBody');
-			return;
+		if (tbody instanceof HTMLElement) {
+			new TableBodyController(tbody);
 		}
-
-		if (DEBUG) console.log('📊 TableBody inicializando para tabla:', tableId);
-
-		const container = document.querySelector(`[data-table-id="${tableId}"]`);
-		if (!container) {
-			if (DEBUG) console.warn('⚠️ Contenedor no encontrado');
-			return;
-		}
-
-		const cols = JSON.parse(columnsStr);
-
-		container.addEventListener('table:state-update', (e) => {
-			if (DEBUG) console.log('📊 TableBody recibiendo actualización');
-			const event = e as CustomEvent;
-			const { state, filteredData } = event.detail;
-			const pageSize = state.pageSize;
-
-			let pageData = filteredData;
-			if (filteredData.length > 0) {
-				const start = (state.currentPage - 1) * pageSize;
-				pageData = filteredData.slice(start, start + pageSize);
-			}
-
-			tbody.innerHTML = '';
-
-			if (pageData.length === 0) {
-				const emptyRow = document.createElement('tr');
-				const emptyCell = document.createElement('td');
-				emptyCell.setAttribute('colspan', String(cols.length));
-				emptyCell.className = 'table-empty';
-				emptyCell.textContent = 'No data available';
-				emptyRow.appendChild(emptyCell);
-				tbody.appendChild(emptyRow);
-			} else {
-				pageData.forEach((row: any) => {
-					const tr = document.createElement('tr');
-					cols.forEach((col: any) => {
-						const td = document.createElement('td');
-						td.className = 'table-td';
-						td.textContent = row[col.key] || '';
-						tr.appendChild(td);
-					});
-					tbody.appendChild(tr);
-				});
-			}
-		});
-
-		if (DEBUG) console.log('✨ TableBody inicializado correctamente');
 	});
 </script>

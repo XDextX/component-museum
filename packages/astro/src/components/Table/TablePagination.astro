@@ -1,19 +1,30 @@
 ---
 import Button from '../Button/Button.astro';
+import { PAGINATION_ACTION } from './TablePaginationController.mts';
 
 interface Props {
 	tableId: string;
 	paginated?: boolean;
+	totalPages?: number;
+	currentPage?: number;
 }
 
-const { tableId, paginated = true } = Astro.props;
-
-const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
+const {
+	tableId,
+	paginated = true,
+	totalPages = 1,
+	currentPage = 1,
+} = Astro.props;
 ---
 
 {
 	paginated && (
-		<div class='table-pagination' data-table-pagination={tableId}>
+		<div
+			class='table-pagination'
+			data-table-pagination={tableId}
+			data-total-pages={totalPages}
+			data-current-page={currentPage}
+		>
 			<Button
 				variant='outline'
 				size='sm'
@@ -25,7 +36,7 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 			</Button>
 			<div class='table-page-info' role='status' aria-live='polite'>
 				Page <span data-table-current-page={tableId}>1</span> of
-				<span data-table-total-pages={tableId}>1</span>
+				<span data-table-total-pages={tableId}>{totalPages}</span>
 			</div>
 			<Button
 				variant='outline'
@@ -41,54 +52,11 @@ const PAGINATION_ACTION = { PREV: 'prev', NEXT: 'next' };
 }
 
 <script>
-	const DEBUG = false; // Cambiar a true para ver logs de debug
+	import { TablePaginationController } from './TablePaginationController.mts';
 
 	document.querySelectorAll('[data-table-pagination]').forEach((pagination) => {
-		const tableId = pagination.getAttribute('data-table-pagination');
-
-		if (!tableId) {
-			if (DEBUG) console.warn('⚠️ Falta tableId en TablePagination');
-			return;
+		if (pagination instanceof HTMLElement) {
+			new TablePaginationController(pagination);
 		}
-
-		if (DEBUG)
-			console.log('📄 TablePagination inicializando para tabla:', tableId);
-
-		const container = document.querySelector(`[data-table-id="${tableId}"]`);
-		if (!container) {
-			if (DEBUG) console.warn('⚠️ Contenedor no encontrado');
-			return;
-		}
-
-		pagination
-			.querySelectorAll(`[data-pagination-action="${tableId}"]`)
-			.forEach((btn) => {
-				btn.addEventListener('click', () => {
-					const action = btn.getAttribute('data-action');
-					if (DEBUG) console.log('📄 Pagination action:', action);
-					container.dispatchEvent(
-						new CustomEvent('table:pagination', {
-							detail: { action },
-							bubbles: true,
-						}),
-					);
-				});
-			});
-
-		container.addEventListener('table:state-update', (e) => {
-			if (DEBUG) console.log('📄 TablePagination recibiendo actualización');
-			const event = e as CustomEvent;
-			const { state, totalPages } = event.detail;
-			const currentPageSpan = pagination.querySelector(
-				`[data-table-current-page="${tableId}"]`,
-			);
-			const totalPagesSpan = pagination.querySelector(
-				`[data-table-total-pages="${tableId}"]`,
-			);
-			if (currentPageSpan) currentPageSpan.textContent = String(state.currentPage);
-			if (totalPagesSpan) totalPagesSpan.textContent = String(totalPages);
-		});
-
-		if (DEBUG) console.log('✨ TablePagination inicializado correctamente');
 	});
 </script>

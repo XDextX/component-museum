@@ -2,6 +2,7 @@
 import type { Column } from './types';
 import Button from '../Button/Button.astro';
 import MultiSelect from '../MultiSelect/MultiSelect.astro';
+import { Input } from '../Input';
 
 interface Props {
 	tableId: string;
@@ -9,6 +10,7 @@ interface Props {
 	searchable?: boolean;
 	filterable?: boolean;
 	filterSelectOptions: Record<string, Array<{ label: string; value: string }>>;
+	[key: string]: any;
 }
 
 const {
@@ -17,15 +19,16 @@ const {
 	searchable = true,
 	filterable = true,
 	filterSelectOptions,
+	...rest
 } = Astro.props;
 ---
 
 {
 	(searchable || filterable) && (
-		<div class='table-controls' data-table-controls={tableId}>
-			<div class='table-controls-top'>
+		<div class='table-controls' data-table-controls={tableId} {...rest}>
+			<div class='table-controls-top' data-table-controls-top={tableId}>
 				{searchable && (
-					<input
+					<Input
 						type='search'
 						class='table-search-input'
 						placeholder='Search...'
@@ -45,22 +48,12 @@ const {
 				)}
 			</div>
 			{filterable && (
-				<div class='table-filters'>
+				<div class='table-filters' data-table-filters={tableId}>
 					{columns.map((col) =>
 						col.filterable ? (
 							<div class='table-filter-group'>
 								<div class='table-filter-header'>
 									<label class='table-filter-label'>{col.label}</label>
-									<Button
-										variant='outline'
-										size='sm'
-										data-table-filter-clear={tableId}
-										data-column={col.key}
-										title={`Clear ${col.label} filter`}
-										class='table-filter-clear-btn'
-									>
-										✕
-									</Button>
 								</div>
 								<MultiSelect
 									options={filterSelectOptions[col.key]}
@@ -80,14 +73,11 @@ const {
 }
 
 <script>
-	import { ControlsController, debug } from './TableControls';
+	import { ControlsController } from './TableControls';
 
-	document.querySelectorAll('[data-table-id]').forEach((table) => {
-		if (table instanceof HTMLElement) {
-			const ctrl = new ControlsController(table);
-			ctrl.init();
-		} else {
-			debug('warn', '⚠️ No se encontró tabla en el elemento:', table);
+	document.querySelectorAll('[data-table-controls]').forEach((controls) => {
+		if (controls instanceof HTMLElement) {
+			new ControlsController(controls);
 		}
 	});
 </script>
