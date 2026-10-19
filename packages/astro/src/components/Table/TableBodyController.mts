@@ -5,7 +5,7 @@ import type { Column } from "./types";
 export class TableBodyController extends ComponentController {
     constructor(container: HTMLElement) {
         super(container);
-        this.DEBUG = true;
+        this.DEBUG = false;
         this.init();
     }
     init() {

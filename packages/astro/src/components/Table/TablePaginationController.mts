@@ -40,6 +40,13 @@ export class TablePaginationController extends ComponentController {
     }
 
     init() {
+        // The table re-queried its rows: a new page count, back on page 1.
+        this.container.addEventListener(EVENTS.MUSEUM.TABLE.STATE_UPDATE, (e) => {
+            const detail = (e as CustomEvent<{ currentPage: number; totalPages: number; }>).detail;
+            this.currentPage = detail.currentPage;
+            this.totalPages = detail.totalPages;
+            this.render();
+        });
         this.prevBtn?.addEventListener('click', () => {
             this.update(PAGINATION_ACTION.PREV);
         });
@@ -58,7 +65,11 @@ export class TablePaginationController extends ComponentController {
             this.notify(action);
         }
 
-        this.enableActions()
+        this.render();
+    }
+
+    private render() {
+        this.enableActions();
         this.currentPageSpan.textContent = String(this.currentPage);
         this.totalPagesSpan.textContent = String(this.totalPages);
     }

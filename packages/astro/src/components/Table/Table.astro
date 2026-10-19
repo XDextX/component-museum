@@ -80,13 +80,12 @@ columns.forEach((col) => {
 		{paginated}
 		totalPages={Math.ceil(data.length / pageSize)}
 		currentPage={1}
-		currentPage={1}
 	/>
 </div>
 <script>
 	import { TableController } from './TableController';
 
-	document.querySelectorAll('[data-table-id]').forEach((container) => {
+	document.querySelectorAll('.table-container[data-table-id]').forEach((container) => {
 		if (container instanceof HTMLElement) {
 			new TableController(container);
 		}

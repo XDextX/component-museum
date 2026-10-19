@@ -5,7 +5,7 @@ export class ControlsController extends ComponentController {
 
     constructor(container: HTMLElement) {
         super(container);
-        this.DEBUG = true;
+        this.DEBUG = false;
         this.searchInput = this.getElement<HTMLInputElement>(`[data-table-search]`);
         this.clearBtn = this.getElement<HTMLButtonElement>(`[data-table-clear]`);
         this.filterSelects = this.getElements<HTMLElement>(`[data-table-filter]`).entries().toArray().map(([index, select]) => select);
