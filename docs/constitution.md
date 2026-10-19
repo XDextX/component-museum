@@ -4,6 +4,8 @@ Status: approved 2026-10-19 by the owner — 10 rules, reviewed in full.
 Changed: 2026-10-19 · traducción al español y enmienda de la regla 10 · reglas 1, 2 y 6 en
 términos genéricos tras el reinicio (los nombres concretos, pendientes de la spec de
 arquitectura).
+Changed: 2026-10-19 · enmiendas de las reglas 5 (excepción temporal para Astro en Storybook) y
+10 (historias en español e inglés) · spec 003
 
 **Propósito.** Este repo es el único hogar de los componentes con los que el dueño construye
 otros proyectos. Cada componente se publica como un paquete por cada framework que soporta, de
@@ -34,9 +36,11 @@ desarrolla y cede ante ellas en cualquier conflicto.
    mismo nombre. *Check:* la matriz de frameworks de la galería, generada a partir de las
    entradas de los paquetes.
 5. **Ningún componente sin su historia.** Cada componente exportado tiene una página en la
-   galería que explica cómo usarlo, cómo está construido y cómo modificarlo, con controles en
-   vivo para manipular sus props. *Check:* cada export tiene página; una página a la que le
-   falta una sección no está terminada.
+   galería que explica cómo usarlo, cómo está construido y cómo modificarlo. Donde el framework
+   se renderiza en el cliente, la página tiene controles en vivo para manipular sus props; los
+   componentes Astro muestran en su historia cada variante del contrato prerenderizada, con su
+   código de uso, hasta que Storybook soporte Astro de forma oficial. *Check:* cada export tiene
+   página; una página a la que le falta una sección, un control o una variante no está terminada.
 6. **Un cambio incompatible se versiona como tal.** Otros proyectos dependen de estos paquetes:
    renombrar o quitar una prop, una variante o un evento es un commit `BREAKING CHANGE`, para
    que la herramienta de versionado suba la versión mayor (cuál, pendiente de la spec de
@@ -54,5 +58,6 @@ desarrolla y cede ante ellas en cualquier conflicto.
 10. **Los secretos, fuera; los documentos, en español; el código, en inglés.** `.env` está en
     `.gitignore` y ningún token, contraseña o dirección personal aparece en un archivo
     versionado. Los documentos — esta constitución, `AGENTS.md`, las specs, los planes y las
-    tareas — están en español; el código y sus comentarios, en inglés. *Check:*
-    `git ls-files .env` está vacío; leer el diff.
+    tareas — están en español; la documentación de las historias de la galería, de cara al
+    público, en español y en inglés; el código y sus comentarios, en inglés. *Check:*
+    `git ls-files .env` está vacío; el test de idiomas de la spec 003; leer el diff.
