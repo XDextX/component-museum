@@ -26,6 +26,8 @@ export class CheckboxController extends ComponentController {
                 detail: {
                     checkboxId: this.checkboxId,
                     checked: checkbox.checked,
+                    value: checkbox.value,
+                    label: checkbox.getAttribute('data-checkbox-label'),
                 },
             });
         });
