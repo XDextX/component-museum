@@ -21,3 +21,7 @@ Lo que salió de `spec.md` al partir la antigua 002 (32 RF) en 002–004. Pasa a
 - Cómo se construye cada paquete y qué herramienta versiona.
 - La regla 4 se comprueba con la matriz de frameworks, que llega con la 005; hasta entonces la
   guarda el contrato común (RF-6, RF-7). Por eso la entrega 2 incluye la 005.
+- RF-3 compila en el consumidor sin tocar, que no detecta un módulo resuelto desde un
+  `node_modules` por encima del consumidor: solo lo detecta el consumidor con la guarda
+  `museum-guard` (decisión del dueño en la 001, ce3e8e6). La 002 tiene que pasar sus paquetes
+  también por el consumidor con guarda, o un import no declarado puede pasar inadvertido.
