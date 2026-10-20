@@ -1,6 +1,7 @@
 # Plan 001 — base-tests
 
 **Approved:** 2026-10-19 · el dueño aprobó el plan y las 8 tareas, con Node 24 LTS y `package-lock.json` versionado
+Tras la aprobación se añadieron la T-6b y la T-9, cada una por decisión del dueño: hoy son 10 tareas.
 
 Parte de `spec.md` (aprobada, 8 RF) y de `notes.md`. No hay `package.json`: se borró en el
 reinicio, y el runner se elige aquí (bloque 6). Versiones comprobadas en npm el 2026-10-19.
