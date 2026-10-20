@@ -76,7 +76,7 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
   cambia `git status` o el hash de un archivo de `tests/fixtures/`, comprobado escribiendo un
   archivo ahí durante la suite.
 
-- [ ] **T-8 — Enmendar `AGENTS.md` con la política nueva**
+- [x] **T-8 — Enmendar `AGENTS.md` con la política nueva**
   Cubre: RF-7
   Archivos: `AGENTS.md`
   Hecho cuando: «Verificar» nombra `npm test` en lugar de «Todavía no hay runner de tests», y
