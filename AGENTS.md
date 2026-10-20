@@ -31,10 +31,11 @@ de `Memory.md` lo decide el agente.
 
 ### Verificar
 
-- **Todavía no hay runner de tests.** Hasta que una spec propia elija uno, un cambio se verifica
-  compilando el paquete tocado y abriendo cada página de la galería tocada desde un servidor de
-  desarrollo en marcha — di qué páginas abriste. (Los comandos, pendientes de la spec de
-  arquitectura.)
+- **Un cambio se verifica con `npm test` desde la raíz**, que tiene que terminar en 0: encadena
+  la comprobación de tipos, Vitest, los tests en un Edge real y los consumidores externos. Un
+  verde de solo una parte no vale. Además, abre cada página de la galería tocada desde un servidor
+  de desarrollo en marcha — di qué páginas abriste. (El comando de la galería, pendiente de la
+  spec de arquitectura.)
 - **Validar una spec cubre sus requisitos no funcionales y sus casos límite, no solo sus RF.**
 - **El árbol de trabajo es CRLF.** Normaliza antes de buscar un ancla, o la sonda no encuentra
   nada.
@@ -54,8 +55,9 @@ de `Memory.md` lo decide el agente.
 
 ### Comandos
 
-- **No ejecutes el comprobador de tipos** hasta que una spec decida que la comprobación de tipos
-  forma parte de la política.
+- **La comprobación de tipos es parte de la política**: `tsc --noEmit` para TypeScript y
+  `astro check` para los `.astro`, los dos dentro de `npm test` y antes de Vitest. Un error de
+  tipos corta la cadena con distinto de 0.
 - **No añadas un linter, un formateador ni un runner de tests para que pase un check** —
   constitución, regla 9.
 

@@ -1,7 +1,8 @@
 # Spec 001 — base-tests
 
-**Status:** approved
+**Status:** implemented
 **Approved:** 2026-10-19 · el dueño leyó la spec completa tras 4 rondas de clarify y la partición en 5 · 83 lines, 8 RF
+**Implemented:** 2026-10-19 · 10 tareas (T-1…T-9 y T-6b) en `spec/001-base-tests`; validada por el reviewer en 2 vueltas; `npm test` 36/36
 **Size:** M · **Entrega:** 1 (solo esta spec)
 
 ## Contexto y objetivo
