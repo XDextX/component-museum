@@ -9,6 +9,5 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["tests/**/*.ts", "vitest.config.ts", "tests/fixtures/test-package/src/**/*.tsx"],
-  "exclude": ["tests/fixtures/**"]
+  "include": ["tests/*.ts", "tests/lib/**/*.ts", "vitest.config.ts", "tests/fixtures/test-package/src/**/*.tsx"]
 }
