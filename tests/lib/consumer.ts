@@ -1,7 +1,11 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { execFile } from 'node:child_process';
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
+import { promisify } from 'node:util';
 import { consumerDir, type Framework } from './paths.ts';
 import { run, type RunResult } from './run.ts';
+
+const execFileAsync = promisify(execFile);
 
 // shortcut: npm-cli.js next to node.exe is the Windows layout; under `npm test` npm_execpath wins.
 const npmCli = process.env.npm_execpath ?? join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js');
@@ -24,12 +28,21 @@ export const configFiles: Record<Framework, string> = {
   astro: 'astro.config.mjs',
 };
 
-export type ConsumerOptions = { guardResolution?: boolean };
+export type ConsumerOptions = {
+  /** Adds the RF-5 resolution guard to the consumer's config; without it the config stays the starter's. */
+  guardResolution?: boolean;
+  /** A starter already scaffolded by `scaffold`, copied instead of running the starter again. */
+  starter?: string;
+};
 
-function npm(args: string[], cwd: string, failure: string): string {
-  const result = run(process.execPath, [npmCli, ...args], { cwd });
-  if (result.code !== 0) throw new Error(`${failure}\n${result.output}`);
-  return result.output;
+async function npm(args: string[], cwd: string, failure: string): Promise<string> {
+  try {
+    const { stdout } = await execFileAsync(process.execPath, [npmCli, ...args], { cwd, maxBuffer: 64 * 1024 * 1024 });
+    return stdout;
+  } catch (error) {
+    const { stdout = '', stderr = '' } = error as { stdout?: string; stderr?: string };
+    throw new Error(`${failure}\n${stdout}${stderr}`, { cause: error });
+  }
 }
 
 function patch(file: string, edit: (source: string) => string): void {
@@ -40,26 +53,28 @@ function patch(file: string, edit: (source: string) => string): void {
 }
 
 /** Runs the pinned starter into `<parent>/<framework>`, from scratch, and returns that folder. */
-export function scaffold(parent: string, framework: Framework): string {
+export async function scaffold(parent: string, framework: Framework): Promise<string> {
   const dir = join(parent, framework);
   if (existsSync(dir)) rmSync(dir, { recursive: true });
   mkdirSync(parent, { recursive: true });
   const starter = starters[framework].map((arg) => (arg === '<dir>' ? framework : arg));
-  npm(['exec', '--yes', ...starter], parent, `sin red: no se pudo crear el starter de ${framework}`);
+  await npm(['exec', '--yes', ...starter], parent, `sin red: no se pudo crear el starter de ${framework}`);
   return dir;
 }
 
 /** Packs `packageDir` into `destination` and returns the package name and the tarball path. */
-export function packPackage(packageDir: string, destination: string): { name: string; path: string } {
-  const [packed] = JSON.parse(npm(['pack', packageDir, '--json', '--pack-destination', destination], destination, `npm pack failed for ${packageDir}`));
+export async function packPackage(packageDir: string, destination: string): Promise<{ name: string; path: string }> {
+  mkdirSync(destination, { recursive: true });
+  const [packed] = JSON.parse(await npm(['pack', packageDir, '--json', '--pack-destination', destination], destination, `npm pack failed for ${packageDir}`));
   return { name: packed.name, path: join(destination, packed.filename) };
 }
 
 /** Packs `packageDir` next to the consumer, never inside the repo, and installs the tarball. */
-export function installPackage(dir: string, packageDir: string): string {
-  const packed = packPackage(packageDir, dirname(dir));
+export async function installPackage(dir: string, packageDir: string): Promise<string> {
+  // One pack folder per consumer: two consumers installing at once never share a tarball.
+  const packed = await packPackage(packageDir, join(dirname(dir), `pack-${basename(dir)}`));
   // No --prefer-offline: with it npm trusts stale cached metadata and misses the starter's versions.
-  npm(['install', '--no-audit', '--no-fund', packed.path], dir, `npm install failed in ${dir}`);
+  await npm(['install', '--no-audit', '--no-fund', packed.path], dir, `npm install failed in ${dir}`);
   return packed.name;
 }
 
@@ -95,10 +110,15 @@ function guardResolution(framework: Framework, dir: string, name: string): void 
  * package at `packageDir` packed as a tarball, the way a consumer outside the repo gets it. The
  * starter's config stays untouched unless `guardResolution` adds the RF-5 resolution guard.
  */
-export function createConsumer(base: string, runId: string, framework: Framework, packageDir: string, options: ConsumerOptions = {}): string {
+export async function createConsumer(base: string, runId: string, framework: Framework, packageDir: string, options: ConsumerOptions = {}): Promise<string> {
   const dir = consumerDir(base, runId, framework);
-  scaffold(dirname(dir), framework);
-  const name = installPackage(dir, packageDir);
+  if (options.starter) {
+    if (existsSync(dir)) rmSync(dir, { recursive: true });
+    cpSync(options.starter, dir, { recursive: true });
+  } else {
+    await scaffold(dirname(dir), framework);
+  }
+  const name = await installPackage(dir, packageDir);
   importPackage(framework, dir, name);
   if (options.guardResolution) guardResolution(framework, dir, name);
   return dir;

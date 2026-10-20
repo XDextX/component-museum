@@ -51,6 +51,24 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
   `node_modules` de la raíz del repo, y falla con él en el `node_modules` del padre del
   consumidor; con la dependencia declarada, pasa. El módulo copiado a la raíz se borra al terminar.
 
+- [x] **T-6b — Reutilizar los consumidores en una ejecución**
+  Cubre: ninguno nuevo; tarea de rendimiento sobre RF-4 y RF-5 (plan, bloques 4 y 6)
+  Archivos: `tests/global-setup.ts`, `vitest.config.ts`, `tests/consumer.test.ts`,
+  `tests/lib/consumer.ts`
+  Hecho cuando:
+  - Cada consumidor se crea una sola vez por `runId`.
+  - Hay uno sin tocar por framework para los tests que lo exigen, y otro con la guarda de
+    resolución por framework para RF-5, nunca mezclados.
+  - Ningún test modifica un consumidor sin tocar, y cada consumidor con guarda lo modifica solo su
+    propio test de RF-5.
+  - Los 27 tests siguen en verde.
+  - Las inyecciones de RF-4 (consumidor dentro del repo) y de RF-5 (sin la guarda) siguen
+    poniéndose en rojo.
+  - El tiempo total de `npm test` se mide antes y después, y se reporta.
+
+  Va antes de la T-7 porque cambia dónde se crean los consumidores: la instantánea de RF-6 tiene
+  que tomarse antes de que el `globalSetup` los cree.
+
 - [ ] **T-7 — Comprobar que la verificación deja el árbol igual**
   Cubre: RF-6
   Archivos: `tests/lib/snapshot.ts`, `tests/snapshot.test.ts`, `tests/consumer.test.ts`

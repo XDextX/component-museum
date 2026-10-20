@@ -37,7 +37,8 @@ Todos los RF quedan cubiertos.
 | `package-lock.json` | sí | Fija las versiones resueltas, transitivas incluidas. |
 | `package.json` | sí | Declara el repo como privado, sus `engines` (`^22.22.0 \|\| >=24.0.0`), el script `test` y las dependencias de desarrollo con motivo. |
 | `tsconfig.json` | sí | Decide qué TypeScript se comprueba: los tests y el `.tsx` de la fixture, en modo estricto, con `types: ["node"]`. |
-| `vitest.config.ts` | sí | Decide qué es un test (`tests/**/*.test.ts`), qué queda fuera (`tests/fixtures/**`) y los tiempos máximos. |
+| `vitest.config.ts` | sí | Decide qué es un test (`tests/**/*.test.ts`), qué queda fuera (`tests/fixtures/**`), los tiempos máximos y el `globalSetup` de T-6b. |
+| `tests/global-setup.ts` | sí (T-6b) | Crea una vez por ejecución los consumidores que comparten los tests, los entrega con `provide` y los borra al terminar. |
 | `tests/lib/paths.ts` | sí | Decide si una ruta está fuera del repo y dónde vive cada consumidor (lógica pura). |
 | `tests/lib/snapshot.ts` | sí | Toma la instantánea del árbol y dice qué cambió entre dos (comparación pura). |
 | `tests/lib/run.ts` | sí | Ejecuta un comando y devuelve código y salida, sin lanzar excepción si falla. |
@@ -84,6 +85,15 @@ que el build del consumidor falle; lo borra. Después lo copia a `<base>/cm-<run
 el padre del consumidor, y espera el mismo fallo. Por último declara la dependencia en el paquete
 copiado, reinstala y espera que el build pase.
 
+**Consumidores compartidos (T-6b).** El `globalSetup` de Vitest genera el `runId` y crea, en
+paralelo, cuatro consumidores: uno sin tocar por framework (RF-4) y uno con la guarda de
+resolución por framework (RF-5), en carpetas `cm-<runId>` y `cm-<runId>-guard` distintas. Antes
+de crear el de React sin tocar, deja un `leftover.txt` en su ruta, para que el test de «borra y
+recrea» solo compruebe que ya no está. También genera los starters de referencia, sin instalar,
+para el test de configuración idéntica. Los tests reciben las rutas con `inject`. Los
+consumidores sin tocar son de solo lectura; cada consumidor con guarda lo modifica solo su test
+de RF-5, que es el último que lo usa. El teardown borra todas las carpetas `cm-<runId>*`.
+
 **Árbol intacto (RF-6).** La suite de consumidor toma la instantánea en `beforeAll` (salida de
 `git status --porcelain` y sha256 de cada archivo de `tests/fixtures/`) y en `afterAll` falla si
 `diffSnapshots` no está vacío. Ninguna inyección toca el repo: todas van a copias temporales.
@@ -118,6 +128,7 @@ Es una línea de comandos: `npm test`.
 | **`.tsx` de la fixture sin JSX.** Basta para que `tsc` lo compruebe. | Con JSX: exige `react` y sus tipos, que trae la 002. |
 | **Sin workspaces de npm todavía.** | Declararlos ahora: no hay paquetes; los decide la 002. |
 | **Leer el estilo calculado con `getComputedStyle` vía Playwright**, y por CDP (`CSS.getComputedStyleForNode`) si con JavaScript desactivado `evaluate` no responde. Lo comprueba T-3 al empezar. | Capturas y comparación de píxeles: frágil ante fuentes y escalado. |
+| **Consumidores compartidos por ejecución** (decisión del dueño, 2026-10-19). Tras la T-6, `npm test` tardaba 58–76 s, casi todo creando e instalando consumidores, en serie y con instalaciones repetidas. Se crean una vez por `runId`, en paralelo, en el `globalSetup`, y los comparten todos los tests (bloque 4). Coste aceptado: los tests dejan de estar aislados entre sí. Un test que modificara un consumidor sin tocar afectaría a los demás, y por eso esos consumidores son de solo lectura. | Separar los lentos en `npm run test:consumers`: rompe el comando único de RF-1. Dejarlo como está: 58–76 s por ejecución. Reutilizar consumidores entre ejecuciones: más rápido, pero un consumidor viejo escondería un fallo de instalación limpia (RF-4). |
 | **Guarda de resolución solo en el consumidor de RF-5** (decisión del dueño, 2026-10-19). Con el módulo en el `node_modules` de un padre del consumidor, la resolución de Node y de Vite sube por las carpetas y el build pasa (comprobado en T-6). `createConsumer` con `guardResolution: true` añade a la configuración del consumidor temporal un plugin de Vite que hace fallar el build si un import se resuelve fuera de su carpeta; en Astro, además, `vite.resolve.noExternal` con el paquete bajo prueba, para que Vite vea sus imports. Sin la opción, la configuración queda idéntica a la del starter (lo comprueba un test), y la 002 compila sobre un consumidor sin tocar. | B: el permission model de Node 24 (`--permission --allow-fs-read`): más fiel, pero frágil con los binarios nativos de Rolldown y esbuild. C: recortar RF-5 al caso de la raíz del repo: deja sin cubrir el riesgo del `node_modules` padre. |
 
 **Dependencias de desarrollo y su motivo (regla 9).** Ninguna llega a un consumidor.
