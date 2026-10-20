@@ -69,7 +69,7 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
   Va antes de la T-7 porque cambia dónde se crean los consumidores: la instantánea de RF-6 tiene
   que tomarse antes de que el `globalSetup` los cree.
 
-- [ ] **T-7 — Comprobar que la verificación deja el árbol igual**
+- [x] **T-7 — Comprobar que la verificación deja el árbol igual**
   Cubre: RF-6
   Archivos: `tests/lib/snapshot.ts`, `tests/snapshot.test.ts`, `tests/consumer.test.ts`
   Hecho cuando: `diffSnapshots` tiene sus tests; la suite de consumidor falla en `afterAll` si

@@ -2,14 +2,20 @@ import { cpSync, existsSync, readFileSync, realpathSync, rmSync, writeFileSync }
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, inject, it } from 'vitest';
+import { afterAll, describe, expect, inject, it } from 'vitest';
 import { buildConsumer, configFiles, installPackage, packPackage } from './lib/consumer.ts';
 import { consumerDir, isOutside, type Framework } from './lib/paths.ts';
+import { diffSnapshots, snapshotRoots, takeSnapshot } from './lib/snapshot.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const frameworks: Framework[] = ['react', 'astro'];
 // Created once per run by tests/global-setup.ts; the plain ones are read-only here.
 const consumers = inject('consumers');
+
+// RF-6: the tree as global-setup.ts saw it before creating anything; the suite must leave it so.
+afterAll(() => {
+  expect(diffSnapshots(inject('treeBefore'), takeSnapshot(repo, snapshotRoots))).toEqual([]);
+});
 
 /** Where the consumer's own require finds the package, with links resolved. */
 function resolvedFrom(dir: string): string {

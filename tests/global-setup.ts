@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import type { TestProject } from 'vitest/node';
 import { createConsumer, scaffold } from './lib/consumer.ts';
 import { consumerDir, type Framework } from './lib/paths.ts';
+import { snapshotRoots, takeSnapshot, type Snapshot } from './lib/snapshot.ts';
 
 export type SharedConsumers = {
   base: string;
@@ -25,6 +26,8 @@ export type SharedConsumers = {
 declare module 'vitest' {
   export interface ProvidedContext {
     consumers: SharedConsumers;
+    /** The repo before anything ran (RF-6). */
+    treeBefore: Snapshot;
   }
 }
 
@@ -34,6 +37,8 @@ const frameworks: Framework[] = ['react', 'astro'];
 
 /** Creates every consumer once per run, in parallel, and removes them all when the run ends. */
 export default async function setup(project: TestProject): Promise<() => void> {
+  // Before any consumer exists, so whatever creating them changes in the repo shows in RF-6.
+  project.provide('treeBefore', takeSnapshot(repo, snapshotRoots));
   const base = tmpdir();
   const runId = randomUUID().slice(0, 8);
   const guardRunId = `${runId}-guard`;
