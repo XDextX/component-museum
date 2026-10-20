@@ -44,7 +44,7 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
   `true` y el paquete de prueba resuelve en su propio `node_modules`; con un consumidor dentro del
   repo, el test se pone en rojo. Un consumidor viejo en la misma ruta se borra y se recrea.
 
-- [ ] **T-6 — Hacer fallar el build ante un módulo no declarado**
+- [x] **T-6 — Hacer fallar el build ante un módulo no declarado**
   Cubre: RF-5
   Archivos: `tests/fixtures/undeclared-module/`, `tests/consumer.test.ts`
   Hecho cuando: el build del consumidor falla con `museum-undeclared` instalado en el

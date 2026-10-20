@@ -118,6 +118,7 @@ Es una línea de comandos: `npm test`.
 | **`.tsx` de la fixture sin JSX.** Basta para que `tsc` lo compruebe. | Con JSX: exige `react` y sus tipos, que trae la 002. |
 | **Sin workspaces de npm todavía.** | Declararlos ahora: no hay paquetes; los decide la 002. |
 | **Leer el estilo calculado con `getComputedStyle` vía Playwright**, y por CDP (`CSS.getComputedStyleForNode`) si con JavaScript desactivado `evaluate` no responde. Lo comprueba T-3 al empezar. | Capturas y comparación de píxeles: frágil ante fuentes y escalado. |
+| **Guarda de resolución solo en el consumidor de RF-5** (decisión del dueño, 2026-10-19). Con el módulo en el `node_modules` de un padre del consumidor, la resolución de Node y de Vite sube por las carpetas y el build pasa (comprobado en T-6). `createConsumer` con `guardResolution: true` añade a la configuración del consumidor temporal un plugin de Vite que hace fallar el build si un import se resuelve fuera de su carpeta; en Astro, además, `vite.resolve.noExternal` con el paquete bajo prueba, para que Vite vea sus imports. Sin la opción, la configuración queda idéntica a la del starter (lo comprueba un test), y la 002 compila sobre un consumidor sin tocar. | B: el permission model de Node 24 (`--permission --allow-fs-read`): más fiel, pero frágil con los binarios nativos de Rolldown y esbuild. C: recortar RF-5 al caso de la raíz del repo: deja sin cubrir el riesgo del `node_modules` padre. |
 
 **Dependencias de desarrollo y su motivo (regla 9).** Ninguna llega a un consumidor.
 - `vitest` — el runner de RF-1 y RF-2.
