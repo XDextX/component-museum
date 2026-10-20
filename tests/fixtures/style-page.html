@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Style fixture</title>
+    <style>
+      #scheme { color: rgb(20, 20, 20); }
+      @media (prefers-color-scheme: dark) {
+        #scheme { color: rgb(240, 240, 240); }
+      }
+      #scripted { color: rgb(0, 0, 255); }
+    </style>
+  </head>
+  <body>
+    <p id="scheme">Color follows the color scheme.</p>
+    <p id="scripted">Color changes only when JavaScript runs.</p>
+    <script>
+      document.getElementById('scripted').style.color = 'rgb(255, 0, 0)';
+    </script>
+  </body>
+</html>

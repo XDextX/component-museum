@@ -19,7 +19,7 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
   Hecho cuando: el meta-test lanza Vitest sobre `failing-suite`, ve código distinto de 0 y el
   nombre del test y de su archivo en la salida; `npm test` sigue en 0.
 
-- [ ] **T-3 — Leer estilos en Edge con esquema emulado y sin JavaScript**
+- [x] **T-3 — Leer estilos en Edge con esquema emulado y sin JavaScript**
   Cubre: RF-3
   Archivos: `tests/lib/browser.ts`, `tests/fixtures/style-page.html`, `tests/browser.test.ts`
   Hecho cuando: el test lee el color oscuro con `colorScheme: 'dark'`, el claro con `'light'`, y
