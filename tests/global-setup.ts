@@ -5,6 +5,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { TestProject } from 'vitest/node';
 import { createConsumer, scaffold } from './lib/consumer.ts';
+import { acquireLock } from './lib/lock.ts';
 import { consumerDir, type Framework } from './lib/paths.ts';
 import { snapshotRoots, takeSnapshot, type Snapshot } from './lib/snapshot.ts';
 
@@ -37,15 +38,20 @@ const frameworks: Framework[] = ['react', 'astro'];
 
 /** Creates every consumer once per run, in parallel, and removes them all when the run ends. */
 export default async function setup(project: TestProject): Promise<() => void> {
+  const runId = randomUUID().slice(0, 8);
+  // One run per checkout (T-9): a second npm test would see this run's RF-5 module in RF-6.
+  const releaseLock = await acquireLock(join(repo, 'node_modules', '.museum-test-lock'), { runId });
   // Before any consumer exists, so whatever creating them changes in the repo shows in RF-6.
   project.provide('treeBefore', takeSnapshot(repo, snapshotRoots));
   const base = tmpdir();
-  const runId = randomUUID().slice(0, 8);
   const guardRunId = `${runId}-guard`;
   const guardParent = join(base, `cm-${guardRunId}`);
   const starterParent = join(base, `cm-${runId}-starter`);
   const created = [join(base, `cm-${runId}`), guardParent, starterParent];
-  const teardown = () => created.forEach((dir) => rmSync(dir, { recursive: true, force: true }));
+  const teardown = () => {
+    created.forEach((dir) => rmSync(dir, { recursive: true, force: true }));
+    releaseLock();
+  };
 
   try {
     const [reactStarter, astroStarter] = await Promise.all(frameworks.map((f) => scaffold(starterParent, f)));

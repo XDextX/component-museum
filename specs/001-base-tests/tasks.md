@@ -84,3 +84,20 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
   ejecutes el comprobador de tipos». Lo aprueba el dueño y va en su propio commit `docs:`.
 
   Va la última porque la política solo puede nombrar comandos que ya funcionan.
+
+- [x] **T-9 — Poner un candado a `npm test` para que dos ejecuciones no se pisen**
+  Cubre: RF-6 (plan, bloques 2, 4 y 6)
+  Archivos: `tests/lib/lock.ts`, `tests/lock.test.ts`, `tests/global-setup.ts`
+  Hecho cuando:
+  - `isStale` tiene sus tests como dato: dueño vivo y reciente, pid muerto, y más de 15 min.
+  - Un test lanza dos procesos que se disputan un candado en un directorio temporal: el segundo
+    imprime «waiting for another npm test» y espera; con un límite de espera corto, falla con
+    «another npm test (pid …) has held … since …».
+  - Un candado con un pid muerto se retira y la ejecución sigue, así que un huérfano no bloquea
+    para siempre.
+  - El `globalSetup` toma el candado en `node_modules/.museum-test-lock` antes de la instantánea de
+    RF-6 y lo suelta en el teardown, solo si es suyo.
+  - `npm test` sigue en 0, y quitar la retirada de huérfanos pone en rojo el test del huérfano.
+
+  Va tras la T-8 porque nació de un choque real entre dos sesiones, con el resto de la 001 ya hecho.
+

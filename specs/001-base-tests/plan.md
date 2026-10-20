@@ -23,7 +23,7 @@ reinicio, y el runner se elige aquí (bloque 6). Versiones comprobadas en npm el
 | RF-3 | Test con Playwright sobre una página fixture, con `colorScheme` emulado y sin JavaScript. |
 | RF-4 | Helper que crea un consumidor por framework en el directorio temporal del sistema. |
 | RF-5 | Test que instala un módulo no declarado en la raíz y en el padre del consumidor. |
-| RF-6 | Instantánea del árbol (`git status` y hashes) antes y después de la suite de consumidor. |
+| RF-6 | Instantánea del árbol (`git status` y hashes) antes y después de la suite de consumidor; el candado de T-9 impide que otra ejecución la ensucie. |
 | RF-7 | Enmienda de `AGENTS.md` («Verificar» y «Comandos»), en su propio commit `docs:`. |
 | RF-8 | El script `test` corre `tsc --noEmit` y `astro check`; meta-test con errores inyectados. |
 
@@ -39,6 +39,8 @@ Todos los RF quedan cubiertos.
 | `tsconfig.json` | sí | Decide qué TypeScript se comprueba: los tests y el `.tsx` de la fixture, en modo estricto, con `types: ["node"]`. |
 | `vitest.config.ts` | sí | Decide qué es un test (`tests/**/*.test.ts`), qué queda fuera (`tests/fixtures/**`), los tiempos máximos y el `globalSetup` de T-6b. |
 | `tests/global-setup.ts` | sí (T-6b) | Crea una vez por ejecución los consumidores que comparten los tests, los entrega con `provide` y los borra al terminar. |
+| `tests/lib/lock.ts` | sí (T-9) | Decide si una ejecución puede correr: toma el candado del checkout, espera si otra lo tiene, retira uno huérfano y lo suelta al terminar. |
+| `tests/lock.test.ts` | sí (T-9) | `isStale` como dato, y dos procesos que se disputan un candado en un directorio temporal. |
 | `tests/lib/paths.ts` | sí | Decide si una ruta está fuera del repo y dónde vive cada consumidor (lógica pura). |
 | `tests/lib/snapshot.ts` | sí | Toma la instantánea del árbol y dice qué cambió entre dos (comparación pura). |
 | `tests/lib/run.ts` | sí | Ejecuta un comando y devuelve código y salida, sin lanzar excepción si falla. |
@@ -63,6 +65,10 @@ consumerDir(base: string, runId: string, framework: 'react' | 'astro'): string
 // Lista de diferencias entre dos instantáneas; vacía si son iguales.
 diffSnapshots(before: Snapshot, after: Snapshot): string[]
 type Snapshot = { status: string; hashes: Record<string, string> }
+// T-9: true si el dueño del candado ya no corre o lo tomó hace más de maxAgeMs. «now» y
+// «isAlive» entran como parámetros: ni reloj ni procesos dentro.
+isStale(owner: LockOwner, now: number, isAlive: (pid: number) => boolean, maxAgeMs: number): boolean
+type LockOwner = { pid: number; runId: string; startedAt: number }
 ```
 
 ## 4. Algoritmo
@@ -94,6 +100,22 @@ para el test de configuración idéntica. Los tests reciben las rutas con `injec
 consumidores sin tocar son de solo lectura; cada consumidor con guarda lo modifica solo su test
 de RF-5, que es el último que lo usa. El teardown borra todas las carpetas `cm-<runId>*`.
 
+**Candado de ejecución (T-9).** Lo primero del `globalSetup`, antes de la instantánea de RF-6:
+```
+lockDir = <repo>/node_modules/.museum-test-lock          # uno por checkout, fuera de git
+repetir:
+  mkdir(lockDir)  -> si lo crea: escribir owner.json {pid, runId, startedAt}; salir del bucle
+  si existe: leer owner.json
+    si isStale(owner, Date.now(), pidVivo, 15 min): borrar lockDir y reintentar (huérfano)
+    si no: avisar una vez «waiting for another npm test (pid <pid>, since <hora>)»
+           y esperar 2 s; si pasan 10 min, fallar con el mensaje de abajo
+teardown: borrar lockDir solo si owner.json lleva el runId de esta ejecución
+```
+`pidVivo` usa `process.kill(pid, 0)`: si lanza `ESRCH`, el proceso murió. Los 15 min cubren que
+Windows reutilice el pid de una ejecución muerta. `mkdir` es atómico, así que dos ejecuciones no
+pueden tomar el candado a la vez. Si la ejecución muere sin teardown (Ctrl+C, un fallo del
+proceso), el candado queda huérfano y la siguiente lo retira.
+
 **Árbol intacto (RF-6).** La suite de consumidor toma la instantánea en `beforeAll` (salida de
 `git status --porcelain` y sha256 de cada archivo de `tests/fixtures/`) y en `afterAll` falla si
 `diffSnapshots` no está vacío. Ninguna inyección toca el repo: todas van a copias temporales.
@@ -111,6 +133,10 @@ Es una línea de comandos: `npm test`.
 - **Error de tipos:** `tsc` o `astro check` nombran archivo y línea y cortan la cadena con distinto
   de 0, antes de Vitest.
 - **Sin red:** los tests de consumidor fallan con el mensaje de arriba; no se saltan en silencio.
+- **Otra ejecución en marcha (T-9):** imprime una vez «waiting for another npm test (pid <pid>,
+  since <hora>)» y espera. Si a los 10 min sigue ocupado, falla con «another npm test (pid <pid>)
+  has held <lockDir> since <hora>; wait for it to finish, or delete that folder if it died».
+- **Candado huérfano:** se retira solo, sin mensaje de error.
 - **Sin Edge:** el test de navegador falla con «no se encontró Microsoft Edge (canal msedge)».
 - **Sin tests:** no aplica; la suite siempre tiene al menos los de esta spec.
 
@@ -128,6 +154,7 @@ Es una línea de comandos: `npm test`.
 | **`.tsx` de la fixture sin JSX.** Basta para que `tsc` lo compruebe. | Con JSX: exige `react` y sus tipos, que trae la 002. |
 | **Sin workspaces de npm todavía.** | Declararlos ahora: no hay paquetes; los decide la 002. |
 | **Leer el estilo calculado con `getComputedStyle` vía Playwright**, y por CDP (`CSS.getComputedStyleForNode`) si con JavaScript desactivado `evaluate` no responde. Lo comprueba T-3 al empezar. | Capturas y comparación de píxeles: frágil ante fuentes y escalado. |
+| **Candado por checkout en `npm test`** (decisión del dueño, 2026-10-19). Dos ejecuciones a la vez se pisaban: RF-5 crea `node_modules/museum-undeclared` en la raíz del repo, la otra lo veía en su instantánea de RF-6, y RF-5 se negaba a correr si ya existía. Pasó entre la sesión de git y el implementer. Ahora el `globalSetup` toma un candado en `node_modules/.museum-test-lock` (bloque 4): la segunda ejecución espera hasta 10 min y luego falla con un mensaje claro, y un candado huérfano se retira por pid muerto o por antigüedad de más de 15 min. | Solo una regla en `AGENTS.md`: se olvida, y ya falló una vez. Mover el módulo fuera del repo: RF-5 tiene que probar justo el `node_modules` de la raíz. Fallar al instante: dos sesiones lanzan `npm test` a menudo, y esperar evita repetirlo a mano. Esperar sin límite: un candado vivo pero colgado dejaría la ejecución parada para siempre. `proper-lockfile`: una dependencia nueva (regla 9) para unas pocas líneas. |
 | **Consumidores compartidos por ejecución** (decisión del dueño, 2026-10-19). Tras la T-6, `npm test` tardaba 58–76 s, casi todo creando e instalando consumidores, en serie y con instalaciones repetidas. Se crean una vez por `runId`, en paralelo, en el `globalSetup`, y los comparten todos los tests (bloque 4). Coste aceptado: los tests dejan de estar aislados entre sí. Un test que modificara un consumidor sin tocar afectaría a los demás, y por eso esos consumidores son de solo lectura. | Separar los lentos en `npm run test:consumers`: rompe el comando único de RF-1. Dejarlo como está: 58–76 s por ejecución. Reutilizar consumidores entre ejecuciones: más rápido, pero un consumidor viejo escondería un fallo de instalación limpia (RF-4). |
 | **Guarda de resolución solo en el consumidor de RF-5** (decisión del dueño, 2026-10-19). Con el módulo en el `node_modules` de un padre del consumidor, la resolución de Node y de Vite sube por las carpetas y el build pasa (comprobado en T-6). `createConsumer` con `guardResolution: true` añade a la configuración del consumidor temporal un plugin de Vite que hace fallar el build si un import se resuelve fuera de su carpeta; en Astro, además, `vite.resolve.noExternal` con el paquete bajo prueba, para que Vite vea sus imports. Sin la opción, la configuración queda idéntica a la del starter (lo comprueba un test), y la 002 compila sobre un consumidor sin tocar. | B: el permission model de Node 24 (`--permission --allow-fs-read`): más fiel, pero frágil con los binarios nativos de Rolldown y esbuild. C: recortar RF-5 al caso de la raíz del repo: deja sin cubrir el riesgo del `node_modules` padre. |
 
@@ -154,5 +181,10 @@ Es una línea de comandos: `npm test`.
   - RF-6, escribiendo un archivo en `tests/fixtures/` durante la suite.
   - RF-7, buscando las dos frases antiguas, que aún están.
   - El commit de cada tarea nombra su inyección.
+- **Candado (T-9).** `isStale` se prueba como dato con `now` y `isAlive` falsos. Dos procesos de
+  Node se disputan un candado en un directorio temporal, nunca en el del repo, que tiene tomado la
+  propia ejecución: el segundo espera, y con un límite de espera corto falla con el mensaje; un
+  candado con un pid muerto se retira. Rojo una vez: quitar la retirada de huérfanos y ver colgarse
+  la prueba hasta el límite.
 - **Lentitud.** Los tests de consumidor instalan con red: `testTimeout` de 5 minutos en ese
   archivo y `--prefer-offline` en `npm install`.
