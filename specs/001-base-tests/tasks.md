@@ -37,7 +37,7 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
   inyectado en una copia temporal del `.tsx` y otro en la del `.astro`, ve distinto de 0 en cada
   comando.
 
-- [ ] **T-5 — Crear el consumidor externo e instalarle el tarball**
+- [x] **T-5 — Crear el consumidor externo e instalarle el tarball**
   Cubre: RF-4
   Archivos: `tests/lib/consumer.ts`, `tests/consumer.test.ts`
   Hecho cuando: por framework, el consumidor está en `os.tmpdir()/cm-<runId>/`, `isOutside` da
