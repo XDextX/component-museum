@@ -6,8 +6,9 @@
     "strict": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node"]
   },
-  "include": ["tests/**/*.ts", "vitest.config.ts"],
+  "include": ["tests/**/*.ts", "vitest.config.ts", "tests/fixtures/test-package/src/**/*.tsx"],
   "exclude": ["tests/fixtures/**"]
 }

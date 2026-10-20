@@ -27,7 +27,7 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
   pone en rojo. Antes de nada, comprobar si `evaluate` responde con JavaScript desactivado; si no,
   leer por CDP (plan, bloque 6).
 
-- [ ] **T-4 — Añadir el paquete de prueba y la comprobación de tipos**
+- [x] **T-4 — Añadir el paquete de prueba y la comprobación de tipos**
   Cubre: RF-8
   Archivos: `tests/fixtures/test-package/`, `package.json` (script `test` y `@types/node`
   `^24.19.2`), `package-lock.json`, `tsconfig.json` (vuelve `types: ["node"]`),
