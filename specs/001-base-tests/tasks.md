@@ -13,7 +13,7 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
   unidad en Windows) y de `consumerDir`; con un `expect(1).toBe(2)` temporal, termina en distinto
   de 0.
 
-- [ ] **T-2 — Probar que un test rojo para la suite y se nombra**
+- [x] **T-2 — Probar que un test rojo para la suite y se nombra**
   Cubre: RF-2
   Archivos: `tests/lib/run.ts`, `tests/fixtures/failing-suite/`, `tests/runner.test.ts`
   Hecho cuando: el meta-test lanza Vitest sobre `failing-suite`, ve código distinto de 0 y el
@@ -29,11 +29,13 @@ Requisito previo: Node 24 LTS instalado por el dueño (plan, «Decisiones del du
 
 - [ ] **T-4 — Añadir el paquete de prueba y la comprobación de tipos**
   Cubre: RF-8
-  Archivos: `tests/fixtures/test-package/`, `package.json` (script `test`), `tsconfig.json`,
+  Archivos: `tests/fixtures/test-package/`, `package.json` (script `test` y `@types/node`
+  `^24.19.2`), `package-lock.json`, `tsconfig.json` (vuelve `types: ["node"]`),
   `tests/typecheck.test.ts`
-  Hecho cuando: `npm test` corre `tsc --noEmit` y `astro check` antes de Vitest y termina en 0;
-  el meta-test, con un error inyectado en una copia temporal del `.tsx` y otro en la del `.astro`,
-  ve distinto de 0 en cada comando.
+  Hecho cuando: `tsc --noEmit` acepta los imports de `node:path` de `tests/`; `npm test` corre
+  `tsc --noEmit` y `astro check` antes de Vitest y termina en 0; el meta-test, con un error
+  inyectado en una copia temporal del `.tsx` y otro en la del `.astro`, ve distinto de 0 en cada
+  comando.
 
 - [ ] **T-5 — Crear el consumidor externo e instalarle el tarball**
   Cubre: RF-4

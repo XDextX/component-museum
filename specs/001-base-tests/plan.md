@@ -36,7 +36,7 @@ Todos los RF quedan cubiertos.
 | `.gitignore` | modificado | Deja de ignorar `package-lock.json`. |
 | `package-lock.json` | sí | Fija las versiones resueltas, transitivas incluidas. |
 | `package.json` | sí | Declara el repo como privado, sus `engines` (`^22.22.0 \|\| >=24.0.0`), el script `test` y las dependencias de desarrollo con motivo. |
-| `tsconfig.json` | sí | Decide qué TypeScript se comprueba: los tests y el `.tsx` de la fixture, en modo estricto. |
+| `tsconfig.json` | sí | Decide qué TypeScript se comprueba: los tests y el `.tsx` de la fixture, en modo estricto, con `types: ["node"]`. |
 | `vitest.config.ts` | sí | Decide qué es un test (`tests/**/*.test.ts`), qué queda fuera (`tests/fixtures/**`) y los tiempos máximos. |
 | `tests/lib/paths.ts` | sí | Decide si una ruta está fuera del repo y dónde vive cada consumidor (lógica pura). |
 | `tests/lib/snapshot.ts` | sí | Toma la instantánea del árbol y dice qué cambió entre dos (comparación pura). |
@@ -125,6 +125,8 @@ Es una línea de comandos: `npm test`.
 - `typescript` — `tsc --noEmit` de RF-8, y los tipos que entrega la 002.
 - `@astrojs/check` — `astro check` de RF-8.
 - `astro` — lo exige `@astrojs/check` para comprobar `.astro`.
+- `@types/node` `^24.19.2` — los tests importan `node:path` y otros módulos de Node, y `tsc` los
+  comprueba; la versión 24 sigue al Node 24 LTS del dueño.
 
 ## 7. Estrategia de tests
 
