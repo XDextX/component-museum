@@ -6,13 +6,16 @@
     "node": "^22.22.0 || >=24.0.0"
   },
   "scripts": {
-    "test": "tsc --noEmit && astro check --root tests/fixtures/test-package && vitest run"
+    "test": "tsc -p packages/react/tsconfig.build.json && tsc --noEmit && astro check --root tests/fixtures/test-package && vitest run"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.11",
     "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
     "astro": "^7.4.1",
     "playwright-core": "^1.64.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "typescript": "^6.0.3",
     "vitest": "^5.0.5"
   }

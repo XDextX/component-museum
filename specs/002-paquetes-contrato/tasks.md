@@ -5,22 +5,25 @@
 Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización npm
 `component-museum` antes de publicar (plan, «Decisiones del dueño»).
 
-- [ ] **T-1 — Escribir el contrato de Button y su guarda**
+- [x] **T-1 — Escribir el contrato de Button y su guarda**
   Cubre: RF-6
   Archivos: `contracts/button.contract.json`, `tests/lib/contract.ts`, `tests/contract.test.ts`
   Hecho cuando: el contrato recoge la API propuesta en el plan, aprobada con él; `eventName`, `classProp`,
   `contentProp` y `expectedApi` tienen sus tests como dato; el test falla si un componente no
   tiene contrato o tiene más de uno en el repo.
   Inyección: una copia de `button.contract.json` en otra carpeta pone el test en rojo.
+  Inyección vista: copiar `button.contract.json` a `tests/fixtures/dup-inject/` puso el test en rojo («Button has 2 contracts»); restaurado, mismo sha256.
 
-- [ ] **T-2 — Crear el paquete de React con Button**
+- [x] **T-2 — Crear el paquete de React con Button**
   Cubre: RF-1 (React), RF-4 (React)
   Archivos: `packages/react/`, `package.json` (raíz: `react`, `react-dom`, `@types/react`, script
   `test` que compila el paquete), `tsconfig.json`, `.gitignore` (`dist/`), `tests/packages.test.ts`
   Hecho cuando: `npm test` compila `dist/`; el paquete empaquetado se llama
   `@component-museum/react` y trae entrada, `styles.css` y `.d.ts`; el manifiesto solo tiene
   `react` como peer.
-  Inyección: añadir `left-pad` a `dependencies` pone en rojo RF-4.
+  Inyección: añadir `left-pad` a `dependencies` de `packages/react/package.json` → el test de RF-4
+  en rojo (`expected { dependencies: [ 'left-pad' ], … } to deeply equal { dependencies: [], … }`),
+  exit 1; manifiesto restaurado, idéntico según `cmp`.
 
 - [ ] **T-3 — Crear el paquete de Astro con Button**
   Cubre: RF-1 (Astro), RF-4 (Astro)

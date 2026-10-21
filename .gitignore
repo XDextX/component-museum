@@ -1,5 +1,6 @@
 node_modules
 .astro/
+dist/
 
 # Agent tooling and per-machine state (never tracked)
 .agents/

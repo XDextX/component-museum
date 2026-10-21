@@ -8,7 +8,7 @@ import { run, type RunResult } from './run.ts';
 const execFileAsync = promisify(execFile);
 
 // shortcut: npm-cli.js next to node.exe is the Windows layout; under `npm test` npm_execpath wins.
-const npmCli = process.env.npm_execpath ?? join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+export const npmCli = process.env.npm_execpath ?? join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js');
 
 /** Pinned starters (plan 001, block 6): a new starter release never changes the suite. */
 const starters: Record<Framework, string[]> = {
