@@ -37,3 +37,36 @@ export async function readStyle(
     await browser.close();
   }
 }
+
+export type ElementShape = { id: string; tag: string; classes: string[]; attributes: Record<string, string> };
+
+/**
+ * Loads `html` in the system Edge without JavaScript and describes every element matching
+ * `selector`: tag, sorted classes and every other attribute. Only the explicit list below is
+ * normalised away; any other extra attribute on one side makes the comparison fail.
+ */
+export async function readElements(html: string, selector: string): Promise<ElementShape[]> {
+  const browser = await launchEdge();
+  try {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.setContent(html);
+    return await page.locator(selector).evaluateAll((elements) =>
+      elements.map((element) => ({
+        id: element.id,
+        tag: element.tagName.toLowerCase(),
+        classes: [...element.classList].sort(),
+        attributes: Object.fromEntries(
+          element.getAttributeNames()
+            // `class` is compared sorted above; `data-astro-*` is Astro's own bookkeeping; and
+            // `data-museum-button` is the hook of Astro's click script, which React does not emit.
+            .filter((name) => name !== 'class' && name !== 'id' && !name.startsWith('data-astro-') && name !== 'data-museum-button')
+            .sort()
+            .map((name) => [name, element.getAttribute(name) ?? '']),
+        ),
+      })),
+    );
+  } finally {
+    await browser.close();
+  }
+}

@@ -71,7 +71,7 @@ Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización
   consumidor sin tocar no lo detecta, que es la razón de la nota.
   Inyección vista: copias de los dos paquetes con `import 'museum-undeclared'` y el módulo en el `node_modules` del padre (script fuera del repo) → en React y Astro, el build sin tocar termina en 0 y el build con guarda en 1 («resolves outside the consumer»); el repo no se tocó.
 
-- [ ] **T-7 — Romper la comprobación de tipos del consumidor con una variante inexistente**
+- [x] **T-7 — Romper la comprobación de tipos del consumidor con una variante inexistente**
   Cubre: RF-5
   Archivos: `tests/global-setup.ts` (`@astrojs/check` y `typescript` solo en el consumidor con
   guarda de Astro), `tests/consumer.test.ts`
@@ -79,14 +79,16 @@ Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización
   en el de Astro terminan en distinto de 0; sin ese archivo, en 0.
   Inyección: escribir la `variant` como `string` en las dos implementaciones deja pasar `"nope"` y
   pone el test en rojo.
+  Inyección vista: copias de los dos paquetes fuera del repo con `variant?: string` en `Button.tsx` y `Button.astro` → con `<Button variant="nope">`, `tsc -b` (React) y `astro check` (Astro) terminan en 0 y el test de RF-5, que exige distinto de 0, se pone en rojo; `packages/` no se tocó.
 
-- [ ] **T-8 — Comparar el HTML de los dos Button**
+- [x] **T-8 — Comparar el HTML de los dos Button**
   Cubre: RF-9
   Archivos: `tests/markup.test.ts`, `tests/lib/browser.ts`
   Hecho cuando: por cada variante y tamaño, el elemento, las clases ordenadas y los atributos
   `aria-*`, `disabled` y `type` de React (`renderToStaticMarkup`) y de Astro (el `dist/index.html`
   del consumidor) coinciden, tras normalizar `data-astro-*`.
   Inyección: añadir una clase solo en React pone el test en rojo.
+  Inyección vista: en copias temporales, sin tocar `packages/`: `className: 'injected'` solo en React → rojo con «injected» en las clases de las 9 combinaciones; `title: 'injected'` solo en React → rojo con el atributo de más en las 9. Se comparan todos los atributos salvo `data-astro-*` y `data-museum-button` (gancho del script de Astro; React no lo emite).
 
 - [ ] **T-9 — Pasar los atributos HTML al `<button>` y resolver los choques**
   Cubre: RF-11
