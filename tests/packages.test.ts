@@ -1,7 +1,8 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { findContractFiles, loadContract } from './lib/contract.ts';
 import { npmCli } from './lib/consumer.ts';
 import type { Framework } from './lib/paths.ts';
 import { run } from './lib/run.ts';
@@ -33,6 +34,42 @@ function packedFiles(dir: string): { name: string; files: string[] } {
   return { name: packed.name, files: packed.files.map((file: { path: string }) => file.path) };
 }
 
+/** Value exports of an entry file: `export { A, default as B }` yes, `export type { ... }` no. */
+function entryExports(source: string): string[] {
+  const names: string[] = [];
+  for (const [, list] of source.matchAll(/^export\s+(?!type)\{([^}]*)\}/gm)) {
+    for (const item of list.split(',')) {
+      const name = item.trim().split(/\s+as\s+/).pop();
+      if (name) names.push(name);
+    }
+  }
+  return names;
+}
+
+/** RF-2: one message per component missing from a set the other two have. */
+export function crossProblems(folders: string[], exported: string[], contracts: string[]): string[] {
+  const sets = { folder: folders, export: exported, contract: contracts };
+  const all = [...new Set([...folders, ...exported, ...contracts])].sort();
+  return all.flatMap((name) =>
+    Object.entries(sets).filter(([, names]) => !names.includes(name)).map(([kind]) => `${name} has no ${kind}`),
+  );
+}
+
+describe('crossProblems (RF-2)', () => {
+  it('is quiet when the three sets agree', () => {
+    expect(crossProblems(['Button'], ['Button'], ['Button'])).toEqual([]);
+  });
+  it('names the component and where it is missing', () => {
+    expect(crossProblems(['Button', 'Ghost'], ['Button'], ['Button'])).toEqual(['Ghost has no export', 'Ghost has no contract']);
+    expect(crossProblems(['Button'], ['Button', 'Phantom'], ['Button'])).toEqual(['Phantom has no folder', 'Phantom has no contract']);
+    expect(crossProblems(['Button'], [], ['Button'])).toEqual(['Button has no export']);
+  });
+  it('reads value exports only, aliases included', () => {
+    const source = ["export { Button } from './B.js';", "export type { ButtonProps } from './B.js';", "export { default as Card } from './C.astro';"].join('\n');
+    expect(entryExports(source)).toEqual(['Button', 'Card']);
+  });
+});
+
 for (const { framework, dir, peers, keywords } of packages) {
   describe(`@component-museum/${framework}`, () => {
     it('packs under the @component-museum scope with its entry, stylesheet and type declarations (RF-1)', () => {
@@ -45,6 +82,14 @@ for (const { framework, dir, peers, keywords } of packages) {
         expect(files, `${path} is not in the packed files`).toContain(path.replace(/^\.\//, ''));
       }
       expect(files.some((file) => file.endsWith('.d.ts'))).toBe(true);
+    });
+
+    it('crosses src/ folders, entry exports and contracts on the same components (RF-2)', () => {
+      const folders = readdirSync(join(dir, 'src'), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
+      const entry = framework === 'react' ? 'src/index.ts' : 'index.js';
+      const contracts = findContractFiles(repo).map((file) => loadContract(join(repo, file)).name);
+      expect(existsSync(join(dir, entry))).toBe(true);
+      expect(crossProblems(folders, entryExports(readFileSync(join(dir, entry), 'utf8')), contracts)).toEqual([]);
     });
 
     it(`declares no dependency but ${peers.join(', ')} as a peer (RF-4)`, () => {
