@@ -8,9 +8,11 @@ import { run } from './lib/run.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
-/** One row per package; T-3 adds Astro here. `peers` is the only dependency a package may declare (RF-4). */
-const packages: { framework: Framework; dir: string; peers: string[] }[] = [
-  { framework: 'react', dir: join(repo, 'packages', 'react'), peers: ['react'] },
+/** One row per package. `peers` is the only dependency a package may declare (RF-4). */
+const packages: { framework: Framework; dir: string; peers: string[]; keywords: string[] }[] = [
+  { framework: 'react', dir: join(repo, 'packages', 'react'), peers: ['react'], keywords: [] },
+  // astro-component is how Astro tells a component package it must compile, without ssr.noExternal.
+  { framework: 'astro', dir: join(repo, 'packages', 'astro'), peers: ['astro'], keywords: ['astro-component'] },
 ];
 
 type Manifest = Record<string, unknown> & {
@@ -18,6 +20,7 @@ type Manifest = Record<string, unknown> & {
   dependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
   optionalDependencies?: Record<string, string>;
+  keywords?: string[];
 };
 
 const manifestOf = (dir: string): Manifest => JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
@@ -30,7 +33,7 @@ function packedFiles(dir: string): { name: string; files: string[] } {
   return { name: packed.name, files: packed.files.map((file: { path: string }) => file.path) };
 }
 
-for (const { framework, dir, peers } of packages) {
+for (const { framework, dir, peers, keywords } of packages) {
   describe(`@component-museum/${framework}`, () => {
     it('packs under the @component-museum scope with its entry, stylesheet and type declarations (RF-1)', () => {
       const { name, files } = packedFiles(dir);
@@ -52,6 +55,10 @@ for (const { framework, dir, peers } of packages) {
         optionalDependencies: Object.keys(manifest.optionalDependencies ?? {}),
       };
       expect(declared).toEqual({ dependencies: [], peerDependencies: peers, optionalDependencies: [] });
+    });
+
+    it.runIf(keywords.length > 0)(`lists the keywords ${keywords.join(', ')}`, () => {
+      expect(manifestOf(dir).keywords ?? []).toEqual(expect.arrayContaining(keywords));
     });
   });
 }

@@ -25,14 +25,16 @@ Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización
   en rojo (`expected { dependencies: [ 'left-pad' ], … } to deeply equal { dependencies: [], … }`),
   exit 1; manifiesto restaurado, idéntico según `cmp`.
 
-- [ ] **T-3 — Crear el paquete de Astro con Button**
+- [x] **T-3 — Crear el paquete de Astro con Button**
   Cubre: RF-1 (Astro), RF-4 (Astro)
   Archivos: `packages/astro/` (con su propio `tsconfig.json`, como la fixture de la 001),
   `package.json` (script `test` con `astro check --root packages/astro`), `tests/packages.test.ts`
   Hecho cuando: `astro check` sobre el paquete termina en 0; el paquete empaquetado se llama
   `@component-museum/astro` y trae entrada, `styles.css` y tipos; el manifiesto solo tiene `astro`
   como peer y la palabra clave `astro-component`.
-  Inyección: quitar `index.d.ts` de `files` pone en rojo RF-1.
+  Inyección: quitar `index.d.ts` de `files` de `packages/astro/package.json` → el test de RF-1 en
+  rojo (`./index.d.ts is not in the packed files`), exit 1; manifiesto restaurado, idéntico según
+  `cmp`.
 
 - [ ] **T-4 — Comprobar cada implementación contra el contrato**
   Cubre: RF-7, RF-8, RF-10
