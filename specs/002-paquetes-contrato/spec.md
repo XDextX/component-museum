@@ -2,6 +2,7 @@
 
 **Status:** approved
 **Approved:** 2026-10-19 · el dueño leyó la spec completa tras 4 rondas de clarify y la partición en 5 · 92 lines, 10 RF
+**Changed:** 2026-10-20 · RF-11 (paso de atributos HTML) · decisión del dueño
 **Size:** L · **Entrega:** 2 (002–005) · **Depende de:** 001
 
 ## Contexto y objetivo
@@ -46,9 +47,10 @@ de npm: `@component-museum`; si está ocupado, se vuelve a preguntar al dueño.
   externo, una `variant` inexistente en Button hace fallar su comprobación de tipos (001).
 - RF-6: EL SISTEMA define una sola vez el contrato de cada componente, común a los paquetes. —
   **Check:** un test falla si un componente exportado no tiene contrato o tiene más de uno.
-- RF-7: EL SISTEMA implementa en cada framework la API del contrato traducida: props y variantes
-  con su nombre, eventos por RF-8, clase por RF-10. — **Check:** un test traduce el contrato y
-  falla ante una prop, variante, evento o prop de clase que falte o sobre (regla 4).
+- RF-7: EL SISTEMA implementa en cada framework la API del contrato traducida: props propias y
+  variantes con su nombre, eventos por RF-8, clase por RF-10. — **Check:** un test traduce el
+  contrato y falla ante una prop propia, variante, evento o clase que falte o sobre, sin contar los
+  atributos HTML heredados (regla 4).
 - RF-8: EL SISTEMA nombra cada evento `<e>` del contrato como `museum:<componente>:<e>` (evento
   DOM) en Astro y `on<E>` en React. — **Check:** un test deriva los nombres y falla ante uno
   distinto, ausente o extra. Button declara `click`: `museum:button:click` y `onClick`.
@@ -56,6 +58,8 @@ de npm: `@component-museum`; si está ocupado, se vuelve a preguntar al dueño.
   props en los dos frameworks. — **Check:** un test compara cada variante en ambos; 0 diferencias.
 - RF-10: EL SISTEMA nombra la prop de clase `class` en Astro y `className` en React. — **Check:**
   un test falla si una implementación no acepta su nombre o acepta el del otro framework.
+- RF-11: EL SISTEMA pasa tal cual al `<button>` cada atributo HTML que no es prop del contrato. —
+  **Check:** en los dos frameworks, `data-x`, `aria-label` e `id` llegan al `<button>` renderizado.
 
 ## Requisitos no funcionales
 
@@ -68,6 +72,9 @@ de npm: `@component-museum`; si está ocupado, se vuelve a preguntar al dueño.
 
 ## Casos límite
 
+- **Atributo frente a prop del contrato.** `type`, `disabled`, `variant` y `size` solo entran por su
+  prop; la clase del consumidor se suma a la del componente; los atributos que el componente pone
+  para sí ganan al del consumidor (RF-11).
 - **Hoja de estilos vacía.** En esta spec la hoja existe y se importa (RF-1, RF-3), pero la llena
   la 003.
 - **`astro check` en el consumidor.** El starter de Astro no lo trae: el test lo añade solo para
@@ -84,7 +91,7 @@ de npm: `@component-museum`; si está ocupado, se vuelve a preguntar al dueño.
 
 - El build de cada paquete y el de cada consumidor externo terminan en 0, y el comando de la 001.
 - RF-1 se comprobó en cada paquete empaquetado.
-- RF-2, RF-4 y RF-6 a RF-10 son tests vistos en rojo una vez inyectando su violación (regla 8).
+- RF-2, RF-4 y RF-6 a RF-11 son tests vistos en rojo una vez inyectando su violación (regla 8).
 - RF-5 se verificó en cada consumidor externo con su comprobación de tipos.
 
 ## Preguntas abiertas
