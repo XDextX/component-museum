@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { declaredProps, diffApi, eventLiterals } from './lib/api.ts';
 import {
   classProp,
   componentDirs,
@@ -85,6 +86,48 @@ describe('RF-6: one contract per component, in the real repo', () => {
       name: JSON.parse(readFileSync(resolve(root, file), 'utf8')).name as string,
     }));
     expect(found.map((f) => f.name)).toContain('Button');
-    expect(problems(found, [...new Set([...componentDirs(root), 'Button'])])).toEqual([]);
+    expect(problems(found, componentDirs(root))).toEqual([]);
+  });
+});
+
+describe('RF-7, RF-8, RF-10: each implementation against the contract', () => {
+  const impls = {
+    react: { file: resolve(root, 'packages/react/src/Button/Button.tsx'), type: 'ButtonProps' },
+    astro: { file: resolve(root, 'packages/astro/src/Button/Button.astro'), type: 'Props' },
+  } as const;
+
+  for (const framework of ['react', 'astro'] as const) {
+    const { file, type } = impls[framework];
+    const other = framework === 'react' ? 'class' : 'className';
+
+    it(`${framework}: own props match the translated contract (RF-7, RF-10)`, () => {
+      const { own, all } = declaredProps(file, type);
+      expect(diffApi(expectedApi(button, framework), own)).toEqual([]);
+      expect(all).toContain(classProp(framework));
+      expect(all).not.toContain(other);
+    });
+  }
+
+  it('react: on* props are exactly the contract events (RF-8)', () => {
+    const { own } = declaredProps(impls.react.file, impls.react.type);
+    expect(Object.keys(own).filter((n) => /^on[A-Z]/.test(n))).toEqual(
+      button.events.map((e) => eventName('react', 'button', e)),
+    );
+  });
+
+  it('astro: dispatches only the derived DOM events (RF-8)', () => {
+    expect(eventLiterals(readFileSync(impls.astro.file, 'utf8'))).toEqual(
+      button.events.map((e) => eventName('astro', 'button', e)).sort(),
+    );
+  });
+
+  it('flags a prop that is missing, extra, mistyped or misnamed', () => {
+    const want = expectedApi(button, 'react');
+    const { size: _size, ...withoutSize } = want;
+    expect(diffApi(want, withoutSize)).toEqual(['missing prop size']);
+    expect(diffApi(want, { ...want, foo: 'any' })).toEqual(['extra prop foo']);
+    expect(diffApi(want, { ...want, size: ['sm'] })).toHaveLength(1);
+    const { onClick: _o, ...renamed } = want;
+    expect(diffApi(want, { ...renamed, onPress: 'any' })).toEqual(['missing prop onClick', 'extra prop onPress']);
   });
 });
