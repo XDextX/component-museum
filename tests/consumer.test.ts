@@ -117,3 +117,17 @@ describe('framework packages in the consumers (RF-3)', () => {
     }
   }
 });
+
+describe('Button types in the consumers (002 RF-5)', () => {
+  // Checked once by global-setup.ts in the 002 guarded consumers: tsc -b (React), astro check (Astro).
+  const typeChecks = inject('typeChecks');
+
+  for (const framework of frameworks) {
+    it(`passes the ${framework} consumer's type check, and fails it once a Button has variant="nope"`, () => {
+      const { clean, nope } = typeChecks[framework];
+      expect(clean.code, clean.output).toBe(0);
+      expect(nope.code, nope.output).not.toBe(0);
+      expect(nope.output).toContain('"nope"');
+    });
+  }
+});
