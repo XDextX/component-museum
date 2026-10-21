@@ -36,7 +36,7 @@ Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización
   rojo (`./index.d.ts is not in the packed files`), exit 1; manifiesto restaurado, idéntico según
   `cmp`.
 
-- [ ] **T-4 — Comprobar cada implementación contra el contrato**
+- [x] **T-4 — Comprobar cada implementación contra el contrato**
   Cubre: RF-7, RF-8, RF-10
   Archivos: `tests/lib/api.ts`, `tests/contract.test.ts`
   Hecho cuando: las props **propias** de los dos Button (las declaradas en su archivo, sin los
@@ -45,16 +45,18 @@ Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización
   `museum:button:click` y acepta `class` y no `className`.
   Inyección: renombrar `onClick` a `onPress`, añadir una prop propia `foo`, quitar `size` de las
   propias y aceptar `class` en React, una cada vez, ponen el test en rojo.
+  Inyección vista: en memoria, por el mismo declaredProps/diffApi/eventLiterals del test y sin tocar `packages/`: en React, `onClick`→`onPress`, una prop `foo`, sin `size`, aceptar `class` y una `on*` extra; en Astro, una prop `foo`, `className` en `OwnProps` y el literal `museum:button:press`. Cada una puso en rojo su assert (props propias, RF-10 o eventos).
 
-- [ ] **T-5 — Cruzar carpetas, exports y contratos**
+- [x] **T-5 — Cruzar carpetas, exports y contratos**
   Cubre: RF-2
   Archivos: `tests/packages.test.ts`
   Hecho cuando: por paquete, las carpetas de `src/`, los exports de la entrada y los contratos
   nombran los mismos componentes.
   Inyección: quitar el export de Button de una entrada, o crear una carpeta `src/Ghost/`, ponen el
   test en rojo.
+  Inyección vista: crear `packages/react/src/Ghost/` → rojo con «Ghost has no export» y «Ghost has no contract»; vaciar `packages/astro/index.js` → rojo con «Button has no export»; restaurado por ruta, mismo sha256, carpeta borrada.
 
-- [ ] **T-6 — Compilar los paquetes en los consumidores externos**
+- [x] **T-6 — Compilar los paquetes en los consumidores externos**
   Cubre: RF-3
   Archivos: `tests/global-setup.ts`, `tests/lib/consumer.ts`, `tests/consumer.test.ts`
   Hecho cuando:
@@ -67,6 +69,7 @@ Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización
   Inyección: una copia del paquete con un `import 'museum-undeclared'` no declarado, y ese módulo
   instalado en el `node_modules` del padre del consumidor, hace fallar el build con guarda; el
   consumidor sin tocar no lo detecta, que es la razón de la nota.
+  Inyección vista: copias de los dos paquetes con `import 'museum-undeclared'` y el módulo en el `node_modules` del padre (script fuera del repo) → en React y Astro, el build sin tocar termina en 0 y el build con guarda en 1 («resolves outside the consumer»); el repo no se tocó.
 
 - [ ] **T-7 — Romper la comprobación de tipos del consumidor con una variante inexistente**
   Cubre: RF-5

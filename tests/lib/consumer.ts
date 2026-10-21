@@ -1,7 +1,9 @@
 import { execFile } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { loadContract } from './contract.ts';
 import { consumerDir, type Framework } from './paths.ts';
 import { run, type RunResult } from './run.ts';
 
@@ -33,6 +35,8 @@ export type ConsumerOptions = {
   guardResolution?: boolean;
   /** A starter already scaffolded by `scaffold`, copied instead of running the starter again. */
   starter?: string;
+  /** Framework packages installed with the test package; the entry then renders Button from them. */
+  packages?: string[];
 };
 
 async function npm(args: string[], cwd: string, failure: string): Promise<string> {
@@ -69,18 +73,30 @@ export async function packPackage(packageDir: string, destination: string): Prom
   return { name: packed.name, path: join(destination, packed.filename) };
 }
 
-/** Packs `packageDir` next to the consumer, never inside the repo, and installs the tarball. */
-export async function installPackage(dir: string, packageDir: string): Promise<string> {
+/** Packs each package next to the consumer, never inside the repo, and installs the tarballs at once. */
+export async function installPackage(dir: string, ...packageDirs: string[]): Promise<string[]> {
   // One pack folder per consumer: two consumers installing at once never share a tarball.
-  const packed = await packPackage(packageDir, join(dirname(dir), `pack-${basename(dir)}`));
+  const destination = join(dirname(dir), `pack-${basename(dir)}`);
+  const packed = await Promise.all(packageDirs.map((packageDir) => packPackage(packageDir, destination)));
   // No --prefer-offline: with it npm trusts stale cached metadata and misses the starter's versions.
-  await npm(['install', '--no-audit', '--no-fund', packed.path], dir, `npm install failed in ${dir}`);
-  return packed.name;
+  await npm(['install', '--no-audit', '--no-fund', ...packed.map((p) => p.path)], dir, `npm install failed in ${dir}`);
+  return packed.map((p) => p.name);
 }
 
 /** Runs the consumer's own build script. */
 export function buildConsumer(dir: string): RunResult {
   return run(process.execPath, [npmCli, 'run', 'build'], { cwd: dir });
+}
+
+/** buildConsumer without blocking, so several consumers build at once. */
+export async function buildConsumerAsync(dir: string): Promise<RunResult> {
+  try {
+    const { stdout, stderr } = await execFileAsync(process.execPath, [npmCli, 'run', 'build'], { cwd: dir, maxBuffer: 64 * 1024 * 1024 });
+    return { code: 0, output: `${stdout}${stderr}` };
+  } catch (error) {
+    const { code, stdout = '', stderr = '' } = error as { code?: number; stdout?: string; stderr?: string };
+    return { code: typeof code === 'number' ? code : 1, output: `${stdout}${stderr}` };
+  }
 }
 
 function importPackage(framework: Framework, dir: string, name: string): void {
@@ -91,7 +107,37 @@ function importPackage(framework: Framework, dir: string, name: string): void {
   );
 }
 
-function guardResolution(framework: Framework, dir: string, name: string): void {
+const buttonContract = loadContract(fileURLToPath(new URL('../../contracts/button.contract.json', import.meta.url)));
+
+/** One Button per variant and size, each with a stable id (`button-<variant>-<size>`) for later specs. */
+function buttonInstances(framework: Framework): string {
+  const { variant, size } = buttonContract.props;
+  if (variant.type !== 'enum' || size.type !== 'enum') throw new Error('Button contract: variant and size must be enums');
+  return variant.values
+    .flatMap((v) => size.values.map((s) => `<Button id="button-${v}-${s}" variant="${v}" size="${s}">${v} ${s}</Button>`))
+    .join(framework === 'react' ? '\n      ' : '\n\t\t');
+}
+
+/** Makes the consumer's entry import Button and the stylesheet once, and render every instance. */
+function useButtons(framework: Framework, dir: string, name: string): void {
+  if (framework === 'react') {
+    writeFileSync(
+      join(dir, 'src', 'MuseumButtons.tsx'),
+      `import { Button } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n    </>\n  )\n}\n`,
+    );
+    patch(join(dir, entries.react), (source) =>
+      `import MuseumButtons from './MuseumButtons.tsx'\n${source.replace('<App />', '<App />\n    <MuseumButtons />')}`,
+    );
+  } else {
+    patch(join(dir, entries.astro), (source) =>
+      source
+        .replace(/^---\r?\n/, `---\nimport { Button } from '${name}';\nimport '${name}/styles.css';\n`)
+        .replace('</body>', `\t${buttonInstances(framework)}\n\t</body>`),
+    );
+  }
+}
+
+function guardResolution(framework: Framework, dir: string, names: string[]): void {
   copyFileSync(new URL('./museum-guard.mjs', import.meta.url), join(dir, 'museum-guard.mjs'));
   const root = JSON.stringify(dir);
   const config = join(dir, configFiles[framework]);
@@ -99,8 +145,8 @@ function guardResolution(framework: Framework, dir: string, name: string): void 
     writeFileSync(join(dir, 'museum-guard.d.mts'), "import type { Plugin } from 'vite'\nexport default function museumGuard(root: string): Plugin\n");
     patch(config, (source) => `import museumGuard from './museum-guard.mjs'\n${source.replace('plugins: [react()]', `plugins: [museumGuard(${root}), react()]`)}`);
   } else {
-    // Bundling the package under test lets the guard see its imports; Node would resolve them later.
-    const vite = `{ plugins: [museumGuard(${root})], resolve: { noExternal: [${JSON.stringify(name)}] } }`;
+    // Bundling the packages under test lets the guard see their imports; Node would resolve them later.
+    const vite = `{ plugins: [museumGuard(${root})], resolve: { noExternal: ${JSON.stringify(names)} } }`;
     patch(config, (source) => `import museumGuard from './museum-guard.mjs';\n${source.replace('defineConfig({})', `defineConfig({ vite: ${vite} })`)}`);
   }
 }
@@ -118,8 +164,10 @@ export async function createConsumer(base: string, runId: string, framework: Fra
   } else {
     await scaffold(dirname(dir), framework);
   }
-  const name = await installPackage(dir, packageDir);
+  const packages = options.packages ?? [];
+  const [name, ...frameworkPackages] = await installPackage(dir, packageDir, ...packages);
   importPackage(framework, dir, name);
-  if (options.guardResolution) guardResolution(framework, dir, name);
+  for (const frameworkPackage of frameworkPackages) useButtons(framework, dir, frameworkPackage);
+  if (options.guardResolution) guardResolution(framework, dir, [name, ...frameworkPackages]);
   return dir;
 }

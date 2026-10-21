@@ -4,9 +4,10 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { TestProject } from 'vitest/node';
-import { createConsumer, scaffold } from './lib/consumer.ts';
+import { buildConsumerAsync, createConsumer, scaffold } from './lib/consumer.ts';
 import { acquireLock } from './lib/lock.ts';
 import { consumerDir, type Framework } from './lib/paths.ts';
+import type { RunResult } from './lib/run.ts';
 import { snapshotRoots, takeSnapshot, type Snapshot } from './lib/snapshot.ts';
 
 export type SharedConsumers = {
@@ -16,6 +17,8 @@ export type SharedConsumers = {
   plain: Record<Framework, string>;
   /** Consumers with the resolution guard (RF-5): each one modified only by its own RF-5 test. */
   guarded: Record<Framework, string>;
+  /** Spec 002: guarded consumers with the framework packages, so an undeclared import fails (read-only). */
+  packageGuarded: Record<Framework, string>;
   /** Starters as scaffolded, not installed: the reference for the untouched config. */
   starters: Record<Framework, string>;
   /** Parent of the guarded consumers, where RF-5 puts museum-undeclared in node_modules. */
@@ -29,12 +32,15 @@ declare module 'vitest' {
     consumers: SharedConsumers;
     /** The repo before anything ran (RF-6). */
     treeBefore: Snapshot;
+    /** Spec 002 RF-3: each consumer that installs the framework packages, built once here. */
+    builds: Record<'plain' | 'packageGuarded', Record<Framework, RunResult>>;
   }
 }
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const testPackage = join(repo, 'tests', 'fixtures', 'test-package');
 const frameworks: Framework[] = ['react', 'astro'];
+const frameworkPackage = (framework: Framework) => join(repo, 'packages', framework);
 
 /** Creates every consumer once per run, in parallel, and removes them all when the run ends. */
 export default async function setup(project: TestProject): Promise<() => void> {
@@ -46,8 +52,9 @@ export default async function setup(project: TestProject): Promise<() => void> {
   const base = tmpdir();
   const guardRunId = `${runId}-guard`;
   const guardParent = join(base, `cm-${guardRunId}`);
+  const packageRunId = `${runId}-pkg`;
   const starterParent = join(base, `cm-${runId}-starter`);
-  const created = [join(base, `cm-${runId}`), guardParent, starterParent];
+  const created = [join(base, `cm-${runId}`), guardParent, join(base, `cm-${packageRunId}`), starterParent];
   const teardown = () => {
     created.forEach((dir) => rmSync(dir, { recursive: true, force: true }));
     releaseLock();
@@ -67,18 +74,30 @@ export default async function setup(project: TestProject): Promise<() => void> {
     mkdirSync(leftoverDir, { recursive: true });
     writeFileSync(join(leftoverDir, 'leftover.txt'), 'from an earlier run');
 
-    const [plainReact, plainAstro, guardedReact, guardedAstro] = await Promise.all([
-      createConsumer(base, runId, 'react', testPackage, { starter: starters.react }),
-      createConsumer(base, runId, 'astro', testPackage, { starter: starters.astro }),
+    const [plainReact, plainAstro, guardedReact, guardedAstro, packageReact, packageAstro] = await Promise.all([
+      createConsumer(base, runId, 'react', testPackage, { starter: starters.react, packages: [frameworkPackage('react')] }),
+      createConsumer(base, runId, 'astro', testPackage, { starter: starters.astro, packages: [frameworkPackage('astro')] }),
       createConsumer(base, guardRunId, 'react', undeclaringPackage, { starter: starters.react, guardResolution: true }),
       createConsumer(base, guardRunId, 'astro', undeclaringPackage, { starter: starters.astro, guardResolution: true }),
+      createConsumer(base, packageRunId, 'react', testPackage, { starter: starters.react, guardResolution: true, packages: [frameworkPackage('react')] }),
+      createConsumer(base, packageRunId, 'astro', testPackage, { starter: starters.astro, guardResolution: true, packages: [frameworkPackage('astro')] }),
     ]);
+
+    // Built here, not in a test: the shared consumers stay read-only for every test file.
+    const [buildPlainReact, buildPlainAstro, buildPackageReact, buildPackageAstro] = await Promise.all(
+      [plainReact, plainAstro, packageReact, packageAstro].map(buildConsumerAsync),
+    );
+    project.provide('builds', {
+      plain: { react: buildPlainReact, astro: buildPlainAstro },
+      packageGuarded: { react: buildPackageReact, astro: buildPackageAstro },
+    });
 
     project.provide('consumers', {
       base,
       runId,
       plain: { react: plainReact, astro: plainAstro },
       guarded: { react: guardedReact, astro: guardedAstro },
+      packageGuarded: { react: packageReact, astro: packageAstro },
       starters,
       guardParent,
       undeclaringPackage,
