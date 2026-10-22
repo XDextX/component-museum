@@ -45,13 +45,14 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   Inyección: quitar `disabled` de `astroCases` deja el JSON sin esos casos, y el recuento de la
   tarea (variantes × 2) se pone en rojo.
 
-- [ ] **T-4 — Historia React de Button con sus controles**
+- [x] **T-4 — Historia React de Button con sus controles**
   Cubre: RF-3, RF-9 (junto al control)
   Archivos: `gallery/stories/Button.react.stories.tsx`
   Hecho cuando: la historia usa `argTypesFromContract`; el control de clase ofrece «ninguna» y
   `my-button`; su descripción muestra el CSS de `.my-button`, que un decorador inyecta sin capa;
   `storybook build` termina en 0.
   Inyección: un `argTypes` escrito a mano con una variante de menos pone en rojo RF-3 en la T-7.
+  Inyección vista: 2026-10-22 · las guardas de RF-3 (T-7) y RF-10 (T-8) aún no existen, así que ningún test se pone en rojo. Probe por sustitución: `import { Button } from '../../packages/react/src/index.ts'` en la historia → un grep de rutas a `packages/` en `gallery/` la detecta (limpio en la base); restaurada con el mismo sha256. `storybook build` pasa con y sin la violación: el build no es la guarda, lo son T-7/T-8.
 
 - [ ] **T-5 — Documentación de Button en español y en inglés**
   Cubre: RF-2, RF-9 (en «cómo alterarlo»)
