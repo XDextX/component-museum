@@ -1,0 +1,36 @@
+{
+  "name": "@component-museum/astro",
+  "version": "0.1.0",
+  "description": "Astro components of the component museum.",
+  "type": "module",
+  "engines": {
+    "node": "^22.22.0 || >=24.0.0"
+  },
+  "keywords": [
+    "astro-component"
+  ],
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./styles.css": "./styles.css"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "src",
+    "styles.css"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "prepack": "node ../../scripts/sync-styles.mjs"
+  },
+  "peerDependencies": {
+    "astro": "^7.0.0"
+  }
+}

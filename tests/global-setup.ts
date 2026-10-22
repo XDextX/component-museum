@@ -1,12 +1,15 @@
+import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import type { TestProject } from 'vitest/node';
-import { createConsumer, scaffold } from './lib/consumer.ts';
+import { buildConsumerAsync, createConsumer, npmCli, scaffold } from './lib/consumer.ts';
 import { acquireLock } from './lib/lock.ts';
 import { consumerDir, type Framework } from './lib/paths.ts';
+import type { RunResult } from './lib/run.ts';
 import { snapshotRoots, takeSnapshot, type Snapshot } from './lib/snapshot.ts';
 
 export type SharedConsumers = {
@@ -16,8 +19,12 @@ export type SharedConsumers = {
   plain: Record<Framework, string>;
   /** Consumers with the resolution guard (RF-5): each one modified only by its own RF-5 test. */
   guarded: Record<Framework, string>;
+  /** Spec 002: guarded consumers with the framework packages, so an undeclared import fails (read-only). */
+  packageGuarded: Record<Framework, string>;
   /** Starters as scaffolded, not installed: the reference for the untouched config. */
   starters: Record<Framework, string>;
+  /** Spec 003 T-7: consumers with Tailwind v4 and two pages (tailwindPages), built once and read-only. */
+  tailwind: Record<Framework, string>;
   /** Parent of the guarded consumers, where RF-5 puts museum-undeclared in node_modules. */
   guardParent: string;
   /** The test package plus an import of museum-undeclared it does not declare. */
@@ -29,12 +36,89 @@ declare module 'vitest' {
     consumers: SharedConsumers;
     /** The repo before anything ran (RF-6). */
     treeBefore: Snapshot;
+    /** Spec 002 RF-3: each consumer that installs the framework packages, built once here. */
+    builds: Record<'plain' | 'packageGuarded' | 'tailwind', Record<Framework, RunResult>>;
+    /** Spec 002 RF-5: each guarded 002 consumer's type check, clean and with variant="nope". */
+    typeChecks: Record<Framework, { clean: RunResult; nope: RunResult }>;
+    /** Spec 004: the built Storybook and the extracted Astro cases. */
+    gallery: { storybook: string; astroJson: string };
   }
 }
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const testPackage = join(repo, 'tests', 'fixtures', 'test-package');
 const frameworks: Framework[] = ['react', 'astro'];
+const frameworkPackage = (framework: Framework) => join(repo, 'packages', framework);
+
+const execFileAsync = promisify(execFile);
+
+/** Runs npm in `cwd` to completion; a failure is a result, never a thrown error. */
+async function npmRun(args: string[], cwd: string): Promise<RunResult> {
+  try {
+    const { stdout, stderr } = await execFileAsync(process.execPath, [npmCli, ...args], { cwd, maxBuffer: 64 * 1024 * 1024 });
+    return { code: 0, output: `${stdout}${stderr}` };
+  } catch (error) {
+    const { code, stdout = '', stderr = '' } = error as { code?: number; stdout?: string; stderr?: string };
+    return { code: typeof code === 'number' ? code : 1, output: `${stdout}${stderr}` };
+  }
+}
+
+const gallery = join(repo, 'gallery');
+
+/** Runs a Node script to completion; a failure is a result, never a thrown error. */
+async function nodeRun(args: string[], cwd: string): Promise<RunResult> {
+  try {
+    const { stdout, stderr } = await execFileAsync(process.execPath, args, { cwd, maxBuffer: 64 * 1024 * 1024 });
+    return { code: 0, output: `${stdout}${stderr}` };
+  } catch (error) {
+    const { code, stdout = '', stderr = '' } = error as { code?: number; stdout?: string; stderr?: string };
+    return { code: typeof code === 'number' ? code : 1, output: `${stdout}${stderr}` };
+  }
+}
+
+/**
+ * Spec 004: prerenders Button in Astro, extracts the cases to JSON and builds Storybook, in that
+ * order, since the Astro story imports the JSON. A failing step fails the whole run.
+ */
+async function buildGallery(): Promise<{ storybook: string; astroJson: string }> {
+  const steps: [string, () => Promise<RunResult>][] = [
+    // Each package's styles.css is written on prepack; the gallery imports it by specifier.
+    ['copy the stylesheets', () => npmRun(['run', 'prepack', '--workspace=@component-museum/react', '--workspace=@component-museum/astro'], repo)],
+    ['astro build of astro-render', () => nodeRun([join(repo, 'node_modules', 'astro', 'bin', 'astro.mjs'), 'build', '--root', join(gallery, 'astro-render')], repo)],
+    ['extract the Astro cases', () => nodeRun([join(gallery, 'scripts', 'extract-astro.mjs')], repo)],
+    ['storybook build', () => npmRun(['run', 'build', '--workspace=@component-museum/gallery'], repo)],
+  ];
+  // A JSON left by an earlier run would hide a broken extraction.
+  rmSync(join(gallery, 'generated'), { recursive: true, force: true });
+  for (const [name, step] of steps) {
+    const result = await step();
+    if (result.code !== 0) throw new Error(`gallery: ${name} failed\n${result.output.slice(-4000)}`);
+  }
+  return { storybook: join(gallery, 'storybook-static'), astroJson: join(gallery, 'generated', 'astro-button.json') };
+}
+
+/** The consumer's type check, clean and then with a Button whose variant is not in the contract. */
+async function checkButtonTypes(framework: Framework, dir: string): Promise<{ clean: RunResult; nope: RunResult }> {
+  if (framework === 'astro') {
+    // The Astro starter has no type checker: only this consumer gets one (the untouched one never does).
+    const install = await npmRun(['install', '--no-audit', '--no-fund', '--save-dev', '@astrojs/check@^0.9.11', 'typescript@^6.0.3'], dir);
+    if (install.code !== 0) throw new Error(`npm install @astrojs/check failed in ${dir}\n${install.output}`);
+  }
+  const check = () => npmRun(framework === 'react' ? ['exec', '--', 'tsc', '-b'] : ['exec', '--', 'astro', 'check'], dir);
+  const clean = await check();
+  const file = framework === 'react' ? join(dir, 'src', 'Nope.tsx') : join(dir, 'src', 'Nope.astro');
+  writeFileSync(
+    file,
+    framework === 'react'
+      ? `import { Button } from '@component-museum/react'\n\nexport const Nope = () => <Button variant="nope">nope</Button>\n`
+      : `---\nimport { Button } from '@component-museum/astro';\n---\n\n<Button variant="nope">nope</Button>\n`,
+  );
+  try {
+    return { clean, nope: await check() };
+  } finally {
+    rmSync(file);
+  }
+}
 
 /** Creates every consumer once per run, in parallel, and removes them all when the run ends. */
 export default async function setup(project: TestProject): Promise<() => void> {
@@ -46,8 +130,10 @@ export default async function setup(project: TestProject): Promise<() => void> {
   const base = tmpdir();
   const guardRunId = `${runId}-guard`;
   const guardParent = join(base, `cm-${guardRunId}`);
+  const packageRunId = `${runId}-pkg`;
+  const tailwindRunId = `${runId}-tw`;
   const starterParent = join(base, `cm-${runId}-starter`);
-  const created = [join(base, `cm-${runId}`), guardParent, starterParent];
+  const created = [join(base, `cm-${runId}`), guardParent, join(base, `cm-${packageRunId}`), join(base, `cm-${tailwindRunId}`), starterParent];
   const teardown = () => {
     created.forEach((dir) => rmSync(dir, { recursive: true, force: true }));
     releaseLock();
@@ -67,19 +153,50 @@ export default async function setup(project: TestProject): Promise<() => void> {
     mkdirSync(leftoverDir, { recursive: true });
     writeFileSync(join(leftoverDir, 'leftover.txt'), 'from an earlier run');
 
-    const [plainReact, plainAstro, guardedReact, guardedAstro] = await Promise.all([
-      createConsumer(base, runId, 'react', testPackage, { starter: starters.react }),
-      createConsumer(base, runId, 'astro', testPackage, { starter: starters.astro }),
+    // The gallery builds alongside the consumers; it touches only gallery/ and its own outputs.
+    const galleryBuilt = buildGallery();
+    // Awaited after the consumers; this keeps an early failure from being an unhandled rejection meanwhile.
+    galleryBuilt.catch(() => {});
+
+    const [plainReact, plainAstro, guardedReact, guardedAstro, packageReact, packageAstro, tailwindReact, tailwindAstro] = await Promise.all([
+      createConsumer(base, runId, 'react', testPackage, { starter: starters.react, packages: [frameworkPackage('react')] }),
+      createConsumer(base, runId, 'astro', testPackage, { starter: starters.astro, packages: [frameworkPackage('astro')] }),
       createConsumer(base, guardRunId, 'react', undeclaringPackage, { starter: starters.react, guardResolution: true }),
       createConsumer(base, guardRunId, 'astro', undeclaringPackage, { starter: starters.astro, guardResolution: true }),
+      createConsumer(base, packageRunId, 'react', testPackage, { starter: starters.react, guardResolution: true, packages: [frameworkPackage('react')] }),
+      createConsumer(base, packageRunId, 'astro', testPackage, { starter: starters.astro, guardResolution: true, packages: [frameworkPackage('astro')] }),
+      // Spec 003 T-7: Tailwind v4 consumers (no guard), two pages each.
+      createConsumer(base, tailwindRunId, 'react', testPackage, { starter: starters.react, packages: [frameworkPackage('react')], tailwind: true }),
+      createConsumer(base, tailwindRunId, 'astro', testPackage, { starter: starters.astro, packages: [frameworkPackage('astro')], tailwind: true }),
     ]);
+
+    // Built here, not in a test: the shared consumers stay read-only for every test file.
+    const [buildPlainReact, buildPlainAstro, buildPackageReact, buildPackageAstro, buildTailwindReact, buildTailwindAstro] = await Promise.all(
+      [plainReact, plainAstro, packageReact, packageAstro, tailwindReact, tailwindAstro].map(buildConsumerAsync),
+    );
+    project.provide('builds', {
+      plain: { react: buildPlainReact, astro: buildPlainAstro },
+      packageGuarded: { react: buildPackageReact, astro: buildPackageAstro },
+      tailwind: { react: buildTailwindReact, astro: buildTailwindAstro },
+    });
+
+    // 002 RF-5, after the builds: a wrong variant must break each guarded consumer's own type check.
+    const typeChecks = Object.fromEntries(
+      await Promise.all(
+        frameworks.map(async (framework) => [framework, await checkButtonTypes(framework, framework === 'react' ? packageReact : packageAstro)] as const),
+      ),
+    ) as Record<Framework, { clean: RunResult; nope: RunResult }>;
+    project.provide('typeChecks', typeChecks);
+    project.provide('gallery', await galleryBuilt);
 
     project.provide('consumers', {
       base,
       runId,
       plain: { react: plainReact, astro: plainAstro },
       guarded: { react: guardedReact, astro: guardedAstro },
+      packageGuarded: { react: packageReact, astro: packageAstro },
       starters,
+      tailwind: { react: tailwindReact, astro: tailwindAstro },
       guardParent,
       undeclaringPackage,
     });

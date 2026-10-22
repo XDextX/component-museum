@@ -7,7 +7,8 @@
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "skipLibCheck": true,
+    "jsx": "react-jsx",
     "types": ["node"]
   },
-  "include": ["tests/*.ts", "tests/lib/**/*.ts", "vitest.config.ts", "tests/fixtures/test-package/src/**/*.tsx"]
+  "include": ["tests/*.ts", "tests/lib/**/*.ts", "vitest.config.ts", "tests/fixtures/test-package/src/**/*.tsx", "packages/react/src", "gallery/env.d.ts"]
 }

@@ -1,0 +1,155 @@
+/*
+ * The only CSS source of the component museum. Each package's styles.css is a byte-for-byte copy
+ * made by scripts/sync-styles.mjs on prepack: edit this file, never a package's own copy.
+ *
+ * Declaring base and components first puts museum inside components wherever Tailwind is imported:
+ * it beats Tailwind's preflight (base) and loses to the consumer's utilities (plan 003, block 4).
+ */
+@layer base, components;
+
+@layer components.museum {
+  /* Tokens that do not change with the theme. */
+  :root {
+    --museum-radius: 0.375rem;
+    --museum-border-width: 1px;
+    --museum-focus-width: 2px;
+    --museum-focus-offset: 2px;
+    --museum-focus-halo: 2px;
+    --museum-disabled-opacity: 0.5;
+
+    --museum-space-sm-x: 0.75rem;
+    --museum-space-sm-y: 0.375rem;
+    --museum-space-md-x: 1rem;
+    --museum-space-md-y: 0.5rem;
+    --museum-space-lg-x: 1.5rem;
+    --museum-space-lg-y: 0.75rem;
+
+    --museum-font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --museum-font-weight: 600;
+    --museum-line-height: 1.25;
+    --museum-font-size-sm: 0.875rem;
+    --museum-font-size-md: 1rem;
+    --museum-font-size-lg: 1.125rem;
+  }
+
+  /* Light theme: the default, and any container with data-theme="light". */
+  :root,
+  [data-theme="light"] {
+    --museum-surface: #ffffff;
+    --museum-focus-ring: #1d4ed8;
+
+    --museum-button-primary-bg: #1d4ed8;
+    --museum-button-primary-fg: #ffffff;
+    --museum-button-primary-border: #1d4ed8;
+
+    --museum-button-secondary-bg: #e5e7eb;
+    --museum-button-secondary-fg: #111827;
+    --museum-button-secondary-border: #d1d5db;
+
+    --museum-button-outline-bg: var(--museum-surface);
+    --museum-button-outline-fg: #1d4ed8;
+    --museum-button-outline-border: #1d4ed8;
+  }
+
+  /* Dark theme from the system, unless the page asks for light. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --museum-surface: #111827;
+      --museum-focus-ring: #93c5fd;
+
+      --museum-button-primary-bg: #2563eb;
+      --museum-button-primary-fg: #ffffff;
+      --museum-button-primary-border: #2563eb;
+
+      --museum-button-secondary-bg: #374151;
+      --museum-button-secondary-fg: #f9fafb;
+      --museum-button-secondary-border: #4b5563;
+
+      --museum-button-outline-bg: var(--museum-surface);
+      --museum-button-outline-fg: #93c5fd;
+      --museum-button-outline-border: #93c5fd;
+    }
+  }
+
+  /* Dark theme on any element that asks for it; the nearest data-theme wins. */
+  [data-theme="dark"] {
+    --museum-surface: #111827;
+    --museum-focus-ring: #93c5fd;
+
+    --museum-button-primary-bg: #2563eb;
+    --museum-button-primary-fg: #ffffff;
+    --museum-button-primary-border: #2563eb;
+
+    --museum-button-secondary-bg: #374151;
+    --museum-button-secondary-fg: #f9fafb;
+    --museum-button-secondary-border: #4b5563;
+
+    --museum-button-outline-bg: var(--museum-surface);
+    --museum-button-outline-fg: #93c5fd;
+    --museum-button-outline-border: #93c5fd;
+  }
+
+  /* Button reads tokens only: every color, size and font comes from a --museum-* variable. */
+  .museum-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    border-width: var(--museum-border-width);
+    border-style: solid;
+    border-radius: var(--museum-radius);
+    font-family: var(--museum-font-family);
+    font-weight: var(--museum-font-weight);
+    line-height: var(--museum-line-height);
+    cursor: pointer;
+  }
+
+  .museum-button--primary {
+    background-color: var(--museum-button-primary-bg);
+    color: var(--museum-button-primary-fg);
+    border-color: var(--museum-button-primary-border);
+  }
+
+  .museum-button--secondary {
+    background-color: var(--museum-button-secondary-bg);
+    color: var(--museum-button-secondary-fg);
+    border-color: var(--museum-button-secondary-border);
+  }
+
+  .museum-button--outline {
+    background-color: var(--museum-button-outline-bg);
+    color: var(--museum-button-outline-fg);
+    border-color: var(--museum-button-outline-border);
+  }
+
+  .museum-button--sm {
+    padding: var(--museum-space-sm-y) var(--museum-space-sm-x);
+    font-size: var(--museum-font-size-sm);
+  }
+
+  .museum-button--md {
+    padding: var(--museum-space-md-y) var(--museum-space-md-x);
+    font-size: var(--museum-font-size-md);
+  }
+
+  .museum-button--lg {
+    padding: var(--museum-space-lg-y) var(--museum-space-lg-x);
+    font-size: var(--museum-font-size-lg);
+  }
+
+  /*
+   * A keyboard focus ring; a mouse click draws none. Two tones: the ring sits apart from the button
+   * on a halo of the package's surface, which also fills the gap, so the ring never touches the
+   * consumer's canvas and its contrast holds on any page (owner's decision A).
+   */
+  .museum-button:focus-visible {
+    outline: var(--museum-focus-width) solid var(--museum-focus-ring);
+    outline-offset: var(--museum-focus-offset);
+    box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) var(--museum-surface);
+  }
+
+  .museum-button:disabled {
+    opacity: var(--museum-disabled-opacity);
+    cursor: not-allowed;
+  }
+}

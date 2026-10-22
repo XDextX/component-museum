@@ -1,0 +1,12 @@
+{
+  "name": "Button",
+  "props": {
+    "variant": { "type": "enum", "values": ["primary", "secondary", "outline"], "default": "primary" },
+    "size": { "type": "enum", "values": ["sm", "md", "lg"], "default": "md" },
+    "type": { "type": "enum", "values": ["button", "submit", "reset"], "default": "button" },
+    "disabled": { "type": "boolean", "default": false }
+  },
+  "events": ["click"],
+  "content": true,
+  "classProp": true
+}

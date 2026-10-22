@@ -1,0 +1,186 @@
+import { Canvas, Controls, Meta, Source } from '@storybook/addon-docs/blocks';
+import * as ReactStories from './Button.react.stories.tsx';
+import { exampleClasses } from '../lib/example-classes.ts';
+import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
+
+<Meta title="Button/Documentation" />
+
+# Button
+
+<LanguageSwitch />
+
+<Canvas of={ReactStories.Default} sourceState="shown" />
+
+<Controls of={ReactStories.Default} />
+
+<Lang lang="es">
+
+## Uso
+
+Button es un botón con tres variantes (`primary`, `secondary`, `outline`), tres tamaños (`sm`, `md`, `lg`), un `type` (`button`, `submit`, `reset`) y un estado `disabled`. Se instala desde el paquete de tu framework y se importa siempre por su nombre de paquete, junto con su hoja de estilos.
+
+En React:
+
+```tsx
+import { Button } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Button variant="outline" size="lg">Button</Button>
+```
+
+En Astro:
+
+```astro
+---
+import { Button } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Button variant="outline" size="lg">Button</Button>
+```
+
+Solo se escriben las props que no tienen su valor por defecto (`primary`, `md`, `button`, sin `disabled`). Cualquier otro atributo HTML llega al `<button>`. El clic es el evento nativo: `onClick` en React; en Astro, el evento `museum:button:click`, que sube por el DOM.
+
+## Construcción
+
+Button son dos implementaciones de un mismo contrato (`contracts/button.contract.json`) que comparten una sola hoja de estilos:
+
+- **React:** `Button` compone las clases `museum-button`, `museum-button--<variant>` y `museum-button--<size>`, y añade al final la `className` que recibas. Pinta `data-museum-button` y reenvía el resto de atributos.
+- **Astro:** el mismo marcado, con `class` en lugar de `className` y un `<slot />` para el texto.
+- **CSS:** vive en la capa `components.museum`. Cada color, tamaño y fuente sale de una variable `--museum-*`; la clase no escribe ningún valor suelto.
+- **Temas:** el claro es el de por defecto; el oscuro llega con `prefers-color-scheme` o con `data-theme="dark"` en cualquier contenedor. `data-theme="light"` lo fuerza claro.
+- **Foco:** el anillo solo aparece con teclado (`:focus-visible`), con un halo de la superficie del paquete para que se lea sobre cualquier página.
+
+## Cómo alterarlo
+
+Hay tres vías, de menos a más intrusiva. Como el CSS del paquete está en una capa, **tu CSS siempre gana**: no hace falta subir la especificidad ni usar `!important`.
+
+**1. Tokens.** Redefine una variable `--museum-*` en un contenedor o en `:root`, y todos los Button debajo la heredan. Estos son los tokens de las variantes y de la forma:
+
+- Color: `--museum-button-primary-bg`, `--museum-button-primary-fg`, `--museum-button-primary-border`, y lo mismo para `secondary` y `outline`.
+- Forma: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity`.
+- Tamaño: `--museum-space-sm-x`, `--museum-space-md-y`, `--museum-font-size-lg`, y el resto de la escala `sm`, `md` y `lg`.
+- Tipografía: `--museum-font-family`, `--museum-font-weight`, `--museum-line-height`.
+- Foco: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-button-primary-bg: #047857;
+  --museum-button-primary-border: #047857;
+  --museum-radius: 999px;
+}
+```
+
+**2. Una regla sobre la clase.** Pasa tu propia clase (`className` en React, `class` en Astro). Se añade a las del componente, nunca las sustituye, y tu regla, al estar fuera de la capa, gana sin más. Esta historia define y muestra `my-button`, que es también la opción del control de clase:
+
+<Source language="css" code={exampleClasses['my-button']} />
+
+En React:
+
+```tsx
+import { Button } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Button className="my-button">Button</Button>
+```
+
+En Astro:
+
+```astro
+---
+import { Button } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Button class="my-button">Button</Button>
+```
+
+**3. Utilidades.** Si tu proyecto usa Tailwind, sus utilidades también ganan a la capa del paquete. Se usan igual, como clase de tu proyecto, y no hay que configurar nada más. El paquete no define ninguna utilidad propia.
+
+</Lang>
+
+<Lang lang="en">
+
+## Usage
+
+Button is a button with three variants (`primary`, `secondary`, `outline`), three sizes (`sm`, `md`, `lg`), a `type` (`button`, `submit`, `reset`) and a `disabled` state. Install it from your framework's package and always import it by package name, together with its stylesheet.
+
+In React:
+
+```tsx
+import { Button } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Button variant="outline" size="lg">Button</Button>
+```
+
+In Astro:
+
+```astro
+---
+import { Button } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Button variant="outline" size="lg">Button</Button>
+```
+
+Only write the props that are off their default (`primary`, `md`, `button`, not `disabled`). Any other HTML attribute reaches the `<button>`. The click is the native event: `onClick` in React; in Astro, the `museum:button:click` event, which bubbles up the DOM.
+
+## How it is built
+
+Button is two implementations of one contract (`contracts/button.contract.json`) sharing a single stylesheet:
+
+- **React:** `Button` composes the classes `museum-button`, `museum-button--<variant>` and `museum-button--<size>`, and appends the `className` you pass last. It renders `data-museum-button` and forwards the remaining attributes.
+- **Astro:** the same markup, with `class` instead of `className` and a `<slot />` for the text.
+- **CSS:** it lives in the `components.museum` layer. Every color, size and font comes from a `--museum-*` variable; the class writes no loose values.
+- **Themes:** light is the default; dark arrives through `prefers-color-scheme` or `data-theme="dark"` on any container. `data-theme="light"` forces light.
+- **Focus:** the ring shows for keyboard users only (`:focus-visible`), with a halo of the package's surface so it reads on any page.
+
+## How to alter it
+
+There are three ways, from least to most intrusive. Because the package CSS sits in a layer, **your CSS always wins**: no need to raise specificity or use `!important`.
+
+**1. Tokens.** Redefine a `--museum-*` variable on a container or on `:root`, and every Button below inherits it. These are the variant and shape tokens:
+
+- Color: `--museum-button-primary-bg`, `--museum-button-primary-fg`, `--museum-button-primary-border`, and likewise for `secondary` and `outline`.
+- Shape: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity`.
+- Size: `--museum-space-sm-x`, `--museum-space-md-y`, `--museum-font-size-lg`, and the rest of the `sm`, `md` and `lg` scale.
+- Typography: `--museum-font-family`, `--museum-font-weight`, `--museum-line-height`.
+- Focus: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-button-primary-bg: #047857;
+  --museum-button-primary-border: #047857;
+  --museum-radius: 999px;
+}
+```
+
+**2. A rule on the class.** Pass your own class (`className` in React, `class` in Astro). It is added to the component's, never replaces them, and your rule, being outside the layer, wins outright. This story defines and shows `my-button`, which is also the class control's option:
+
+<Source language="css" code={exampleClasses['my-button']} />
+
+In React:
+
+```tsx
+import { Button } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Button className="my-button">Button</Button>
+```
+
+In Astro:
+
+```astro
+---
+import { Button } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Button class="my-button">Button</Button>
+```
+
+**3. Utilities.** If your project uses Tailwind, its utilities also beat the package layer. Use them the same way, as a class from your project; nothing more to configure. The package defines no utilities of its own.
+
+</Lang>

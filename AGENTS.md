@@ -34,8 +34,7 @@ de `Memory.md` lo decide el agente.
 - **Un cambio se verifica con `npm test` desde la raíz**, que tiene que terminar en 0: encadena
   la comprobación de tipos, Vitest, los tests en un Edge real y los consumidores externos. Un
   verde de solo una parte no vale. Además, abre cada página de la galería tocada desde un servidor
-  de desarrollo en marcha — di qué páginas abriste. (El comando de la galería, pendiente de la
-  spec de arquitectura.)
+  de desarrollo en marcha — di qué páginas abriste. (El comando de la galería es `npm run gallery`.)
 - **Validar una spec cubre sus requisitos no funcionales y sus casos límite, no solo sus RF.**
 - **El árbol de trabajo es CRLF.** Normaliza antes de buscar un ancla, o la sonda no encuentra
   nada.
@@ -66,10 +65,12 @@ de `Memory.md` lo decide el agente.
 - **NUNCA hagas push. NUNCA hagas commit si no te lo piden.** Terminar una tarea no implica hacer
   commit.
 - **Los commits siguen Conventional Commits** (`feat:`, `fix:`, `docs:`, `refactor:`…), que la
-  herramienta de changelog y versionado lee para versionar los paquetes (cuál, pendiente de la
-  spec de arquitectura).
+  herramienta de changelog y versionado lee para versionar los paquetes (`@s-ui/mono`, que se
+  instala al publicar por primera vez).
 - **Una spec nueva se redacta desde `main`, y tiene su propia rama una vez aprobada**:
-  `spec/NNN-<nombre>`.
+  `spec/NNN-<nombre>`. Dentro de una entrega, la primera spec sale de `main` y cada siguiente de
+  la rama de la anterior, que aún no está en `main`; al cerrar la entrega se mergea a `main` la
+  rama de la última spec.
 - `AGENTS.md` y `docs/constitution.md` van en su propio commit `docs:`.
 - **`git checkout -- .` destruye el trabajo sin commitear sin avisar.** Revierte solo rutas
   explícitas.

@@ -1,0 +1,152 @@
+# Tareas 004 — historia-button
+
+**Approved:** 2026-10-22 · aprobado por el coordinator en la sesión autónoma que declaró el dueño ("trabaja y haz los commits"), con sus 3 respuestas (versionado, instalación, workspaces); el dueño corrige al vuelo
+
+Cómo se trabaja en paralelo (plan, bloque 6): cada tarea de una ola va en su propio worktree, con
+su rama `spec/004-historia-button-T-n` y su `node_modules`. Al cerrar la ola, la sesión de git
+mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toca una sola tarea:
+`package.json` y `package-lock.json` la T-1, y `tests/global-setup.ts` la T-6.
+
+- [x] **T-1 — Workspaces y esqueleto de la galería con Storybook**
+  Cubre: base de RF-1 a RF-10 (tarea mecánica)
+  Archivos: `package.json` (workspaces, script `gallery`), `package-lock.json`,
+  `gallery/package.json`, `gallery/.storybook/main.ts`, `gallery/.storybook/preview.ts`,
+  `.gitignore`
+  Hecho cuando: `npm ci` enlaza `@component-museum/react` y `@component-museum/astro` en
+  `node_modules`; `npm run gallery` arranca Storybook; `storybook build` termina en 0; los tests de
+  la 001 a la 003 siguen en verde.
+  Inyección: quitar `gallery` de las workspaces hace que el import por especificador de
+  `preview.ts` no resuelva, y `storybook build` falla.
+  Inyección vista: la del plan pone `storybook build` en rojo por otro motivo (npm desinstala
+  Storybook con la galería, y `@component-museum/react` sigue enlazado desde `packages/*`), así que
+  no prueba el especificador. En su lugar, quitar el enlace `node_modules/@component-museum/react`
+  → `storybook build` en rojo con «failed to resolve import "@component-museum/react/styles.css"»,
+  exit 1; `npm install` lo enlaza de nuevo y el build pasa. Manifiestos restaurados, idénticos según
+  `cmp`. `npm run gallery` compila los paquetes (`build:packages`) y arranca Storybook en `:6006`.
+
+- [x] **T-2 — Lógica pura: controles, códigos de uso y casos Astro desde el contrato**
+  Cubre: base de RF-3, RF-5, RF-6, RF-7, RF-8
+  Archivos: `gallery/lib/contract-args.ts`, `tests/contract-args.test.ts`
+  Hecho cuando:
+  - `argTypesFromContract` da una lista cerrada por enumerado, un interruptor por booleano y la
+    clase con `['', 'my-button']`.
+  - `usageSnippet` escribe los dos imports y solo las props que no tienen su valor por defecto.
+  - `astroCases` da cada variante, normal y `disabled`.
+  Inyección: que `usageSnippet` omita el import de la hoja pone en rojo su test.
+  Inyección vista: quitar el import de la hoja de `usageSnippet` dejó en rojo "always writes both imports and omits default props" (6 verdes, 1 rojo); restaurado con el mismo sha256.
+  Corrección tras validación (punto 2): `usageSnippet('astro', …)` dejaba los `import` fuera del
+  frontmatter, igual que los 4 bloques `astro` del MDX y los casos del JSON; ahora van entre `---`.
+  `snippetProblems` exige el frontmatter y ningún `import` fuera de él, con su caso «la guarda
+  muerde». Inyección vista: antes del arreglo, esa guarda dio rojo en los 4 bloques del MDX y en
+  los 2 estados de Astro (6 fallos, «an import outside the frontmatter»).
+
+- [x] **T-3 — Prerenderizar Button en Astro**
+  Cubre: RF-5, RF-6 (el contenido; el test es la T-7)
+  Archivos: `gallery/astro-render/` (`astro.config.mjs`, `src/pages/index.astro`,
+  `tsconfig.json`; sin `package.json` propio: usa el `astro` de la raíz con `astro build --root`),
+  `gallery/scripts/extract-astro.mjs`
+  Hecho cuando: `astro build` en `astro-render` y la extracción dejan `gallery/generated/astro-button.json`
+  con un caso por variante, normal y `disabled`, cada uno con su HTML real y su código de uso.
+  Inyección: quitar `disabled` de `astroCases` deja el JSON sin esos casos, y el recuento de la
+  tarea (variantes × 2) se pone en rojo.
+  Inyección vista: `astroCases` con `[false]` en lugar de `[false, true]` → `extract-astro.mjs` en
+  rojo («expected 6 Astro cases (each variant, normal and disabled), got 3»), exit 1; el recuento
+  sale del contrato, no de `astroCases`. Restaurado, idéntico según `cmp`, y de nuevo 6 casos.
+  Riesgo del plan comprobado: `astro build` compila `@component-museum/astro` enlazado por las
+  workspaces sin `ssr.noExternal`. Cada caso guarda solo el `<button>`: Astro emite el script del
+  clic una vez por página, junto al primer caso.
+
+- [x] **T-4 — Historia React de Button con sus controles**
+  Cubre: RF-3, RF-9 (junto al control)
+  Archivos: `gallery/stories/Button.react.stories.tsx`
+  Hecho cuando: la historia usa `argTypesFromContract`; el control de clase ofrece «ninguna» y
+  `my-button`; su descripción muestra el CSS de `.my-button`, que un decorador inyecta sin capa;
+  `storybook build` termina en 0.
+  Inyección: un `argTypes` escrito a mano con una variante de menos pone en rojo RF-3 en la T-7.
+  Inyección vista: 2026-10-22 · las guardas de RF-3 (T-7) y RF-10 (T-8) aún no existen, así que ningún test se pone en rojo. Probe por sustitución: `import { Button } from '../../packages/react/src/index.ts'` en la historia → un grep de rutas a `packages/` en `gallery/` la detecta (limpio en la base); restaurada con el mismo sha256. `storybook build` pasa con y sin la violación: el build no es la guarda, lo son T-7/T-8.
+  Corrección tras validación (punto 1): el CSS de `my-button` no se veía junto al control (el panel
+  solo mostraba «Name» y «Control»). La historia activa `controls.expanded` y el CSS tiene una sola
+  fuente, `gallery/lib/example-classes.ts`, que importan la historia y el MDX (con `<Source>`).
+  `tests/gallery-browser.test.ts` lo comprueba en el Storybook construido: la fila `className` del
+  panel y la página de documentación, en los dos idiomas. Inyección vista: una copia de la
+  historia sin `controls.expanded`, en un Storybook aparte → rojo («expected 'className…' to
+  contain '.my-button {'»), exit 1; test restaurado, idéntico según `cmp`, fuente sin tocar.
+
+- [x] **T-5 — Documentación de Button en español y en inglés**
+  Cubre: RF-2, RF-9 (en «cómo alterarlo»)
+  Archivos: `gallery/stories/Button.mdx`
+  Hecho cuando: hay seis secciones con contenido («Uso», «Construcción» y «Cómo alterarlo», y
+  «Usage», «How it is built» y «How to alter it»); «Cómo alterarlo» enseña tokens, reglas sobre la
+  clase y utilidades, con el CSS de `my-button`; sus códigos de uso salen de `usageSnippet`.
+  Inyección: borrar «How to alter it» pone en rojo RF-2 en la T-8.
+  Inyección vista: la guarda de texto es la de la T-8 (aún no existe); con un check provisional (seis `##` con contenido) borrar «## How to alter it» dio rojo (MISSING), restaurado y verde. Las dos versiones van seguidas, con un selector de anclas (#es, #en).
+
+- [x] **T-6 — Historia Astro y builds de la galería en `npm test`**
+  Cubre: RF-5, RF-6 (en la galería)
+  Archivos: `gallery/stories/Button.astro.stories.tsx`, `tests/global-setup.ts`
+  Hecho cuando: la historia Astro muestra cada caso del JSON con su HTML y su código de uso debajo;
+  el `globalSetup` construye `astro-render`, extrae el JSON y construye Storybook en paralelo con
+  los consumidores, y entrega sus rutas; el tiempo de `npm test` se mide antes y después.
+  Inyección: que el `globalSetup` no extraiga el JSON hace fallar `storybook build`, porque la
+  historia Astro no encuentra el JSON.
+  Inyección vista: `global-setup.ts` sin el paso de extracción → `npm test` en rojo en el
+  `globalSetup` («gallery: storybook build failed … Could not resolve '../generated/astro-button.json'»),
+  exit 1; restaurado, idéntico según `cmp`. El `globalSetup` borra `gallery/generated/` antes de
+  construir, para que un JSON viejo no tape una extracción rota. Tiempo de `npm test`: 92 s antes,
+  85 s después; la galería se construye en paralelo con los consumidores y no alarga la ejecución.
+  Corrección tras validación (punto 3): `npm test` comprueba los tipos de `gallery/` (`tsc -p
+  gallery`: historias, `.storybook/*.ts`, `lib/`) y `astro check --root gallery/astro-render`;
+  `gallery/env.d.ts` declara los imports de CSS (los 3 TS2882). El prerenderizado y la extracción
+  pasan al script `gallery:astro`, que va antes de `tsc` porque la historia Astro importa el JSON.
+  Inyección vista: una historia temporal con `const wrong: number = 'not a number'` → `npm test`
+  cortado en `tsc -p gallery` (TS2322), exit 2, antes de Vitest; borrada.
+
+- [x] **T-7 — Guardas de historias, controles y casos Astro**
+  Cubre: RF-1, RF-3, RF-5, RF-6
+  Archivos: `tests/gallery.test.ts`
+  Hecho cuando:
+  - Cada export de las dos entradas tiene una historia por framework bajo `Button`.
+  - Los `argTypes` de la historia React coinciden con el contrato.
+  - El JSON tiene cada caso, con `museum-button--<variant>`, un nombre accesible no vacío y su
+    código de uso con la variante correcta.
+  Inyección: una variante nueva en una copia del contrato sin su caso Astro pone en rojo RF-5.
+  Inyección vista: 2026-10-22 · una copia en memoria del contrato con la variante `ghost` sin caso Astro → «ghost: no Astro case» y «ghost-disabled: no Astro case» (el JSON se regenera desde el contrato, así que un contrato real no puede probarlo); lo fijan los tests `bites`. En la historia React, `argTypes` con `variant` sin `outline` y título `Button/Reakt` → rojo RF-3 («variant options differ from the contract») y RF-1 («Button has no React story titled Button/React», en fuente y en `index.json` del Storybook construido), 4 rojos de 10; restaurada con el mismo sha256. Tiempo: `npm test` 142 s con todo.
+
+- [x] **T-8 — Guardas de documentación, códigos de uso e imports**
+  Cubre: RF-2, RF-7, RF-8, RF-9, RF-10
+  Archivos: `tests/snippets.test.ts`
+  Hecho cuando:
+  - El MDX tiene las seis secciones con contenido.
+  - Todos los códigos de uso (historia React, casos Astro y MDX) llevan los dos imports y solo
+    props del contrato y clases `museum-*` o `my-button`.
+  - El CSS de `my-button` aparece en la descripción del control y en «cómo alterarlo».
+  - Ningún import de `gallery/` usa una ruta a un paquete, y todos resuelven.
+  Inyección: un `import '../../packages/react/styles.css'` en una copia de `preview.ts` pone en rojo
+  RF-10, y una clase `px-4` en un código de uso del MDX, RF-8.
+  Inyección vista: 2026-10-22 · a la vez, en copias de `Button.mdx` y `preview.ts`: borrar «How to alter it» (RF-2), `className="px-4"` en un snippet (RF-8), import `../../packages/react/styles.css` en `preview.ts` (RF-10) y otro CSS de `my-button` en el MDX inglés (RF-9) → 6 rojos de 23. El CSS distinto solo: 1 rojo (RF-9), 22 verdes. Restaurados, mismo sha256. RF-9 compara, normalizado en espacios, `exampleClasses` (historia) con las dos secciones «cómo alterarlo»; el MDX no puede importar la constante, así que el test mantiene igual la copia.
+
+- [x] **T-9 — Los controles re-renderizan Button React**
+  Cubre: RF-4
+  Archivos: `tests/gallery-browser.test.ts`
+  Hecho cuando: en Edge, sobre el Storybook construido y servido con `serve.ts`, cada arg
+  (`variant`, `size`, `type`, `disabled`, texto, clase) cambia el atributo, la clase o el texto
+  del `<button>`, en los dos temas; un texto vacío no da error. La validación lo repite a mano
+  desde `npm run gallery`.
+  Inyección: una historia que ignora `args.variant` pone en rojo el caso de `variant`.
+  Inyección vista: una copia de la historia React con `render: ({ variant, ...args }) => <Button {...args} />`,
+  construida en un Storybook aparte (`gallery/.inject-T9/`, borrado después; la fuente sin tocar) →
+  los dos temas en rojo, solo con «variant:secondary: the <button> does not show it», exit 1; test
+  restaurado, idéntico según `cmp`. Riesgo del plan comprobado: los args por URL pasan la misma
+  validación que los controles (`variant:nope` se ignora) y el panel de controles del manager
+  muestra los valores llegados por URL, así que comparten el almacén de args.
+
+- [x] **T-10 — Cerrar las marcas «pendiente» de la constitución y `AGENTS.md`**
+  Cubre: RF-11
+  Archivos: `tests/marks.test.ts`, `docs/constitution.md`, `AGENTS.md`
+  Hecho cuando: el test une cada archivo en una línea y halla 0
+  `pendientes? de la spec de arquitectura` fuera de `Changed:`. La enmienda nombra la galería, los
+  paquetes y sus entradas, `npm run gallery` y la herramienta de versionado, `@s-ui/mono`, sin instalarla;
+  lleva su entrada `Changed:`, la aprueba el dueño y va en su propio commit `docs:`.
+  Inyección: el test, escrito antes de la enmienda, halla las 4 marcas y se pone en rojo.
+  Inyección vista: 2026-10-22 · test escrito antes: rojo con 4 marcas (2 por archivo); tras la enmienda,
+  re-añadir una marca en `AGENTS.md` (restaurado por ruta, mismo sha256) lo pone en rojo.

@@ -1,4 +1,4 @@
-import { cpSync, existsSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -87,6 +87,47 @@ describe('undeclared module (RF-5)', { timeout: 300_000 }, () => {
       await installPackage(dir, declaring);
       const declared = buildConsumer(dir);
       expect(declared.code, declared.output).toBe(0);
+    });
+  }
+});
+
+/** True when some file under the consumer's dist/ contains `text`: the build really used Button. */
+function builtWith(dir: string, text: string): boolean {
+  const dist = join(dir, 'dist');
+  return readdirSync(dist, { recursive: true, withFileTypes: true }).some(
+    (entry) => entry.isFile() && readFileSync(join(entry.parentPath, entry.name), 'utf8').includes(text),
+  );
+}
+
+describe('framework packages in the consumers (RF-3)', () => {
+  // Built once by global-setup.ts, so the shared consumers stay read-only here.
+  const builds = inject('builds');
+
+  for (const framework of frameworks) {
+    for (const [kind, dirs] of [['untouched', consumers.plain], ['guarded 002', consumers.packageGuarded]] as const) {
+      it(`builds the ${kind} ${framework} consumer with @component-museum/${framework}, Button and its stylesheet`, () => {
+        const build = builds[kind === 'untouched' ? 'plain' : 'packageGuarded'][framework];
+        expect(build.code, build.output).toBe(0);
+        const dir = dirs[framework];
+        expect(existsSync(join(dir, 'node_modules', '@component-museum', framework, 'package.json'))).toBe(true);
+        // The package's class and an instance id from the entry: Button and the entry both reached the build.
+        expect(builtWith(dir, 'museum-button')).toBe(true);
+        expect(builtWith(dir, 'button-outline-lg')).toBe(true);
+      });
+    }
+  }
+});
+
+describe('Button types in the consumers (002 RF-5)', () => {
+  // Checked once by global-setup.ts in the 002 guarded consumers: tsc -b (React), astro check (Astro).
+  const typeChecks = inject('typeChecks');
+
+  for (const framework of frameworks) {
+    it(`passes the ${framework} consumer's type check, and fails it once a Button has variant="nope"`, () => {
+      const { clean, nope } = typeChecks[framework];
+      expect(clean.code, clean.output).toBe(0);
+      expect(nope.code, nope.output).not.toBe(0);
+      expect(nope.output).toContain('"nope"');
     });
   }
 });

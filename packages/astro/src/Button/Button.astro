@@ -1,0 +1,37 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+/** Button's own API, from contracts/button.contract.json translated to Astro. */
+interface OwnProps {
+  variant?: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  /** Added to the component's own classes, never replacing them. */
+  class?: string;
+}
+
+/** Any other HTML attribute reaches the `<button>`; the Omit keeps the own props single. */
+export interface Props extends OwnProps, Omit<HTMLAttributes<'button'>, keyof OwnProps> {}
+
+// The hook is the component's own: a consumer's data-museum-button is dropped, not rendered twice (RF-11).
+const { variant = 'primary', size = 'md', disabled = false, type = 'button', class: className, 'data-museum-button': _hook, ...attributes } = Astro.props;
+---
+
+<button
+  {...attributes}
+  type={type}
+  disabled={disabled}
+  class:list={['museum-button', `museum-button--${variant}`, `museum-button--${size}`, className]}
+  data-museum-button
+>
+  <slot />
+</button>
+
+<script>
+  // The contract's click event, as a DOM event named museum:button:click (RF-8).
+  document.addEventListener('click', (event) => {
+    const button = (event.target as Element | null)?.closest('[data-museum-button]');
+    button?.dispatchEvent(new CustomEvent('museum:button:click', { bubbles: true }));
+  });
+</script>

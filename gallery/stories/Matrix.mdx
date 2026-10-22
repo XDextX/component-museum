@@ -1,0 +1,46 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { frameworkMatrix } from '../lib/matrix.ts';
+// By specifier, never a path into packages/ (constitution, rule 1): the text of each package entry.
+import reactEntry from '@component-museum/react?raw';
+import astroEntry from '@component-museum/astro?raw';
+
+<Meta title="Matrix" />
+
+# Matriz / Matrix
+
+export const contracts = import.meta.glob('../../contracts/*.contract.json', { eager: true });
+export const components = Object.values(contracts).map((c) => (c.default ?? c).name);
+export const matrix = frameworkMatrix({ react: reactEntry, astro: astroEntry }, components);
+
+Qué framework exporta cada componente. / Which framework exports each component.
+
+{/* A named region in the Tab order: keyboard users reach the table and hear what it is. */}
+<div role="region" aria-label="Matriz de frameworks / Framework matrix" tabIndex={0}>
+<table>
+  <caption>Componentes por framework / Components by framework</caption>
+  <thead>
+    <tr>
+      <th scope="col">Componente</th>
+      <th scope="col">React</th>
+      <th scope="col">Astro</th>
+    </tr>
+  </thead>
+  <tbody>
+    {components.length === 0 ? (
+      <tr><td colSpan={3}>Sin componentes</td></tr>
+    ) : (
+      components.map((name) => (
+        <tr key={name}>
+          <th scope="row">{name}</th>
+          {['react', 'astro'].map((fw) => (
+            <td key={fw}>
+              <span aria-hidden="true">{matrix[name][fw] === 'present' ? '✓' : 'falta'}</span>
+              <span className="sb-sr-only">{`${name} ${matrix[name][fw] === 'present' ? 'está en' : 'falta en'} ${fw}`}</span>
+            </td>
+          ))}
+        </tr>
+      ))
+    )}
+  </tbody>
+</table>
+</div>

@@ -1,0 +1,31 @@
+{
+  "name": "@component-museum/react",
+  "version": "0.1.0",
+  "description": "React components of the component museum.",
+  "type": "module",
+  "engines": {
+    "node": "^22.22.0 || >=24.0.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./styles.css"
+  },
+  "files": [
+    "dist",
+    "styles.css"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "prepack": "node ../../scripts/sync-styles.mjs"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}
