@@ -69,7 +69,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   Inyección: borrar «How to alter it» pone en rojo RF-2 en la T-8.
   Inyección vista: la guarda de texto es la de la T-8 (aún no existe); con un check provisional (seis `##` con contenido) borrar «## How to alter it» dio rojo (MISSING), restaurado y verde. Las dos versiones van seguidas, con un selector de anclas (#es, #en).
 
-- [ ] **T-6 — Historia Astro y builds de la galería en `npm test`**
+- [x] **T-6 — Historia Astro y builds de la galería en `npm test`**
   Cubre: RF-5, RF-6 (en la galería)
   Archivos: `gallery/stories/Button.astro.stories.tsx`, `tests/global-setup.ts`
   Hecho cuando: la historia Astro muestra cada caso del JSON con su HTML y su código de uso debajo;
@@ -77,6 +77,11 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   los consumidores, y entrega sus rutas; el tiempo de `npm test` se mide antes y después.
   Inyección: que el `globalSetup` no extraiga el JSON hace fallar `storybook build`, porque la
   historia Astro no encuentra el JSON.
+  Inyección vista: `global-setup.ts` sin el paso de extracción → `npm test` en rojo en el
+  `globalSetup` («gallery: storybook build failed … Could not resolve '../generated/astro-button.json'»),
+  exit 1; restaurado, idéntico según `cmp`. El `globalSetup` borra `gallery/generated/` antes de
+  construir, para que un JSON viejo no tape una extracción rota. Tiempo de `npm test`: 92 s antes,
+  85 s después; la galería se construye en paralelo con los consumidores y no alarga la ejecución.
 
 - [ ] **T-7 — Guardas de historias, controles y casos Astro**
   Cubre: RF-1, RF-3, RF-5, RF-6

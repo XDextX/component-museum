@@ -40,6 +40,8 @@ declare module 'vitest' {
     builds: Record<'plain' | 'packageGuarded' | 'tailwind', Record<Framework, RunResult>>;
     /** Spec 002 RF-5: each guarded 002 consumer's type check, clean and with variant="nope". */
     typeChecks: Record<Framework, { clean: RunResult; nope: RunResult }>;
+    /** Spec 004: the built Storybook and the extracted Astro cases. */
+    gallery: { storybook: string; astroJson: string };
   }
 }
 
@@ -59,6 +61,40 @@ async function npmRun(args: string[], cwd: string): Promise<RunResult> {
     const { code, stdout = '', stderr = '' } = error as { code?: number; stdout?: string; stderr?: string };
     return { code: typeof code === 'number' ? code : 1, output: `${stdout}${stderr}` };
   }
+}
+
+const gallery = join(repo, 'gallery');
+
+/** Runs a Node script to completion; a failure is a result, never a thrown error. */
+async function nodeRun(args: string[], cwd: string): Promise<RunResult> {
+  try {
+    const { stdout, stderr } = await execFileAsync(process.execPath, args, { cwd, maxBuffer: 64 * 1024 * 1024 });
+    return { code: 0, output: `${stdout}${stderr}` };
+  } catch (error) {
+    const { code, stdout = '', stderr = '' } = error as { code?: number; stdout?: string; stderr?: string };
+    return { code: typeof code === 'number' ? code : 1, output: `${stdout}${stderr}` };
+  }
+}
+
+/**
+ * Spec 004: prerenders Button in Astro, extracts the cases to JSON and builds Storybook, in that
+ * order, since the Astro story imports the JSON. A failing step fails the whole run.
+ */
+async function buildGallery(): Promise<{ storybook: string; astroJson: string }> {
+  const steps: [string, () => Promise<RunResult>][] = [
+    // Each package's styles.css is written on prepack; the gallery imports it by specifier.
+    ['copy the stylesheets', () => npmRun(['run', 'prepack', '--workspace=@component-museum/react', '--workspace=@component-museum/astro'], repo)],
+    ['astro build of astro-render', () => nodeRun([join(repo, 'node_modules', 'astro', 'bin', 'astro.mjs'), 'build', '--root', join(gallery, 'astro-render')], repo)],
+    ['extract the Astro cases', () => nodeRun([join(gallery, 'scripts', 'extract-astro.mjs')], repo)],
+    ['storybook build', () => npmRun(['run', 'build', '--workspace=@component-museum/gallery'], repo)],
+  ];
+  // A JSON left by an earlier run would hide a broken extraction.
+  rmSync(join(gallery, 'generated'), { recursive: true, force: true });
+  for (const [name, step] of steps) {
+    const result = await step();
+    if (result.code !== 0) throw new Error(`gallery: ${name} failed\n${result.output.slice(-4000)}`);
+  }
+  return { storybook: join(gallery, 'storybook-static'), astroJson: join(gallery, 'generated', 'astro-button.json') };
 }
 
 /** The consumer's type check, clean and then with a Button whose variant is not in the contract. */
@@ -117,6 +153,11 @@ export default async function setup(project: TestProject): Promise<() => void> {
     mkdirSync(leftoverDir, { recursive: true });
     writeFileSync(join(leftoverDir, 'leftover.txt'), 'from an earlier run');
 
+    // The gallery builds alongside the consumers; it touches only gallery/ and its own outputs.
+    const galleryBuilt = buildGallery();
+    // Awaited after the consumers; this keeps an early failure from being an unhandled rejection meanwhile.
+    galleryBuilt.catch(() => {});
+
     const [plainReact, plainAstro, guardedReact, guardedAstro, packageReact, packageAstro, tailwindReact, tailwindAstro] = await Promise.all([
       createConsumer(base, runId, 'react', testPackage, { starter: starters.react, packages: [frameworkPackage('react')] }),
       createConsumer(base, runId, 'astro', testPackage, { starter: starters.astro, packages: [frameworkPackage('astro')] }),
@@ -146,6 +187,7 @@ export default async function setup(project: TestProject): Promise<() => void> {
       ),
     ) as Record<Framework, { clean: RunResult; nope: RunResult }>;
     project.provide('typeChecks', typeChecks);
+    project.provide('gallery', await galleryBuilt);
 
     project.provide('consumers', {
       base,
