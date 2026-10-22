@@ -14,6 +14,7 @@
     --museum-border-width: 1px;
     --museum-focus-width: 2px;
     --museum-focus-offset: 2px;
+    --museum-focus-halo: 2px;
     --museum-disabled-opacity: 0.5;
 
     --museum-space-sm-x: 0.75rem;
@@ -35,7 +36,7 @@
   :root,
   [data-theme="light"] {
     --museum-surface: #ffffff;
-    --museum-focus: #1d4ed8;
+    --museum-focus-ring: #1d4ed8;
 
     --museum-button-primary-bg: #1d4ed8;
     --museum-button-primary-fg: #ffffff;
@@ -54,7 +55,7 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --museum-surface: #111827;
-      --museum-focus: #93c5fd;
+      --museum-focus-ring: #93c5fd;
 
       --museum-button-primary-bg: #2563eb;
       --museum-button-primary-fg: #ffffff;
@@ -73,7 +74,7 @@
   /* Dark theme on any element that asks for it; the nearest data-theme wins. */
   [data-theme="dark"] {
     --museum-surface: #111827;
-    --museum-focus: #93c5fd;
+    --museum-focus-ring: #93c5fd;
 
     --museum-button-primary-bg: #2563eb;
     --museum-button-primary-fg: #ffffff;
@@ -136,10 +137,15 @@
     font-size: var(--museum-font-size-lg);
   }
 
-  /* A keyboard focus ring; a mouse click draws none. */
+  /*
+   * A keyboard focus ring; a mouse click draws none. Two tones: the ring sits apart from the button
+   * on a halo of the package's surface, which also fills the gap, so the ring never touches the
+   * consumer's canvas and its contrast holds on any page (owner's decision A).
+   */
   .museum-button:focus-visible {
-    outline: var(--museum-focus-width) solid var(--museum-focus);
+    outline: var(--museum-focus-width) solid var(--museum-focus-ring);
     outline-offset: var(--museum-focus-offset);
+    box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) var(--museum-surface);
   }
 
   .museum-button:disabled {

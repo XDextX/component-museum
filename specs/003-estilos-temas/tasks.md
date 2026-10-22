@@ -79,7 +79,7 @@ archivo.
   Inyección: cambiar el orden para que `[data-theme="dark"]` vaya antes que `@media` deja ganar a
   la preferencia del sistema en `<html data-theme="light">`, y el test se pone en rojo (en una
   copia de la hoja inyectada en la página, no en la fuente).
-  Inyección vista: copia de la hoja con `:root:not([data-theme="light"])` cambiado por `:root` en el `@media` oscuro → 4 de 48 en rojo (`data-theme="light"` bajo emulación oscura en React y Astro, y los dos RF-1 de Astro sin JavaScript). La inyección del plan (mover `[data-theme="dark"]`) no muerde porque el `:not(...)` ya protege ese caso.
+  Inyección vista: copia de la hoja con `:root:not([data-theme="light"])` cambiado por `:root` en el `@media` oscuro → 4 de 48 en rojo: los 2 que detectan la violación son `<html data-theme="light">` bajo emulación oscura en React y Astro; los otros 2 (RF-1 de Astro sin JavaScript) son timeouts de `addStyleTag` con JavaScript desactivado, del método de inyección, no detección. La inyección del plan (mover `[data-theme="dark"]`) no muerde porque el `:not(...)` ya protege ese caso.
 
 - [x] **T-7 — Consumidores con Tailwind v4, uno por framework, con dos órdenes de import**
   Cubre: base de RF-9 y RF-10
@@ -111,3 +111,12 @@ archivo.
   Inyección: un `fg` de `primary` con contraste 3:1, en una copia de la hoja inyectada en la
   página, pone el test en rojo.
   Inyección vista: en copias temporales del test con una copia de la hoja añadida a la página: `fg` de `primary` en `#b0b0b0` → 4 casos en rojo (3,09 y 2,38 < 4,5); `.museum-button:focus-visible { outline: none }` → 4 casos en rojo; borradas, test idéntico por sha256.
+  Corrección tras validación: el anillo de foco medía contra `--museum-surface` y no podía fallar,
+  aunque en el consumidor Astro oscuro el lienzo es blanco y el anillo `#93c5fd` quedaba a 1,80:1.
+  Decisión A del dueño: anillo de dos tonos. La hoja renombra el token a `--museum-focus-ring` y
+  añade un halo `box-shadow` de `--museum-surface` (`--museum-focus-halo`, 2px) que llena el hueco
+  y rodea el anillo; `tests/a11y.test.ts` mide el anillo contra lo que lo rodea de verdad (el halo,
+  o si no el lienzo real) y exige que el halo sea la superficie y pase del anillo.
+  Inyección vista: una copia de la hoja con `box-shadow: none` en el foco, añadida a la página → los
+  4 casos en rojo, Astro oscuro con 1,8:1; test restaurado, idéntico según `cmp`, y
+  `styles/museum.css` sin tocar. Aprobación visual del dueño pendiente.
