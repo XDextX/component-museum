@@ -93,7 +93,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
     código de uso con la variante correcta.
   Inyección: una variante nueva en una copia del contrato sin su caso Astro pone en rojo RF-5.
 
-- [ ] **T-8 — Guardas de documentación, códigos de uso e imports**
+- [x] **T-8 — Guardas de documentación, códigos de uso e imports**
   Cubre: RF-2, RF-7, RF-8, RF-9, RF-10
   Archivos: `tests/snippets.test.ts`
   Hecho cuando:
@@ -104,6 +104,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   - Ningún import de `gallery/` usa una ruta a un paquete, y todos resuelven.
   Inyección: un `import '../../packages/react/styles.css'` en una copia de `preview.ts` pone en rojo
   RF-10, y una clase `px-4` en un código de uso del MDX, RF-8.
+  Inyección vista: 2026-10-22 · a la vez, en copias de `Button.mdx` y `preview.ts`: borrar «How to alter it» (RF-2), `className="px-4"` en un snippet (RF-8), import `../../packages/react/styles.css` en `preview.ts` (RF-10) y otro CSS de `my-button` en el MDX inglés (RF-9) → 6 rojos de 23. El CSS distinto solo: 1 rojo (RF-9), 22 verdes. Restaurados, mismo sha256. RF-9 compara, normalizado en espacios, `exampleClasses` (historia) con las dos secciones «cómo alterarlo»; el MDX no puede importar la constante, así que el test mantiene igual la copia.
 
 - [ ] **T-9 — Los controles re-renderizan Button React**
   Cubre: RF-4
