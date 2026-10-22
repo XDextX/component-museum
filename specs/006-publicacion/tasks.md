@@ -52,13 +52,24 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   tipos, `BREAKING CHANGE`, `docs` y `feat` sin scope, con `check()` sin paquetes); revertida,
   10 de 10 en verde. Un test de la suite deja la inyección fija (sin `packages/*`, `check()` da `{}`).
 
-- [ ] **T-4 — Nada de más en cada tarball**
+- [x] **T-4 — Nada de más en cada tarball**
   Cubre: RF-2
   Archivos: `tests/packages.test.ts` (`tarballProblems` y la lista permitida, sobre `packedFiles`)
   Hecho cuando: la lista de `npm pack --dry-run` de cada paquete solo tiene lo permitido (plan,
   bloque 3) y tiene todo lo obligatorio, `LICENSE` y `README.md` incluidos.
   Inyección: un `tsconfig.json` añadido a `files` en una copia del manifiesto de Astro pone en rojo
   RF-2 por archivo de más; quitar `LICENSE` del `prepack`, por archivo de menos.
+  Hecho (2026-10-22): `tarballProblems` y la lista permitida de cada paquete en `tests/packages.test.ts`,
+  con un test unitario y uno por paquete sobre `packedFiles`. Visto en rojo (manifiesto de Astro
+  restaurado por sha256 `1341a1f8…0d9b`): con `tsconfig.json` en `files`,
+  `expected [ 'tsconfig.json is not allowed' ] to deeply equal []`; con `packages/astro/LICENSE`
+  borrado y el `prepack` en `node -e 0`, `[ 'LICENSE is missing' ]`. Restaurado: 21 de 21 en verde
+  (1 omitido).
+  Arreglo aparte (bloque propio): `SKIP` de `tests/lib/contract.ts` no excluía `.claude`, y los
+  worktrees de agentes en `.claude/worktrees/` duplicaban los contratos y ponían en rojo
+  `contract.test.ts` RF-6 en el checkout principal. Se añade `.claude` a `SKIP`. Inyección: copia de
+  `button.contract.json` en `.claude/x/` del worktree: sin el arreglo, RF-6 en rojo
+  (`expected [ Array(1) ] to deeply equal []`, 1 de 15); con él, 15 de 15 en verde; copia borrada.
 
   Va tras la T-1 y la T-2 porque necesita `LICENSE` y `README.md` en el tarball.
 
