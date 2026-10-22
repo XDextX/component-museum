@@ -3,6 +3,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { usageSnippet, type Contract } from '../gallery/lib/contract-args.ts';
 import { exampleClasses } from '../gallery/lib/example-classes.ts';
+import { initialLanguage } from '../gallery/lib/Lang.tsx';
 import { loadContract } from './lib/contract.ts';
 
 const repo = resolve(import.meta.dirname, '..');
@@ -19,11 +20,10 @@ type Block = { lang: string; code: string };
 const blocks = (text: string): Block[] =>
   [...text.matchAll(/```(\w+)\n([\s\S]*?)```/g)].map((m) => ({ lang: m[1], code: m[2] }));
 
-/** Splits the MDX at its language anchors (`<a id="es">`, `<a id="en">`). */
+/** The body of each `<Lang lang="…">` block of the MDX (spec 005, T-2), keyed by language. */
 function languages(text: string): Record<string, string> {
-  const [, ...rest] = text.split(/<a id="(es|en)"><\/a>/);
   const out: Record<string, string> = {};
-  for (let i = 0; i < rest.length; i += 2) out[rest[i]] = rest[i + 1];
+  for (const [, lang, body] of text.matchAll(/^<Lang lang="(es|en)">\n([\s\S]*?)\n<\/Lang>$/gm)) out[lang] = body;
   return out;
 }
 
@@ -75,6 +75,26 @@ describe('documentation in both languages (spec 004, RF-2)', () => {
     const found = [...body.matchAll(/^## (.+)$/gm)].map((m) => m[1].trim());
     expect(found).toEqual(titles);
     for (const part of body.split(/^## .+$/m).slice(1)) expect(part.trim()).not.toBe('');
+  });
+
+  // Spec 005, T-2: the switch sits above both languages, and nothing is left outside a <Lang>.
+  it('offers the language switch, and keeps no section outside a <Lang>', () => {
+    expect(mdx).toMatch(/^<LanguageSwitch \/>$/m);
+    const outside = mdx.replace(/^<Lang lang="(es|en)">\n[\s\S]*?\n<\/Lang>$/gm, '');
+    expect([...outside.matchAll(/^## (.+)$/gm)].map((m) => m[1])).toEqual([]);
+  });
+});
+
+describe('initial language (spec 005, RF-5)', () => {
+  it('is Spanish with nothing saved, or with anything but a known language saved', () => {
+    expect(initialLanguage(null)).toBe('es');
+    expect(initialLanguage('fr')).toBe('es');
+    expect(initialLanguage('')).toBe('es');
+  });
+
+  it('is the saved language when it is Spanish or English', () => {
+    expect(initialLanguage('es')).toBe('es');
+    expect(initialLanguage('en')).toBe('en');
   });
 });
 

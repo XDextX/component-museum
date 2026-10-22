@@ -20,7 +20,7 @@ indicada toca cada archivo compartido:
   Inyección: una copia en disco de la entrada de Astro sin el export de Button deja la celda
   `Button × astro` en `missing`; con el test esperando `present`, se pone en rojo.
 
-- [ ] **T-2 — Selector de idioma**
+- [x] **T-2 — Selector de idioma**
   Cubre: RF-1 y RF-5 (el contenido; los tests en el navegador son la T-6)
   Archivos: `gallery/lib/Lang.tsx` (con `initialLanguage`), `gallery/tsconfig.json` (`include` con
   `lib/**/*.tsx`), `gallery/stories/Button.mdx`, `tests/snippets.test.ts`
@@ -31,6 +31,14 @@ indicada toca cada archivo compartido:
   - `tsc --noEmit -p gallery` revisa `Lang.tsx`, y `storybook build` termina en 0.
   Inyección: una copia del MDX sin `<Lang lang="en">` pone en rojo RF-2 de la 004 en
   `snippets.test.ts`.
+  Inyección vista: el test leyendo una copia del MDX sin `<Lang lang="en">` → 3 en rojo, entre ellos
+  RF-2 de la 004 («en has its three sections»: `expected [] to deeply equal [ 'Usage', …`), exit 1;
+  test restaurado, idéntico según `cmp`, y el MDX fuente sin tocar. Sin `LanguageProvider`: un
+  almacén de módulo con `useSyncExternalStore` comparte la lengua entre el selector y cada `<Lang>`.
+  Comprobado a mano en Edge sobre el build: español por defecto, «English» pasa a inglés con
+  `aria-pressed` y lo guarda en `museum:lang`, y al recargar sigue en inglés.
+  Con una sola lengua visible, el test RF-9 de la 004 (`gallery-browser.test.ts`) elige cada
+  idioma con el selector antes de buscar el CSS de ejemplo; antes lo esperaba dos veces a la vez.
 
 - [ ] **T-3 — Selector de tema en la barra de Storybook**
   Cubre: RF-3 (el contenido; el test es la T-7)
