@@ -69,7 +69,9 @@ de `Memory.md` lo decide el agente.
   herramienta de changelog y versionado lee para versionar los paquetes (cuál, pendiente de la
   spec de arquitectura).
 - **Una spec nueva se redacta desde `main`, y tiene su propia rama una vez aprobada**:
-  `spec/NNN-<nombre>`.
+  `spec/NNN-<nombre>`. Dentro de una entrega, la primera spec sale de `main` y cada siguiente de
+  la rama de la anterior, que aún no está en `main`; al cerrar la entrega se mergea a `main` la
+  rama de la última spec.
 - `AGENTS.md` y `docs/constitution.md` van en su propio commit `docs:`.
 - **`git checkout -- .` destruye el trabajo sin commitear sin avisar.** Revierte solo rutas
   explícitas.
