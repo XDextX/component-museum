@@ -3,6 +3,8 @@ node_modules
 dist/
 # Copies of styles/museum.css, written on prepack (spec 003)
 packages/*/styles.css
+# Copies of LICENSE, written on prepack (spec 006)
+packages/*/LICENSE
 # Gallery builds and generated data (spec 004)
 gallery/storybook-static/
 gallery/generated/

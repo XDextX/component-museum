@@ -10,7 +10,7 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
 - `packages/*/package.json`: la T-1;
 - el `package.json` de la raíz y `package-lock.json`: la T-3.
 
-- [ ] **T-1 — Licencia MIT y manifiestos listos para publicar**
+- [x] **T-1 — Licencia MIT y manifiestos listos para publicar**
   Cubre: RF-1
   Archivos: `LICENSE`, `scripts/sync-styles.mjs` (mismo nombre; añade la copia de `LICENSE`),
   `packages/react/package.json`, `packages/astro/package.json` (`license`, `repository` con
@@ -20,6 +20,7 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   `styles.css` a cada paquete; el test de RF-1 lee los dos manifiestos y el `LICENSE`; los tests de
   la 002 y la 003 que leen el tarball siguen en verde.
   Inyección: una copia en disco de un manifiesto con `directory: "packages/otro"` pone en rojo RF-1.
+  Visto en rojo: con `"directory": "packages/otro"` en el manifiesto de Astro, el test de RF-1 falla (`expected [ Array(1) ] to deeply equal []`); restaurado por sha256 (OK).
 
 - [ ] **T-2 — README bilingüe de cada paquete**
   Cubre: RF-9
