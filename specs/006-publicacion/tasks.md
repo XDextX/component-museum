@@ -53,7 +53,7 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
 
   Va tras la T-1 y la T-2 porque necesita `LICENSE` y `README.md` en el tarball.
 
-- [ ] **T-5 — Guarda contra publicar o leer tokens desde el repo**
+- [x] **T-5 — Guarda contra publicar o leer tokens desde el repo**
   Cubre: RF-6
   Archivos: `tests/no-publish.test.ts`
   Hecho cuando: el test recorre los `package.json` versionados, `scripts/` y `tests/`, y falla ante
@@ -61,6 +61,12 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   real, pasa.
   Inyección: un script `"release": "sui-mono release"` en una copia del manifiesto de la raíz, o un
   `.npmrc` en una copia del árbol, pone el test en rojo.
+  Visto en rojo (2026-10-22): con la guarda debilitada (sin buscar términos ni `.npmrc`), los dos casos
+  de inyección sobre copias en un directorio temporal fallan (2 de 4 en rojo); con la guarda
+  restaurada, pasan los 4. En el repo real y sobre un test que arma sus cadenas en ejecución, pasa.
+  Nota: `npx vitest run tests/no-publish.test.ts` con la config del repo no llegó a ejecutar el test:
+  el `globalSetup` falló al construir la galería (`storybook build`), ajeno a esta tarea. Se corrió
+  con una config mínima sin `globalSetup`.
 
 - [ ] **T-6 — Procedimiento de publicación del dueño**
   Cubre: RF-7
