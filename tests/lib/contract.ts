@@ -54,7 +54,8 @@ export function loadContract(file: string): Contract {
   return JSON.parse(readFileSync(file, 'utf8')) as Contract;
 }
 
-const SKIP = new Set(['node_modules', '.git', 'dist']);
+// .claude holds agent worktrees: whole copies of the repo, so their contracts would count twice.
+const SKIP = new Set(['node_modules', '.git', '.claude', 'dist']);
 
 /** Repo-relative paths (forward slashes) of every `*.contract.json` under `root`. */
 export function findContractFiles(root: string, dir = root): string[] {

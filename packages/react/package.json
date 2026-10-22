@@ -2,6 +2,15 @@
   "name": "@component-museum/react",
   "version": "0.1.0",
   "description": "React components of the component museum.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/XDextX/component-museum.git",
+    "directory": "packages/react"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "engines": {
     "node": "^22.22.0 || >=24.0.0"
@@ -23,7 +32,7 @@
     "*.css"
   ],
   "scripts": {
-    "prepack": "node ../../scripts/sync-styles.mjs"
+    "prepack": "node ../../scripts/build-dist.mjs && node ../../scripts/sync-styles.mjs"
   },
   "peerDependencies": {
     "react": "^19.0.0"

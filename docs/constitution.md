@@ -11,6 +11,8 @@ de spec · cambio de referencia, no de sentido
 Changed: 2026-10-22 · reglas 1 y 6: nombran la galería, los paquetes y sus entradas y la herramienta de
 versionado (`@s-ui/mono`) en lugar de «pendiente de la spec de arquitectura» · spec 004, cambio de
 referencia, no de sentido · aprobado por el dueño el 2026-10-22
+Changed: 2026-10-22 · regla 10: los README de los paquetes, en español y en inglés · spec 006 ·
+aprobado por el dueño el 2026-10-22
 
 **Propósito.** Este repo es el único hogar de los componentes con los que el dueño construye
 otros proyectos. Cada componente se publica como un paquete por cada framework que soporta, de
@@ -62,6 +64,7 @@ desarrolla y cede ante ellas en cualquier conflicto.
 10. **Los secretos, fuera; los documentos, en español; el código, en inglés.** `.env` está en
     `.gitignore` y ningún token, contraseña o dirección personal aparece en un archivo
     versionado. Los documentos — esta constitución, `AGENTS.md`, las specs, los planes y las
-    tareas — están en español; la documentación de las historias de la galería, de cara al
-    público, en español y en inglés; el código y sus comentarios, en inglés. *Check:*
-    `git ls-files .env` está vacío; el test de idiomas de las historias; leer el diff.
+    tareas — están en español; la documentación de cara al público — las historias de la galería
+    y el README de cada paquete — en español y en inglés; el código y sus comentarios, en inglés.
+    *Check:* `git ls-files .env` está vacío; el test de idiomas de las historias y el de los
+    README; leer el diff.

@@ -8,8 +8,8 @@ siempre que sea eso lo que la hace cumplible.
 repiten aquí. `docs/incidents.md` guarda la historia que hay detrás de ellas.
 
 **Idioma.** Todo documento del repo está en español: la constitución, este archivo, las specs,
-los planes y las tareas. El código y sus comentarios, JSDoc incluido, están en inglés. El idioma
-de `Memory.md` lo decide el agente.
+los planes y las tareas, salvo lo que la regla 10 pone en dos idiomas. El código y sus
+comentarios, JSDoc incluido, están en inglés. El idioma de `Memory.md` lo decide el agente.
 
 ## Flujo de trabajo
 
@@ -67,6 +67,9 @@ de `Memory.md` lo decide el agente.
 - **Los commits siguen Conventional Commits** (`feat:`, `fix:`, `docs:`, `refactor:`…), que la
   herramienta de changelog y versionado lee para versionar los paquetes (`@s-ui/mono`, que se
   instala al publicar por primera vez).
+- **Todo commit que toque un paquete lleva el scope `packages/react` o `packages/astro`, y hay un
+  commit por paquete**: `@s-ui/mono` asigna cada commit a un paquete por su scope, y sin él no ve
+  el cambio ni lo publica.
 - **Una spec nueva se redacta desde `main`, y tiene su propia rama una vez aprobada**:
   `spec/NNN-<nombre>`. Dentro de una entrega, la primera spec sale de `main` y cada siguiente de
   la rama de la anterior, que aún no está en `main`; al cerrar la entrega se mergea a `main` la
