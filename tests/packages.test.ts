@@ -11,10 +11,10 @@ import { run } from './lib/run.ts';
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
 /** One row per package. `peers` is the only dependency a package may declare (RF-4). */
-const packages: { framework: Framework; dir: string; peers: string[]; keywords: string[] }[] = [
-  { framework: 'react', dir: join(repo, 'packages', 'react'), peers: ['react'], keywords: [] },
+const packages: { framework: Framework; dir: string; peers: string[]; keywords: string[]; allowed: string[] }[] = [
+  { framework: 'react', dir: join(repo, 'packages', 'react'), peers: ['react'], keywords: [], allowed: ['dist/', 'styles.css', 'package.json', 'LICENSE', 'README.md'] },
   // astro-component is how Astro tells a component package it must compile, without ssr.noExternal.
-  { framework: 'astro', dir: join(repo, 'packages', 'astro'), peers: ['astro'], keywords: ['astro-component'] },
+  { framework: 'astro', dir: join(repo, 'packages', 'astro'), peers: ['astro'], keywords: ['astro-component'], allowed: ['index.js', 'index.d.ts', 'src/', 'styles.css', 'package.json', 'LICENSE', 'README.md'] },
 ];
 
 type Manifest = Record<string, unknown> & {
@@ -35,6 +35,25 @@ function packedFiles(dir: string): { name: string; files: string[] } {
   const [packed] = JSON.parse(result.output.slice(result.output.indexOf('[')));
   return { name: packed.name, files: packed.files.map((file: { path: string }) => file.path) };
 }
+
+/** Spec 006 RF-2: paths outside the allowed list, and required ones missing. An entry ending in "/" admits everything under it. */
+export function tarballProblems(files: string[], allowed: string[], required: string[]): string[] {
+  const permitted = (file: string) => allowed.some((a) => (a.endsWith('/') ? file.startsWith(a) : file === a));
+  return [
+    ...files.filter((file) => !permitted(file)).map((file) => `${file} is not allowed`),
+    ...required.filter((file) => !files.includes(file)).map((file) => `${file} is missing`),
+  ];
+}
+
+describe('tarballProblems (spec 006 RF-2)', () => {
+  it('is quiet when the files are the allowed ones and the required are all there', () => {
+    expect(tarballProblems(['dist/a.js', 'LICENSE'], ['dist/', 'LICENSE'], ['LICENSE'])).toEqual([]);
+  });
+  it('names a file that is not allowed and a required one that is missing', () => {
+    expect(tarballProblems(['LICENSE', 'tsconfig.json', 'dist2/a.js'], ['dist/', 'LICENSE'], ['LICENSE'])).toEqual(['tsconfig.json is not allowed', 'dist2/a.js is not allowed']);
+    expect(tarballProblems(['dist/a.js'], ['dist/', 'LICENSE'], ['LICENSE'])).toEqual(['LICENSE is missing']);
+  });
+});
 
 /** RF-2: one message per component missing from a set the other two have. */
 export function crossProblems(folders: string[], exported: string[], contracts: string[]): string[] {
@@ -102,7 +121,7 @@ describe('publishProblems and licenseProblems (spec 006 RF-1)', () => {
   });
 });
 
-for (const { framework, dir, peers, keywords } of packages) {
+for (const { framework, dir, peers, keywords, allowed } of packages) {
   describe(`@component-museum/${framework}`, () => {
     it('packs under the @component-museum scope with its entry, stylesheet and type declarations (RF-1)', () => {
       const { name, files } = packedFiles(dir);
@@ -114,6 +133,14 @@ for (const { framework, dir, peers, keywords } of packages) {
         expect(files, `${path} is not in the packed files`).toContain(path.replace(/^\.\//, ''));
       }
       expect(files.some((file) => file.endsWith('.d.ts'))).toBe(true);
+    });
+
+    it('packs nothing beyond the allowed list and everything required, LICENSE and README.md included (spec 006 RF-2)', () => {
+      const { files } = packedFiles(dir);
+      const exports = manifestOf(dir).exports as Record<string, Record<string, string> | string>;
+      const entry = exports['.'] as Record<string, string>;
+      const required = [entry.import, entry.types, 'styles.css', 'LICENSE', 'README.md'].map((path) => path.replace(/^\.\//, ''));
+      expect(tarballProblems(files, allowed, required)).toEqual([]);
     });
 
     it('declares license, repository directory and public access, and the root LICENSE is MIT by XDextX (spec 006 RF-1)', () => {
