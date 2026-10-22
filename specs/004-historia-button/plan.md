@@ -1,5 +1,7 @@
 # Plan 004 — historia-button
 
+**Approved:** 2026-10-22 · aprobado por el coordinator en la sesión autónoma que declaró el dueño ("trabaja y haz los commits"), con sus 3 respuestas (versionado, instalación, workspaces); el dueño corrige al vuelo
+
 Parte de `spec.md` (aprobada, 11 RF) y de `notes.md`. Se apoya en lo que dejaron la 001, la 002 y
 la 003:
 - `npm test` con candado;
@@ -11,6 +13,15 @@ la 003:
 Versiones comprobadas en npm el 2026-10-22.
 
 ## Decisiones del dueño (de `notes.md` y de la 003)
+
+Respuestas del dueño del 2026-10-22 a las preguntas del plan:
+- **Versionado:** `@s-ui/mono` 2.46.0, que lee Conventional Commits y versiona cada paquete.
+  RF-11 lo nombra en la regla 6 de la constitución y en `AGENTS.md`.
+- **Instalación de `@s-ui/mono`:** al publicar por primera vez, al cerrar la entrega 2. La 004 no
+  añade la dependencia.
+- **Workspaces de npm:** sí, `packages/*` y `gallery`.
+
+Y de antes:
 
 - La galería es **Storybook oficial**, solo para React. Astro se muestra prerenderizado: cada
   variante del contrato con su código de uso (regla 5, enmendada en c05740e).
@@ -126,7 +137,7 @@ La enmienda pone en su lugar:
 - **Paquetes y entradas:** `@component-museum/react` y `@component-museum/astro`, cada uno con su
   `index`.
 - **Comando de la galería:** `npm run gallery`.
-- **Herramienta de versionado:** la que elija el dueño (pregunta 1).
+- **Herramienta de versionado:** `@s-ui/mono` (decisión del dueño).
 
 Lleva su entrada `Changed:`. El test de RF-11 une cada archivo en una sola línea y no debe hallar
 ninguna `pendientes? de la spec de arquitectura` fuera de las entradas `Changed:`. Antes de la
@@ -162,7 +173,8 @@ Storybook (`storybook build`), en paralelo con los consumidores. El tiempo se mi
 - `@storybook/react-vite` 10.6.3 — renderiza las historias React con Vite, que ya usan los
   consumidores.
 - `@storybook/addon-docs` 10.6.3 — la página MDX de documentación (RF-2).
-- La herramienta de versionado, si el dueño decide instalarla ya (pregunta 2).
+- `@s-ui/mono` no se instala en esta spec: se nombra y se instala al cerrar la entrega 2
+  (decisión del dueño).
 
 ## 7. Estrategia de tests
 
@@ -174,20 +186,3 @@ Storybook (`storybook build`), en paralelo con los consumidores. El tiempo se mi
 - **Inyección por tarea:** cada tarea tiene su línea «Inyección:», y su commit dice cuál se vio en
   rojo (regla 8). Las inyecciones van en copias o en la rama del worktree, nunca en `main`.
 - **Proporción:** 10 tareas para 11 RF. La T-10 es la enmienda de documentos.
-
-## Preguntas para el dueño
-
-1. **Herramienta de versionado** (RF-11 tiene que nombrarla; regla 6). Tiene que leer Conventional
-   Commits y versionar cada paquete por separado. Las opciones:
-   - **`@s-ui/mono` 2.46.0**, la que usaba `legacy`. Hace monorepo y Conventional Commits, y su
-     última versión es del 2026-05-12. Es mi recomendación, porque el dueño ya la conoce.
-   - **`release-please` 17.11.2.** Va orientada a GitHub: abre PRs de release, pero el push es del
-     dueño.
-   - **`commit-and-tag-version` 13.3.0.** Es local y sencilla, pero no versiona varios paquetes
-     por separado sin configuración extra.
-   - `@changesets/cli` 3.0.3 no lee Conventional Commits; la descarto.
-2. **¿Se instala ya o al cerrar la entrega 2?** RF-11 solo exige nombrarla. Propongo nombrarla
-   ahora e instalarla al cerrar la entrega, cuando se publique por primera vez; así esta spec no
-   añade una dependencia que no usa.
-3. **¿Workspaces de npm, `packages/*` y `gallery`?** Cambia cómo se instala el repo; la decisión
-   de la 002 de no tenerlas quedaba pendiente de la galería. Recomiendo que sí.

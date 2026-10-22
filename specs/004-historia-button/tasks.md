@@ -1,7 +1,6 @@
 # Tareas 004 — historia-button
 
-Pendiente del dueño (plan, «Preguntas para el dueño»): la herramienta de versionado y cuándo se
-instala bloquean solo la enmienda de la T-10; las workspaces bloquean la T-1.
+**Approved:** 2026-10-22 · aprobado por el coordinator en la sesión autónoma que declaró el dueño ("trabaja y haz los commits"), con sus 3 respuestas (versionado, instalación, workspaces); el dueño corrige al vuelo
 
 Cómo se trabaja en paralelo (plan, bloque 6): cada tarea de una ola va en su propio worktree, con
 su rama `spec/004-historia-button-T-n` y su `node_modules`. Al cerrar la ola, la sesión de git
@@ -100,6 +99,6 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   Archivos: `tests/marks.test.ts`, `docs/constitution.md`, `AGENTS.md`
   Hecho cuando: el test une cada archivo en una línea y halla 0
   `pendientes? de la spec de arquitectura` fuera de `Changed:`. La enmienda nombra la galería, los
-  paquetes y sus entradas, `npm run gallery` y la herramienta de versionado que elija el dueño;
+  paquetes y sus entradas, `npm run gallery` y la herramienta de versionado, `@s-ui/mono`, sin instalarla;
   lleva su entrada `Changed:`, la aprueba el dueño y va en su propio commit `docs:`.
   Inyección: el test, escrito antes de la enmienda, halla las 4 marcas y se pone en rojo.
