@@ -6,7 +6,7 @@ Regla para el paralelismo: solo la T-3 edita `styles/museum.css`. Si un test de 
 cambiar la hoja, esa tarea lo dice y la T-3 lo hace, para que dos sesiones no toquen el mismo
 archivo.
 
-- [ ] **T-1 — Una sola fuente de CSS, copiada a cada paquete al empaquetar**
+- [x] **T-1 — Una sola fuente de CSS, copiada a cada paquete al empaquetar**
   Cubre: ninguno nuevo; tarea mecánica de la que dependen RF-1 a RF-11 (plan, bloques 4 y 6)
   Archivos: `styles/museum.css` (cabecera con `@layer base, components;` y bloque
   `components.museum` vacío), `scripts/sync-styles.mjs`, `packages/react/package.json`,
@@ -17,14 +17,16 @@ archivo.
   `styles/museum.css`; los tests de la 001 y la 002 siguen en verde.
   Inyección: editar a mano un `packages/*/styles.css` y empaquetar sin el `prepack` pone en rojo
   la igualdad con la fuente.
+  Inyección vista: quitar el `prepack` de `packages/react/package.json` y añadir a mano `.hand-edited { color: red; }` a `packages/react/styles.css` → rojo («the packed styles.css differs from styles/museum.css»), exit 1; restaurados, idénticos según `cmp`.
 
-- [ ] **T-2 — Lógica pura de CSS y de contraste**
+- [x] **T-2 — Lógica pura de CSS y de contraste**
   Cubre: base de RF-2 y RF-11
   Archivos: `tests/lib/css.ts`, `tests/css.test.ts`
   Hecho cuando: `atRules` ignora los comentarios y lista `layer`, `media`, `apply`, `import`;
   `parseRgb` lee `rgb()` y `rgba()`; `contrastRatio` da 21 entre negro y blanco, 1 entre dos
   colores iguales, y 4.54 entre `#767676` y blanco.
   Inyección: quitar la linealización sRGB de `contrastRatio` pone en rojo el caso `#767676`.
+  Inyección vista: sin la linealización sRGB, `contrastRatio` da 2.0478 para #767676 sobre blanco y el caso WCAG de 4.5422 se pone en rojo (1 de 11 tests); revertida, sha256 idéntico.
 
 - [ ] **T-3 — Escribir tokens, temas y reglas de Button**
   Cubre: el contenido de RF-1 y RF-4 a RF-7 y RF-11 (los tests son la T-4, la T-6, la T-8 y la T-9)
@@ -47,7 +49,7 @@ archivo.
   Inyección: añadir `@apply`, una regla `button { }` o una regla fuera de `@layer`, una cada vez,
   pone el test en rojo.
 
-- [ ] **T-5 — Servir el `dist/` y añadir una instancia con clase propia**
+- [x] **T-5 — Servir el `dist/` y añadir una instancia con clase propia**
   Cubre: base de RF-1, RF-4 a RF-6 y RF-8 a RF-11
   Archivos: `tests/lib/serve.ts`, `tests/lib/consumer.ts`
   Hecho cuando: `serve(dir)` sirve un `dist/` en un puerto libre y se cierra al terminar; las
@@ -55,6 +57,7 @@ archivo.
   la 002 siguen en verde, porque la configuración del starter no cambia.
   Inyección: servir sin cabecera `Content-Type` para `.js` hace que Edge no ejecute el módulo, y la
   prueba de humo de la tarea (React renderiza el Button) se pone en rojo.
+  Inyección vista: quitar el `Content-Type` de `.js` en `tests/lib/serve.ts` → Edge no ejecuta el módulo y «serves the React dist…» se pone en rojo (`TimeoutError`); restaurado, sha256 idéntico.
 
 - [ ] **T-6 — Estilos, tokens y temas en los consumidores**
   Cubre: RF-1, RF-4, RF-5, RF-6

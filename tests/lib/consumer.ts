@@ -117,6 +117,8 @@ function buttonInstances(framework: Framework): string {
     .flatMap((v) => size.values.map((s) => `<Button id="button-${v}-${s}" variant="${v}" size="${s}">${v} ${s}</Button>`))
     // RF-11: free HTML attributes, a consumer class, and a clash with the component's own hook.
     .concat(`<Button id="button-attrs" data-x="1" aria-label="Etiqueta" ${framework === 'react' ? 'className' : 'class'}="consumer-class" data-museum-button="consumer">attrs</Button>`)
+    // Spec 003 T-5: a Button a test rule can target; its id avoids the `button-` prefix the 002 comparison selects.
+    .concat(`<Button id="own-class" ${framework === 'react' ? 'className' : 'class'}="museum-test-own">own</Button>`)
     .join(framework === 'react' ? '\n      ' : '\n\t\t');
 }
 
