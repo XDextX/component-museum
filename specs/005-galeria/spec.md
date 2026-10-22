@@ -1,7 +1,8 @@
 # Spec 005 — galeria
 
-**Status:** approved
+**Status:** implemented
 **Approved:** 2026-10-19 · el dueño leyó la spec completa tras 4 rondas de clarify y la partición en 5 · 75 lines, 5 RF
+**Implemented:** 2026-10-22 · 7 tareas con worktrees y merges locales, más 1 corrección tras la validación (texto del lienzo en tema oscuro); validada por el reviewer en 2 vueltas; `npm test` 234/234 (+1 omitido)
 **Size:** M · **Entrega:** 2 (002–005) · **Depende de:** 004
 
 ## Contexto y objetivo
