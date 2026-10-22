@@ -17,7 +17,7 @@ export function forbiddenTerms(): string[] {
 const inScope = (f: string) => /(^|\/)package\.json$/.test(f) || /^(scripts|tests)\//.test(f);
 
 // Problems in the tracked files of `root`: forbidden terms in scope, and any tracked .npmrc.
-export function publishProblems(root: string, tracked: string[]): string[] {
+export function trackedSecretProblems(root: string, tracked: string[]): string[] {
   const problems = tracked.filter((f) => /(^|\/)\.npmrc$/.test(f)).map((f) => `${f} is tracked`);
   for (const f of tracked.filter(inScope)) {
     const text = readFileSync(join(root, f), 'utf8');
@@ -42,13 +42,13 @@ function inTempDir(body: (dir: string) => void): void {
 
 describe('no publishing from the repo (RF-6)', () => {
   it('finds no forbidden term and no tracked .npmrc in the real repo', () => {
-    expect(publishProblems(root, tracked)).toEqual([]);
+    expect(trackedSecretProblems(root, tracked)).toEqual([]);
   });
 
   it('passes a test that builds its terms at run time', () => {
     inTempDir((dir) => {
       writeFileSync(join(dir, 'x.test.ts'), "const s = ['npm', 'publish'].join(' ');\n");
-      expect(publishProblems(dir, ['x.test.ts'])).toEqual([]);
+      expect(trackedSecretProblems(dir, ['x.test.ts'])).toEqual([]);
     });
   });
 
@@ -57,7 +57,7 @@ describe('no publishing from the repo (RF-6)', () => {
       const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
       pkg.scripts = { ...pkg.scripts, release: forbiddenTerms()[1] };
       writeFileSync(join(dir, 'package.json'), JSON.stringify(pkg));
-      expect(publishProblems(dir, ['package.json'])).toEqual([`package.json contains "${forbiddenTerms()[1]}"`]);
+      expect(trackedSecretProblems(dir, ['package.json'])).toEqual([`package.json contains "${forbiddenTerms()[1]}"`]);
     });
   });
 
@@ -65,7 +65,7 @@ describe('no publishing from the repo (RF-6)', () => {
     inTempDir((dir) => {
       cpSync(join(root, 'scripts'), join(dir, 'scripts'), { recursive: true });
       writeFileSync(join(dir, '.npmrc'), 'registry=https://registry.npmjs.org/\n');
-      expect(publishProblems(dir, ['.npmrc', 'scripts/sync-styles.mjs'])).toEqual(['.npmrc is tracked']);
+      expect(trackedSecretProblems(dir, ['.npmrc', 'scripts/sync-styles.mjs'])).toEqual(['.npmrc is tracked']);
     });
   });
 });
