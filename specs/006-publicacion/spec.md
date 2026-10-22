@@ -1,6 +1,6 @@
 # Spec 006 — publicacion
 
-**Status:** approved · **Approved:** 2026-10-22 · el dueño, tras 2 rondas de clarify, con el ajuste de RF-8
+**Status:** implemented · **Approved:** 2026-10-22 · el dueño, tras 2 rondas de clarify, con el ajuste de RF-8 · **Implemented:** 2026-10-22 · 8 tareas en 2 olas con worktrees, más 1 corrección tras la validación (React se empaquetaba sin `dist/`); validada por el reviewer en 2 vueltas; `npm test` 266/266 (+1 omitido)
 **Size:** L (10 RF) · **Entrega:** 2 (002–006) · **Depende de:** 005
 
 ## Contexto y objetivo
