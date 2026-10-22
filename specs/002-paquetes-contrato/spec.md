@@ -1,8 +1,9 @@
 # Spec 002 — paquetes-contrato
 
-**Status:** approved
+**Status:** implemented
 **Approved:** 2026-10-19 · el dueño leyó la spec completa tras 4 rondas de clarify y la partición en 5 · 92 lines, 10 RF
 **Changed:** 2026-10-20 · RF-11 (paso de atributos HTML) · decisión del dueño
+**Implemented:** 2026-10-21 · 9 tareas en `spec/002-paquetes-contrato`, en 4 olas paralelas; validada por el reviewer en 2 vueltas; `npm test` 72/72 (+1 omitido)
 **Size:** L · **Entrega:** 2 (002–005) · **Depende de:** 001
 
 ## Contexto y objetivo
