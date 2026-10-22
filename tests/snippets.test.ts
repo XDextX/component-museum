@@ -166,7 +166,8 @@ describe('gallery imports by package name (RF-10)', () => {
 
   /** Whether a package specifier resolves from `gallery/` through the workspace link and the package's exports. */
   function resolves(spec: string): boolean {
-    const [scope, name, ...sub] = spec.split('/');
+    // Vite queries such as ?raw do not change which export resolves.
+    const [scope, name, ...sub] = spec.split('?')[0].split('/');
     const manifest = join(repo, 'node_modules', scope, name, 'package.json');
     if (!existsSync(manifest)) return false;
     const exp = JSON.parse(read(manifest)).exports ?? {};
