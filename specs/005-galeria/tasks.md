@@ -59,7 +59,7 @@ indicada toca cada archivo compartido:
   como pide la tarea; y el `tsconfig.json` raíz incluye `gallery/env.d.ts`, porque el test importa
   `preview.ts`, que importa la hoja (sin ello, `tsc --noEmit` daba TS2882 y cortaba `npm test`).
 
-- [ ] **T-4 — Página de la matriz**
+- [x] **T-4 — Página de la matriz**
   Cubre: RF-4 (se muestra en la galería)
   Archivos: `gallery/stories/Matrix.mdx`
   Hecho cuando: la página lee las entradas por especificador con `?raw` y los contratos con
@@ -67,6 +67,11 @@ indicada toca cada archivo compartido:
   por celda; sin componentes, muestra «Sin componentes»; `storybook build` termina en 0.
   Inyección: leer la entrada de React por `../../packages/react/...` en una copia pone en rojo
   RF-10 de la 004, por usar una ruta en lugar del especificador.
+  Inyección vista: Matrix.mdx leyendo `../../packages/react/dist/index.js?raw` (restaurado, mismo
+  sha256) puso en rojo RF-10 de la 004 («path into packages/»). Un `@component-museum/nope?raw`
+  rompe el build de Storybook (globalSetup), también rojo. La guarda de RF-10 de la 004 ahora
+  ignora la query `?raw` al resolver (autorizado por el dueño). `npm test`: 24 archivos, 215
+  pasan, 1 saltado, 2m21s.
 
 - [ ] **T-5 — El código de uso sigue a los controles**
   Cubre: RF-2
