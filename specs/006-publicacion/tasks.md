@@ -94,20 +94,20 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   Visto en rojo (2026-10-22): copia del documento con la línea de publicar antepuesta, vía
   `PUBLISH_DOC`; falló «names them in order»; con el documento real, 4 de 4 en verde.
 
-- [ ] **T-7 — Texto de la enmienda de `AGENTS.md`**
+- [x] **T-7 — Texto de la enmienda de `AGENTS.md`**
   Cubre: RF-8
   Archivos: `AGENTS.md`
   Hecho cuando: «Git» hace obligatorio el scope `packages/react` o `packages/astro` en todo commit
   que toque un paquete, con un commit por paquete. «Idioma» añade solo «salvo lo que la regla 10
   pone en dos idiomas». El texto queda listo para su propio commit `docs:`, que aprueba el dueño.
-  Inyección: no aplica (sin test, plan, bloque 6); la validación lee el texto.
+  Inyección: no aplica.
 
-- [ ] **T-8 — Texto de la enmienda de la regla 10**
+- [x] **T-8 — Texto de la enmienda de la regla 10**
   Cubre: RF-10
   Archivos: `docs/constitution.md`
   Hecho cuando: la regla 10 tiene el texto aprobado en `notes.md`, con la entrada `Changed:`
   propuesta allí; queda lista para su propio commit `docs:`, que aprueba el dueño.
-  Inyección: no aplica (sin test, plan, bloque 6); la validación lee el texto.
+  Inyección: no aplica.
 
 ## Grafo de olas
 
