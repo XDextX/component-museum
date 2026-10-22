@@ -1,7 +1,8 @@
 # Spec 003 — estilos-temas
 
-**Status:** approved
+**Status:** implemented
 **Approved:** 2026-10-19 · el dueño leyó la spec completa tras 4 rondas de clarify y la partición en 5 · 96 lines, 11 RF
+**Implemented:** 2026-10-22 · 9 tareas en 3 olas en `spec/003-estilos-temas`, más el anillo de foco de dos tonos tras la validación; validada por el reviewer en 2 vueltas; el dueño aprobó el aspecto de Button y del foco; `npm test` 158/158 (+1 omitido)
 **Size:** L · **Entrega:** 2 (002–005) · **Depende de:** 002
 
 ## Contexto y objetivo
