@@ -3,6 +3,9 @@ node_modules
 dist/
 # Copies of styles/museum.css, written on prepack (spec 003)
 packages/*/styles.css
+# Gallery builds and generated data (spec 004)
+gallery/storybook-static/
+gallery/generated/
 
 # Agent tooling and per-machine state (never tracked)
 .agents/

@@ -7,7 +7,7 @@ su rama `spec/004-historia-button-T-n` y su `node_modules`. Al cerrar la ola, la
 mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toca una sola tarea:
 `package.json` y `package-lock.json` la T-1, y `tests/global-setup.ts` la T-6.
 
-- [ ] **T-1 — Workspaces y esqueleto de la galería con Storybook**
+- [x] **T-1 — Workspaces y esqueleto de la galería con Storybook**
   Cubre: base de RF-1 a RF-10 (tarea mecánica)
   Archivos: `package.json` (workspaces, script `gallery`), `package-lock.json`,
   `gallery/package.json`, `gallery/.storybook/main.ts`, `gallery/.storybook/preview.ts`,
@@ -17,6 +17,12 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   la 001 a la 003 siguen en verde.
   Inyección: quitar `gallery` de las workspaces hace que el import por especificador de
   `preview.ts` no resuelva, y `storybook build` falla.
+  Inyección vista: la del plan pone `storybook build` en rojo por otro motivo (npm desinstala
+  Storybook con la galería, y `@component-museum/react` sigue enlazado desde `packages/*`), así que
+  no prueba el especificador. En su lugar, quitar el enlace `node_modules/@component-museum/react`
+  → `storybook build` en rojo con «failed to resolve import "@component-museum/react/styles.css"»,
+  exit 1; `npm install` lo enlaza de nuevo y el build pasa. Manifiestos restaurados, idénticos según
+  `cmp`. `npm run gallery` compila los paquetes (`build:packages`) y arranca Storybook en `:6006`.
 
 - [ ] **T-2 — Lógica pura: controles, códigos de uso y casos Astro desde el contrato**
   Cubre: base de RF-3, RF-5, RF-6, RF-7, RF-8
