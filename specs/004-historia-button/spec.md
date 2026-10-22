@@ -1,7 +1,8 @@
 # Spec 004 — historia-button
 
-**Status:** approved
+**Status:** implemented
 **Approved:** 2026-10-19 · el dueño leyó la spec completa tras 4 rondas de clarify y la partición en 5 · 96 lines, 11 RF
+**Implemented:** 2026-10-22 · 10 tareas en 4 olas con worktrees y merges locales, más 3 correcciones tras la validación; validada por el reviewer en 2 vueltas; `npm test` 206/206 (+1 omitido)
 **Size:** L · **Entrega:** 2 (002–005) · **Depende de:** 003
 
 ## Contexto y objetivo
