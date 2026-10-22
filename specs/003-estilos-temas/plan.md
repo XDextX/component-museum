@@ -141,10 +141,28 @@ La configuración del consumidor la cambia el test, así que no son consumidores
 
 **Accesibilidad (RF-11).** Por framework, variante y tema, `contrastRatio(fg, bg) ≥ 4.5`. La
 variante `outline` tiene fondo propio (`--museum-surface`), así que su contraste no depende de la
-página del consumidor. El foco se comprueba pulsando `Tab` en Edge: el Button enfocado tiene un
-`outline` visible, con estilo distinto de `none` y ancho de 2px o más, en los dos temas. `disabled`
-queda fuera del umbral de contraste, porque WCAG lo exime. La validación lista además la
-comprobación a mano: teclado, nombre accesible y foco.
+página del consumidor. `disabled` queda fuera del umbral de contraste, porque WCAG lo exime.
+
+**Foco de dos tonos (decisión del dueño, 2026-10-22).** La validación encontró que el anillo
+`#93c5fd` quedaba a 1,80:1 contra el lienzo blanco del consumidor de Astro con tema oscuro. El
+paquete no pinta la página, y el test medía contra `--museum-surface`, así que no podía fallar.
+
+Ahora el anillo va separado del botón y rodeado por un halo de `--museum-surface`. El halo está
+siempre, así que el anillo contrasta contra él y no contra la página. En CSS:
+- `outline: 2px solid var(--museum-focus)` con `outline-offset: 2px`;
+- `box-shadow: 0 0 0 6px var(--museum-surface)`, que pinta el halo bajo el anillo, desde el borde
+  del botón hasta 2px más allá del borde exterior del anillo.
+
+El check se hace en los dos temas, los dos frameworks y sobre el lienzo real de cada consumidor,
+sin `data-theme` en la página ni fondo puesto por el test:
+- **Contraste:** con `Tab`, `contrastRatio(focus, surface) ≥ 3` (WCAG 1.4.11).
+- **El halo existe y rodea el anillo:** el `box-shadow` calculado tiene el color de `surface` y un
+  alcance mayor o igual que `outline-offset` + ancho del anillo + 2px.
+- **Sin hueco transparente:** en una captura del Button enfocado, los píxeles de dentro del
+  anillo, del anillo y del halo exterior son `surface`, `focus` y `surface`. Ninguno es el color del
+  lienzo.
+
+La validación lista además la comprobación a mano: teclado, nombre accesible y foco.
 
 ## 5. Interfaz
 
@@ -154,7 +172,9 @@ comprobación a mano: teclado, nombre accesible y foco.
   - `:root { --museum-button-primary-bg: … }` (tokens);
   - `.museum-button { … }` o su propia clase (reglas);
   - o utilidades de Tailwind en la prop de clase.
-- **Foco:** anillo visible de `--museum-focus` con `:focus-visible`; con ratón, sin anillo.
+- **Foco:** con `:focus-visible`, un anillo de `--museum-focus` separado 2px del botón, sobre un
+  halo de `--museum-surface` que lo rodea por los dos lados; se lee igual sobre fondo claro, oscuro
+  o de cualquier color. Con ratón, sin anillo.
 - **Estado vacío:** no aplica. Button siempre tiene contenido, el texto de ejemplo en los
   consumidores.
 
@@ -166,6 +186,7 @@ comprobación a mano: teclado, nombre accesible y foco.
 | **`museum` anidada en `components`, con `@layer base, components;` al principio** (la vía de `notes.md`). | `@layer museum;` solo: con Tailwind antes, `museum` queda detrás de `utilities` y les gana (RF-9 rojo). `!important` en las utilidades del consumidor: el dueño lo descartó. |
 | **Los temas son reglas de tokens** (`:root`, `[data-theme]` y `@media`); Button solo lee `var()`. | Clases de tema en Button: el consumidor no podría cambiar el tema de un contenedor entero. |
 | **`outline` con fondo propio** (`--museum-surface`), no transparente. | Fondo transparente: el contraste dependería de la página del consumidor, y RF-11 no podría garantizarlo. |
+| **Anillo de foco de dos tonos** (decisión del dueño, 2026-10-22): separado del botón y sobre un halo de `--museum-surface`, y medido contra ese halo. | B, el anillo dentro del botón: su contraste dependería del fondo de cada variante, no de uno solo. C, dejar el foco al consumidor: rompe la regla 7 («accesible por defecto»). |
 | **RF-2 por texto; RF-3 y RF-7 por el CSSOM de Edge.** | Un parser de CSS como dependencia (postcss, css-tree): una dependencia nueva cuando Edge ya parsea la hoja. Solo el CSSOM: el navegador descarta las at-rules desconocidas, así que `@apply` no aparecería. |
 | **Cambios de test en la página abierta** (`addStyleTag`, `evaluate`), no en el consumidor. | Un consumidor más por cada caso: muchas instalaciones, y la regla de solo lectura de la 001 se rompería. |
 | **Dos consumidores con Tailwind, cada uno con dos páginas**, una por orden de import. | Cuatro consumidores (uno por orden y framework): el doble de instalaciones. |
