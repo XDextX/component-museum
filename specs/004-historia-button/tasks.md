@@ -94,7 +94,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   desde `npm run gallery`.
   Inyección: una historia que ignora `args.variant` pone en rojo el caso de `variant`.
 
-- [ ] **T-10 — Cerrar las marcas «pendiente» de la constitución y `AGENTS.md`**
+- [x] **T-10 — Cerrar las marcas «pendiente» de la constitución y `AGENTS.md`**
   Cubre: RF-11
   Archivos: `tests/marks.test.ts`, `docs/constitution.md`, `AGENTS.md`
   Hecho cuando: el test une cada archivo en una línea y halla 0
@@ -102,3 +102,5 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   paquetes y sus entradas, `npm run gallery` y la herramienta de versionado, `@s-ui/mono`, sin instalarla;
   lleva su entrada `Changed:`, la aprueba el dueño y va en su propio commit `docs:`.
   Inyección: el test, escrito antes de la enmienda, halla las 4 marcas y se pone en rojo.
+  Inyección vista: 2026-10-22 · test escrito antes: rojo con 4 marcas (2 por archivo); tras la enmienda,
+  re-añadir una marca en `AGENTS.md` (restaurado por ruta, mismo sha256) lo pone en rojo.

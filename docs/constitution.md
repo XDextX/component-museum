@@ -8,6 +8,9 @@ Changed: 2026-10-19 · enmiendas de las reglas 5 (excepción temporal para Astro
 10 (historias en español e inglés) · spec de la galería
 Changed: 2026-10-19 · regla 10: su check cita el test de idiomas de las historias, sin número
 de spec · cambio de referencia, no de sentido
+Changed: 2026-10-22 · reglas 1 y 6: nombran la galería, los paquetes y sus entradas y la herramienta de
+versionado (`@s-ui/mono`) en lugar de «pendiente de la spec de arquitectura» · spec 004, cambio de
+referencia, no de sentido
 
 **Propósito.** Este repo es el único hogar de los componentes con los que el dueño construye
 otros proyectos. Cada componente se publica como un paquete por cada framework que soporta, de
@@ -22,8 +25,8 @@ desarrolla y cede ante ellas en cualquier conflicto.
    componente solo a través de la entrada de su paquete, exactamente como lo haría un proyecto
    de fuera, nunca a través de una ruta al código fuente de un paquete. Un componente que solo
    funciona desde dentro del repo no está terminado. *Check:* ningún import de la galería llega
-   al código fuente de otro paquete. (Nombres de la galería, de los paquetes y de sus entradas:
-   pendientes de la spec de arquitectura.)
+   al código fuente de otro paquete. (La galería es `gallery/`, Storybook; los paquetes son
+   `@component-museum/react` y `@component-museum/astro`, cada uno con su `index` como entrada.)
 2. **Instalar, importar, usar.** Un consumidor instala el paquete, importa su hoja de estilos una
    vez, y cada componente exportado funciona — sin plugin de build, archivo de configuración ni
    dependencia extra que añadir a mano. *Check:* la historia de cada componente muestra el
@@ -45,8 +48,7 @@ desarrolla y cede ante ellas en cualquier conflicto.
    página; una página a la que le falta una sección, un control o una variante no está terminada.
 6. **Un cambio incompatible se versiona como tal.** Otros proyectos dependen de estos paquetes:
    renombrar o quitar una prop, una variante o un evento es un commit `BREAKING CHANGE`, para
-   que la herramienta de versionado suba la versión mayor (cuál, pendiente de la spec de
-   arquitectura). *Check:* el commit que cambia un contrato lo dice.
+   que la herramienta de versionado suba la versión mayor (`@s-ui/mono`, que lee Conventional Commits y versiona cada paquete). *Check:* el commit que cambia un contrato lo dice.
 7. **Accesible por defecto.** Cada componente cumple WCAG 2.1 AA: alcanzable con teclado, nombre
    accesible, foco visible, contraste de texto 4.5:1. *Check:* su spec indica cómo se verificó
    cada punto en un navegador en marcha.
