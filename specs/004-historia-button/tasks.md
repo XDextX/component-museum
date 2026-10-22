@@ -60,13 +60,14 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   Inyección: un `argTypes` escrito a mano con una variante de menos pone en rojo RF-3 en la T-7.
   Inyección vista: 2026-10-22 · las guardas de RF-3 (T-7) y RF-10 (T-8) aún no existen, así que ningún test se pone en rojo. Probe por sustitución: `import { Button } from '../../packages/react/src/index.ts'` en la historia → un grep de rutas a `packages/` en `gallery/` la detecta (limpio en la base); restaurada con el mismo sha256. `storybook build` pasa con y sin la violación: el build no es la guarda, lo son T-7/T-8.
 
-- [ ] **T-5 — Documentación de Button en español y en inglés**
+- [x] **T-5 — Documentación de Button en español y en inglés**
   Cubre: RF-2, RF-9 (en «cómo alterarlo»)
   Archivos: `gallery/stories/Button.mdx`
   Hecho cuando: hay seis secciones con contenido («Uso», «Construcción» y «Cómo alterarlo», y
   «Usage», «How it is built» y «How to alter it»); «Cómo alterarlo» enseña tokens, reglas sobre la
   clase y utilidades, con el CSS de `my-button`; sus códigos de uso salen de `usageSnippet`.
   Inyección: borrar «How to alter it» pone en rojo RF-2 en la T-8.
+  Inyección vista: la guarda de texto es la de la T-8 (aún no existe); con un check provisional (seis `##` con contenido) borrar «## How to alter it» dio rojo (MISSING), restaurado y verde. Las dos versiones van seguidas, con un selector de anclas (#es, #en).
 
 - [ ] **T-6 — Historia Astro y builds de la galería en `npm test`**
   Cubre: RF-5, RF-6 (en la galería)
