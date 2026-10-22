@@ -90,7 +90,7 @@ Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización
   Inyección: añadir una clase solo en React pone el test en rojo.
   Inyección vista: en copias temporales, sin tocar `packages/`: `className: 'injected'` solo en React → rojo con «injected» en las clases de las 9 combinaciones; `title: 'injected'` solo en React → rojo con el atributo de más en las 9. Se comparan todos los atributos salvo `data-astro-*` y `data-museum-button` (gancho del script de Astro; React no lo emite).
 
-- [ ] **T-9 — Pasar los atributos HTML al `<button>` y resolver los choques**
+- [x] **T-9 — Pasar los atributos HTML al `<button>` y resolver los choques**
   Cubre: RF-11
   Archivos: `packages/react/src/Button/Button.tsx`, `packages/astro/src/Button/Button.astro`,
   `tests/markup.test.ts`
@@ -102,6 +102,10 @@ Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización
     segundo `type` heredado.
   Inyección: aplicar los atributos libres después de los propios del componente deja que el del
   consumidor pise `data-museum-button` y pone el test en rojo.
+  Inyección vista: en React, `{...attributes}` al final del `<button>` → el test de RF-11 en rojo
+  (`"data-museum-button": "consumer"`), exit 1; en Astro, sin retirar el `data-museum-button` del
+  consumidor (sale duplicado y el navegador toma el primero) → el mismo rojo, exit 1; los dos
+  restaurados, idénticos según `cmp`.
 
   Va la última porque comparte con la T-8 el render en los dos frameworks.
 

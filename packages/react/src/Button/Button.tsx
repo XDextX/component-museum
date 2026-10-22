@@ -27,7 +27,8 @@ export function Button({
 }: ButtonProps) {
   const classes = ['museum-button', `museum-button--${variant}`, `museum-button--${size}`, className].filter(Boolean).join(' ');
   return (
-    <button {...attributes} type={type} disabled={disabled} className={classes} onClick={onClick}>
+    // Free attributes first, so the component's own (data-museum-button included) win a clash (RF-11).
+    <button {...attributes} type={type} disabled={disabled} className={classes} onClick={onClick} data-museum-button="">
       {children}
     </button>
   );

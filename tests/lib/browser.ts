@@ -58,9 +58,8 @@ export async function readElements(html: string, selector: string): Promise<Elem
         classes: [...element.classList].sort(),
         attributes: Object.fromEntries(
           element.getAttributeNames()
-            // `class` is compared sorted above; `data-astro-*` is Astro's own bookkeeping; and
-            // `data-museum-button` is the hook of Astro's click script, which React does not emit.
-            .filter((name) => name !== 'class' && name !== 'id' && !name.startsWith('data-astro-') && name !== 'data-museum-button')
+            // `class` is compared sorted above; `data-astro-*` is Astro's own bookkeeping.
+            .filter((name) => name !== 'class' && name !== 'id' && !name.startsWith('data-astro-'))
             .sort()
             .map((name) => [name, element.getAttribute(name) ?? '']),
         ),

@@ -115,6 +115,8 @@ function buttonInstances(framework: Framework): string {
   if (variant.type !== 'enum' || size.type !== 'enum') throw new Error('Button contract: variant and size must be enums');
   return variant.values
     .flatMap((v) => size.values.map((s) => `<Button id="button-${v}-${s}" variant="${v}" size="${s}">${v} ${s}</Button>`))
+    // RF-11: free HTML attributes, a consumer class, and a clash with the component's own hook.
+    .concat(`<Button id="button-attrs" data-x="1" aria-label="Etiqueta" ${framework === 'react' ? 'className' : 'class'}="consumer-class" data-museum-button="consumer">attrs</Button>`)
     .join(framework === 'react' ? '\n      ' : '\n\t\t');
 }
 

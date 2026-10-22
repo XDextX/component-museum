@@ -2,10 +2,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createElement } from 'react';
-// @ts-expect-error react-dom ships no types and @types/react-dom is not a declared dependency (plan 002).
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, inject, it } from 'vitest';
-import { Button } from '../packages/react/dist/index.js';
+import { describe, expect, expectTypeOf, inject, it } from 'vitest';
+import { Button, type ButtonProps } from '../packages/react/dist/index.js';
 import { readElements } from './lib/browser.ts';
 import { loadContract } from './lib/contract.ts';
 
@@ -22,9 +21,33 @@ describe('same HTML in React and Astro (RF-9)', { timeout: 60_000 }, () => {
     const astroHtml = readFileSync(join(inject('consumers').plain.astro, 'dist', 'index.html'), 'utf8');
 
     const react = await readElements(reactHtml, 'button');
-    const astro = await readElements(astroHtml, 'button[id^="button-"]');
+    const astro = await readElements(astroHtml, 'button[id^="button-"]:not(#button-attrs)');
 
     expect(react).toHaveLength(ids.length);
     expect(astro).toEqual(react);
+  });
+});
+
+// The consumer's attributes on the `button-attrs` instance of tests/lib/consumer.ts (RF-11).
+const consumerAttributes = { id: 'button-attrs', 'data-x': '1', 'aria-label': 'Etiqueta', 'data-museum-button': 'consumer' };
+
+describe('HTML attributes reach the <button> (RF-11)', { timeout: 60_000 }, () => {
+  it('passes data-x, aria-label and id, adds the consumer class, and keeps the component’s own data-museum-button', async () => {
+    const reactHtml = renderToStaticMarkup(
+      createElement(Button, { ...consumerAttributes, className: 'consumer-class' } as ButtonProps, 'attrs'),
+    );
+    const astroHtml = readFileSync(join(inject('consumers').plain.astro, 'dist', 'index.html'), 'utf8');
+
+    const [react] = await readElements(reactHtml, '#button-attrs');
+    const [astro] = await readElements(astroHtml, '#button-attrs');
+
+    expect(react.attributes).toMatchObject({ 'data-x': '1', 'aria-label': 'Etiqueta', 'data-museum-button': '' });
+    expect(react.classes).toEqual(expect.arrayContaining(['museum-button', 'consumer-class']));
+    expect(astro).toEqual(react);
+  });
+
+  it('takes type and disabled only through their own props in React', () => {
+    expectTypeOf<ButtonProps['type']>().toEqualTypeOf<'button' | 'submit' | 'reset' | undefined>();
+    expectTypeOf<ButtonProps['disabled']>().toEqualTypeOf<boolean | undefined>();
   });
 });
