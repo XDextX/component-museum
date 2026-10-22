@@ -1,58 +1,48 @@
 # Tareas 005 — galeria
 
 **Approved:** 2026-10-22 · aprobado por el coordinator en la sesión autónoma que declaró el dueño ("trabaja y haz los commits"); el dueño corrige al vuelo
+Ajustado tras mergear las correcciones de la 004 (5ded4ac): la antigua T-1 (`gallery/` en `tsc`) y el
+CSS de `my-button` de un solo origen ya están hechos; las tareas se renumeran de T-1 a T-7.
 
 Cómo se trabaja en paralelo (plan, bloque 6): cada tarea de una ola va en su propio worktree, con
 su rama `spec/005-galeria-T-n` y su `node_modules`. Al cerrar la ola, la sesión de git mergea las
 ramas en `spec/005-galeria`. Se borra `node_modules` antes de quitar cada worktree. Solo la tarea
 indicada toca cada archivo compartido:
-- `Button.mdx`: la T-3 y después la T-6;
-- `tsconfig.json`: la T-1;
-- `tests/snippets.test.ts`: la T-3.
+- `Button.mdx`: la T-2 y después la T-5;
+- `gallery/tsconfig.json` y `tests/snippets.test.ts`: la T-2.
 
-- [ ] **T-1 — Meter `gallery/` en la comprobación de tipos**
-  Cubre: lección de la 004 (tarea mecánica)
-  Archivos: `tsconfig.json` (`gallery/**/*.ts`, `*.tsx`, tipos de cliente de Vite), los arreglos de
-  tipos que salgan en `gallery/lib/` y `gallery/stories/*.tsx` (sin tocar `.storybook/`, que es de la
-  T-4)
-  Hecho cuando: `tsc --noEmit` revisa `gallery/` y termina en 0; `npm test` sigue en 0.
-  Inyección: una copia de `gallery/lib/contract-args.ts` con `const n: number = 'x'` hace que `tsc`
-  termine en distinto de 0.
-
-- [ ] **T-2 — Matriz de frameworks como dato, con un solo parser de entradas**
+- [ ] **T-1 — Matriz de frameworks como dato, con un solo parser de entradas**
   Cubre: RF-4
   Archivos: `gallery/lib/matrix.ts` (`entryExports`, `frameworkMatrix`), `tests/matrix.test.ts`,
   `tests/packages.test.ts` (importa `entryExports` en lugar de su copia)
   Hecho cuando: con las entradas reales, Button es `present` en los dos frameworks; los tests de
-  `entryExports` de la 002 siguen en verde.
+  `entryExports` de la 002 siguen en verde; `tsc --noEmit -p gallery` termina en 0.
   Inyección: una copia en disco de la entrada de Astro sin el export de Button deja la celda
   `Button × astro` en `missing`; con el test esperando `present`, se pone en rojo.
 
-- [ ] **T-3 — Selector de idioma y CSS de ejemplo con un solo origen**
-  Cubre: RF-1 y RF-5 (el contenido; los tests en el navegador son la T-7), y la lección de la 004
-  Archivos: `gallery/lib/Lang.tsx` (con `initialLanguage`), `gallery/lib/example-classes.ts`,
-  `gallery/stories/Button.mdx`, `gallery/stories/Button.react.stories.tsx`,
-  `tests/snippets.test.ts`
+- [ ] **T-2 — Selector de idioma**
+  Cubre: RF-1 y RF-5 (el contenido; los tests en el navegador son la T-6)
+  Archivos: `gallery/lib/Lang.tsx` (con `initialLanguage`), `gallery/tsconfig.json` (`include` con
+  `lib/**/*.tsx`), `gallery/stories/Button.mdx`, `tests/snippets.test.ts`
   Hecho cuando:
-  - El MDX tiene `<LanguageSwitch />` y cada lengua dentro de `<Lang>`.
-  - El CSS de `my-button` sale de `example-classes.ts` en la historia y en el MDX (`<Source>`).
+  - El MDX tiene `<LanguageSwitch />` y cada lengua dentro de `<Lang>`, en lugar de las anclas.
   - `initialLanguage` da `es` sin preferencia, o si la guardada no es válida.
-  - `tests/snippets.test.ts` corta las lenguas por `<Lang>`, comprueba el import del CSS de ejemplo
-    y sigue en verde.
-  - `storybook build` termina en 0.
+  - `tests/snippets.test.ts` corta las lenguas por `<Lang>` y sigue en verde.
+  - `tsc --noEmit -p gallery` revisa `Lang.tsx`, y `storybook build` termina en 0.
   Inyección: una copia del MDX sin `<Lang lang="en">` pone en rojo RF-2 de la 004 en
   `snippets.test.ts`.
 
-- [ ] **T-4 — Selector de tema en la barra de Storybook**
-  Cubre: RF-3 (el contenido; el test es la T-8)
-  Archivos: `gallery/.storybook/preview.tsx` (renombrado desde `preview.ts`)
-  Hecho cuando: el global `theme` (Sistema, Claro, Oscuro) sale en la barra, y su decorador pone
-  `data-theme` alrededor de cada historia, sin atributo con «Sistema»; el import de la hoja por
-  especificador sigue ahí (004, RF-10); `storybook build` termina en 0.
+- [ ] **T-3 — Selector de tema en la barra de Storybook**
+  Cubre: RF-3 (el contenido; el test es la T-7)
+  Archivos: `gallery/.storybook/preview.ts` (sin JSX: `createElement`)
+  Hecho cuando: el global `theme` (Sistema, Claro, Oscuro), con su `title`, sale en la barra; su
+  decorador pone `data-theme` alrededor de cada historia, sin atributo con «Sistema»; el import de
+  la hoja por especificador sigue ahí (004, RF-10); `tsc --noEmit -p gallery` y `storybook build`
+  terminan en 0.
   Inyección: un decorador que olvida el `<div>` para la historia Astro deja sus tokens claros con
-  `theme:dark`, y la T-8 se pone en rojo.
+  `theme:dark`, y la T-7 se pone en rojo.
 
-- [ ] **T-5 — Página de la matriz**
+- [ ] **T-4 — Página de la matriz**
   Cubre: RF-4 (se muestra en la galería)
   Archivos: `gallery/stories/Matrix.mdx`
   Hecho cuando: la página lee las entradas por especificador con `?raw` y los contratos con
@@ -61,7 +51,7 @@ indicada toca cada archivo compartido:
   Inyección: leer la entrada de React por `../../packages/react/...` en una copia pone en rojo
   RF-10 de la 004, por usar una ruta en lugar del especificador.
 
-- [ ] **T-6 — El código de uso sigue a los controles**
+- [ ] **T-5 — El código de uso sigue a los controles**
   Cubre: RF-2
   Archivos: `gallery/stories/Button.mdx` (`<Canvas>` y `<Controls>` de la historia React, fuera de
   las lenguas), `tests/gallery-snippet.test.ts`
@@ -71,7 +61,7 @@ indicada toca cada archivo compartido:
   Inyección: una historia con el `source.transform` quitado (en la rama del worktree) deja el código
   de uso sin los imports ni la variante, y el test se pone en rojo.
 
-- [ ] **T-7 — Idioma en el navegador**
+- [ ] **T-6 — Idioma en el navegador**
   Cubre: RF-1, RF-5
   Archivos: `tests/gallery-i18n.test.ts`
   Hecho cuando:
@@ -81,7 +71,7 @@ indicada toca cada archivo compartido:
   - Recargar mantiene el inglés.
   Inyección: que `initialLanguage` devuelva `en` por defecto pone en rojo RF-5.
 
-- [ ] **T-8 — Tema y accesibilidad de los selectores en el navegador**
+- [ ] **T-7 — Tema y accesibilidad de los selectores en el navegador**
   Cubre: RF-3, NFR de accesibilidad
   Archivos: `tests/gallery-theme.test.ts`
   Hecho cuando:
@@ -96,6 +86,6 @@ indicada toca cada archivo compartido:
 
 | Ola | Tareas en paralelo | Por qué esperan |
 |---|---|---|
-| 1 | T-1 ∥ T-2 | — |
-| 2 | T-3 ∥ T-4 ∥ T-5 | La T-3 y la T-4 necesitan `gallery/` en `tsc` (T-1); la T-5, la matriz (T-2). |
-| 3 | T-6 ∥ T-7 ∥ T-8 | La T-6 y la T-7 necesitan el MDX con `<Lang>` (T-3); la T-8, el tema y la matriz (T-4 y T-5). |
+| 1 | T-1 ∥ T-2 ∥ T-3 | — (ya no hay que esperar a `gallery/` en `tsc`) |
+| 2 | T-4 ∥ T-5 ∥ T-6 | La T-4 necesita la matriz (T-1); la T-5 y la T-6, el MDX con `<Lang>` (T-2). |
+| 3 | T-7 | Necesita el tema (T-3) y la página de la matriz (T-4). |

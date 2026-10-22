@@ -1,6 +1,8 @@
 # Plan 005 — galeria
 
 **Approved:** 2026-10-22 · aprobado por el coordinator en la sesión autónoma que declaró el dueño ("trabaja y haz los commits"); el dueño corrige al vuelo
+Ajustado tras mergear las correcciones de la 004 (5ded4ac): sin la antigua T-1 ni la parte del CSS de un
+solo origen, que ya están hechas; quedan 7 tareas.
 
 Parte de `spec.md` (aprobada, 5 RF) y de `notes.md`. Se apoya en lo que dejó la 004:
 - `gallery/` con Storybook 10.6.3 (`@storybook/react-vite`, `@storybook/addon-docs`);
@@ -20,12 +22,14 @@ Versiones comprobadas en npm el 2026-10-22: `storybook` y `@storybook/addon-docs
 
 ## Lecciones de la 004 que aplica este plan
 
-- **Un solo origen para lo que se escribe dos veces.** El CSS de `my-button` está hoy en la
-  historia y en el MDX, y un test los mantiene iguales. Un MDX sí puede importar un módulo, así que
-  pasa a `gallery/lib/example-classes.ts` y los dos lo importan. El parser de exports de las
-  entradas está hoy dentro de `tests/packages.test.ts`; pasa a `gallery/lib/matrix.ts`, y lo usan
-  el test de la 002 y la matriz.
-- **`gallery/` entra en la comprobación de tipos**, porque esta spec toca su código.
+- **Un solo origen para lo que se escribe dos veces.** El CSS de `my-button` ya tiene uno,
+  `gallery/lib/example-classes.ts`, desde las correcciones de la 004 (5ded4ac). Falta el parser de
+  exports de las entradas, que está dentro de `tests/packages.test.ts`: pasa a
+  `gallery/lib/matrix.ts`, y lo usan el test de la 002 y la matriz.
+- **`gallery/` ya entra en la comprobación de tipos** (`tsc --noEmit -p gallery` y `astro check`
+  de `gallery/astro-render`, en `npm test`). Su `include` solo cubre `.storybook/*.ts` y
+  `lib/**/*.ts`. Por eso el tema se escribe en `preview.ts` con `createElement`, sin JSX, y solo la
+  T-2 amplía el `include` a `lib/**/*.tsx`, para `Lang.tsx`.
 - **Las inyecciones van sobre copias en disco** (de una entrada, del MDX o de la configuración),
   nunca solo en memoria, cuando el test lee archivos.
 - **Cada tarea paralela va en su propio worktree.** Se borra su `node_modules` antes de quitar el
@@ -49,16 +53,14 @@ Astro sin controles, componente que falta) quedan cubiertos por RF-2 y RF-4.
 
 | Archivo | Nuevo | Responsabilidad |
 |---|---|---|
-| `tsconfig.json` | modificado | Incluye `gallery/**/*.ts` y `*.tsx`, con los tipos de cliente de Vite (`?raw`, JSON). |
-| `gallery/lib/example-classes.ts` | sí | El CSS de cada clase de ejemplo: un solo origen para la historia y el MDX. |
+| `gallery/tsconfig.json` | modificado | Su `include` gana `lib/**/*.tsx`, para `Lang.tsx` (T-2). |
 | `gallery/lib/matrix.ts` | sí | `entryExports()`, sacado de `packages.test.ts`, y `frameworkMatrix()`. |
 | `gallery/lib/Lang.tsx` | sí | `LanguageProvider`, `LanguageSwitch` y `Lang`: elige el idioma, lo guarda y pinta solo esa lengua. |
-| `gallery/.storybook/preview.tsx` | renombrado | Hoy es `preview.ts`. Lleva el global `theme` (sistema, claro, oscuro) en la barra y el decorador `data-theme`. |
-| `gallery/stories/Button.mdx` | modificado | Las lenguas dentro de `<Lang>`, el CSS de ejemplo desde `example-classes.ts`, y `<Canvas>` más `<Controls>` de la historia React. |
-| `gallery/stories/Button.react.stories.tsx` | modificado | Importa el CSS de ejemplo de `example-classes.ts`. |
+| `gallery/.storybook/preview.ts` | modificado | El global `theme` (sistema, claro, oscuro) en la barra y el decorador `data-theme`, con `createElement`, sin JSX, para seguir dentro del `include`. |
+| `gallery/stories/Button.mdx` | modificado | Las lenguas dentro de `<Lang>` (T-2), y `<Canvas>` más `<Controls>` de la historia React (T-5). El CSS de ejemplo ya sale de `example-classes.ts`. |
 | `gallery/stories/Matrix.mdx` | sí | La matriz: lee las entradas por especificador con `?raw` y los contratos con `import.meta.glob`. |
 | `tests/packages.test.ts` | modificado | Usa `entryExports` de `gallery/lib/matrix.ts`. |
-| `tests/snippets.test.ts` | modificado | Corta las lenguas por `<Lang lang="…">` en lugar de por las anclas, y comprueba el CSS de ejemplo por su import, no por una copia. |
+| `tests/snippets.test.ts` | modificado | Corta las lenguas por `<Lang lang="…">` en lugar de por las anclas `<a id>`. |
 | `tests/matrix.test.ts` | sí | RF-4. |
 | `tests/gallery-i18n.test.ts` | sí | RF-1 y RF-5. |
 | `tests/gallery-theme.test.ts` | sí | RF-3 y el NFR de accesibilidad. |
@@ -93,7 +95,7 @@ vuelve a ejecutar esa transformación con los args que cambian los controles de 
 elegir `my-button`, el código de uso escribe `className="my-button"`, que la 004 admite (RF-8). En
 Astro no hay controles: cada caso conserva su código de uso fijo (004, RF-6).
 
-**Tema (RF-3).** `preview.tsx` declara el global `theme`: «Sistema», «Claro» y «Oscuro», en la
+**Tema (RF-3).** `preview.ts` declara el global `theme`: «Sistema», «Claro» y «Oscuro», en la
 barra de herramientas de Storybook, que es parte del núcleo de la versión 10. Un decorador envuelve
 cada historia en un `<div>`: con `data-theme="light"` o `"dark"`, o sin el atributo con «Sistema».
 La historia Astro pinta su HTML dentro de ese `<div>`, así que hereda el tema igual.
@@ -109,9 +111,9 @@ La historia Astro pinta su HTML dentro de ese `<div>`, así que hereda el tema i
 El test de RF-4 copia las dos entradas a un temporal. En la copia de la de Astro quita el export de
 Button, y espera que `frameworkMatrix` marque `Button × astro` como `missing`.
 
-**Comprobación de tipos.** `tsc --noEmit` ya está en `npm test`; con `gallery/` en su `include`
-revisa historias, librería y configuración. El MDX no entra: lo compila Storybook en su build, que
-ya está en el `globalSetup`.
+**Comprobación de tipos.** `npm test` ya corre `tsc --noEmit -p gallery` (desde la 004). Revisa
+historias, librería y configuración, y con la T-2 también `Lang.tsx`. El MDX no entra: lo compila
+Storybook en su build, que ya está en el `globalSetup`.
 
 ## 5. Interfaz
 
@@ -135,7 +137,7 @@ ya está en el `globalSetup`.
 | **El tema como global del núcleo de Storybook 10**, con un decorador `data-theme`. | `@storybook/addon-themes`: una dependencia nueva para lo que un global y un decorador ya hacen. |
 | **`<Canvas>` y `<Controls>` en el MDX**, con la transformación de código que ya tiene la historia. | Un componente de código propio enganchado a los args: duplica lo que Storybook ya hace con `usageSnippet`. |
 | **Matriz calculada en la página, desde el texto de las entradas** (`?raw`, por especificador). | Un script que la genere a JSON: otro paso de build y otro archivo generado. Leer `packages/*/` por ruta: rompe la regla 1. |
-| **`entryExports` y el CSS de ejemplo con un solo origen** (lecciones de la 004). | Dejar dos copias con un test de igualdad, como en la 004: cada cambio se hace dos veces. |
+| **`entryExports` con un solo origen** (lección de la 004; el CSS de ejemplo ya lo tiene). | Dejar dos copias con un test de igualdad, como en la 004: cada cambio se hace dos veces. |
 | **Cada tarea paralela en su propio worktree**, mergeado al cerrar la ola. Se borra `node_modules` antes de quitar el worktree. Coste: un `npm ci` por worktree (1–2 min). | El mismo checkout: esperas por el candado y choques de archivos temporales (003 y 004). |
 
 **Dependencias (regla 9).** Ninguna nueva: `Canvas`, `Controls` y `Source` vienen de
@@ -153,4 +155,4 @@ ya está en el `globalSetup`.
 - **La comprobación a mano** desde `npm run gallery`, en los dos temas, la lista la validación.
 - **Inyección por tarea:** cada tarea tiene su línea «Inyección:», hecha sobre copias en disco o en
   la rama del worktree, y su commit dice cuál se vio en rojo (regla 8).
-- **Proporción:** 8 tareas para 5 RF, contando las dos de las lecciones (T-1 y una parte de la T-3).
+- **Proporción:** 7 tareas para 5 RF.
