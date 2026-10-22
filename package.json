@@ -2,10 +2,16 @@
   "name": "component-museum",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "gallery"
+  ],
   "engines": {
     "node": "^22.22.0 || >=24.0.0"
   },
   "scripts": {
+    "build:packages": "tsc -p packages/react/tsconfig.build.json && npm run prepack --workspace=@component-museum/react --workspace=@component-museum/astro",
+    "gallery": "npm run build:packages && npm run dev --workspace=@component-museum/gallery",
     "test": "tsc -p packages/react/tsconfig.build.json && tsc --noEmit && astro check --root tests/fixtures/test-package && astro check --root packages/astro && vitest run"
   },
   "devDependencies": {
