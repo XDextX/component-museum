@@ -105,7 +105,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   Inyección: un `import '../../packages/react/styles.css'` en una copia de `preview.ts` pone en rojo
   RF-10, y una clase `px-4` en un código de uso del MDX, RF-8.
 
-- [ ] **T-9 — Los controles re-renderizan Button React**
+- [x] **T-9 — Los controles re-renderizan Button React**
   Cubre: RF-4
   Archivos: `tests/gallery-browser.test.ts`
   Hecho cuando: en Edge, sobre el Storybook construido y servido con `serve.ts`, cada arg
@@ -113,6 +113,12 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   del `<button>`, en los dos temas; un texto vacío no da error. La validación lo repite a mano
   desde `npm run gallery`.
   Inyección: una historia que ignora `args.variant` pone en rojo el caso de `variant`.
+  Inyección vista: una copia de la historia React con `render: ({ variant, ...args }) => <Button {...args} />`,
+  construida en un Storybook aparte (`gallery/.inject-T9/`, borrado después; la fuente sin tocar) →
+  los dos temas en rojo, solo con «variant:secondary: the <button> does not show it», exit 1; test
+  restaurado, idéntico según `cmp`. Riesgo del plan comprobado: los args por URL pasan la misma
+  validación que los controles (`variant:nope` se ignora) y el panel de controles del manager
+  muestra los valores llegados por URL, así que comparten el almacén de args.
 
 - [x] **T-10 — Cerrar las marcas «pendiente» de la constitución y `AGENTS.md`**
   Cubre: RF-11
