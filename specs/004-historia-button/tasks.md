@@ -24,7 +24,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   exit 1; `npm install` lo enlaza de nuevo y el build pasa. Manifiestos restaurados, idénticos según
   `cmp`. `npm run gallery` compila los paquetes (`build:packages`) y arranca Storybook en `:6006`.
 
-- [ ] **T-2 — Lógica pura: controles, códigos de uso y casos Astro desde el contrato**
+- [x] **T-2 — Lógica pura: controles, códigos de uso y casos Astro desde el contrato**
   Cubre: base de RF-3, RF-5, RF-6, RF-7, RF-8
   Archivos: `gallery/lib/contract-args.ts`, `tests/contract-args.test.ts`
   Hecho cuando:
@@ -33,6 +33,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   - `usageSnippet` escribe los dos imports y solo las props que no tienen su valor por defecto.
   - `astroCases` da cada variante, normal y `disabled`.
   Inyección: que `usageSnippet` omita el import de la hoja pone en rojo su test.
+  Inyección vista: quitar el import de la hoja de `usageSnippet` dejó en rojo "always writes both imports and omits default props" (6 verdes, 1 rojo); restaurado con el mismo sha256.
 
 - [ ] **T-3 — Prerenderizar Button en Astro**
   Cubre: RF-5, RF-6 (el contenido; el test es la T-7)
