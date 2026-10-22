@@ -89,7 +89,7 @@ indicada toca cada archivo compartido:
   ejecutar la transformación al mover un control de la página de documentación, así que no hace
   falta un componente de código propio. El código del `<Canvas>` es el `<pre>` junto a la historia.
 
-- [ ] **T-6 — Idioma en el navegador**
+- [x] **T-6 — Idioma en el navegador**
   Cubre: RF-1, RF-5
   Archivos: `tests/gallery-i18n.test.ts`
   Hecho cuando:
@@ -98,6 +98,7 @@ indicada toca cada archivo compartido:
   - Pulsar «English» los cambia y oculta los españoles.
   - Recargar mantiene el inglés.
   Inyección: que `initialLanguage` devuelva `en` por defecto pone en rojo RF-5.
+  Inyección vista: `initialLanguage` devolviendo `en` por defecto (sobre `Lang.tsx`, restaurado con el mismo sha256) → `tests/gallery-i18n.test.ts` en rojo en la aserción de títulos en español, exit 1.
 
 - [ ] **T-7 — Tema y accesibilidad de los selectores en el navegador**
   Cubre: RF-3, NFR de accesibilidad
