@@ -130,6 +130,14 @@ indicada toca cada archivo compartido:
   (`npm test > log 2>&1` desde Git Bash): exit 0 en los tres (99 s, 111 s y 102 s), 230 tests. Una
   tanda anterior falló por npm, no por esto: `@volar/typescript@2.4.29` se publicó 4 s después de
   que la instalación de `@astrojs/check` lo pidiera (ETARGET).
+  Corrección tras validación (ronda 1): con «Oscuro», el texto propio de la historia Button/Astro
+  (`<h3>` de cada caso y `<code>` del código de uso) quedaba negro sobre `#111827`, a 1,18:1; el
+  decorador pintaba el fondo con `--museum-surface` pero no daba color. Se arregla en la galería, no
+  en el paquete: el decorador de `preview.ts` da al lienzo `color-scheme` (el del tema, o
+  `light dark` con «Sistema») y `color: CanvasText`. Medido: 21:1 en claro y 17,74:1 en oscuro, con
+  «Sistema» igual bajo cada preferencia. `gallery-theme.test.ts` lo comprueba en Edge para los cuatro
+  casos. Inyección vista: una copia de la configuración sin `color: CanvasText`, en un Storybook
+  aparte → los dos casos oscuros en rojo a 1,18:1, exit 1; test y `preview.ts` con el mismo sha256.
 
 ## Grafo de olas
 

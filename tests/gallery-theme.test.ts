@@ -102,6 +102,44 @@ describe('gallery theme and keyboard access (spec 005, RF-3 and accessibility)',
     }
   }
 
+  // The gallery's own text (each case's heading and usage code) sits on the decorator's canvas, so it
+  // must read on it in every theme, the system one included under both preferences (rule 7).
+  const canvasCases = [
+    { global: 'light', scheme: 'dark' },
+    { global: 'dark', scheme: 'light' },
+    { global: 'system', scheme: 'light' },
+    { global: 'system', scheme: 'dark' },
+  ] as const;
+  for (const { global, scheme } of canvasCases) {
+    it(`Button/Astro, theme ${global} under a ${scheme} system: its headings and usage code read at 4.5:1 on the canvas`, async () => {
+      const context = await browser.newContext({ colorScheme: scheme });
+      const page = await context.newPage();
+      try {
+        await page.goto(`${served.url}iframe.html?id=button-astro--variants&viewMode=story&globals=theme:${global}`);
+        await page.locator('#storybook-root h3').first().waitFor();
+        const texts = await page.locator('#storybook-root h3, #storybook-root code').evaluateAll((els) =>
+          els.map((el) => {
+            // The background the text sits on: the nearest ancestor that paints one.
+            let ground = 'rgb(255, 255, 255)';
+            for (let node: Element | null = el; node; node = node.parentElement) {
+              const bg = getComputedStyle(node).backgroundColor;
+              if (bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+                ground = bg;
+                break;
+              }
+            }
+            return { tag: el.tagName.toLowerCase(), color: getComputedStyle(el).color, ground };
+          }),
+        );
+        const report = texts.map((t) => ({ ...t, ratio: Number(contrastRatio(parseRgb(t.color), parseRgb(t.ground)).toFixed(2)) }));
+        expect(report.length).toBeGreaterThan(0);
+        expect(report.filter((t) => t.ratio < 4.5), JSON.stringify(report.slice(0, 2))).toEqual([]);
+      } finally {
+        await context.close();
+      }
+    });
+  }
+
   it('reaches both language buttons with Tab, each named by its language', async () => {
     const page = await browser.newPage();
     try {

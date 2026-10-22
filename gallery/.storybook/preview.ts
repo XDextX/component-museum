@@ -7,10 +7,15 @@ import '@component-museum/react/styles.css';
 // "system" sets no attribute, so the package's prefers-color-scheme rule decides.
 const withTheme: Decorator = (Story, { globals }) => {
   const theme = globals.theme === 'light' || globals.theme === 'dark' ? globals.theme : undefined;
-  // The surface token paints the canvas, so dark buttons do not sit on a white one.
+  // The surface token paints the canvas, so dark buttons do not sit on a white one. The gallery's own
+  // text (headings, usage code) takes the system text colour of the same scheme, so it reads on that
+  // canvas in every theme without a text token in the package.
   return createElement(
     'div',
-    { 'data-theme': theme, style: { background: 'var(--museum-surface)', padding: '1rem' } },
+    {
+      'data-theme': theme,
+      style: { background: 'var(--museum-surface)', colorScheme: theme ?? 'light dark', color: 'CanvasText', padding: '1rem' },
+    },
     createElement(Story),
   );
 };
