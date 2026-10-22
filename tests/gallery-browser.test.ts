@@ -114,18 +114,22 @@ describe('the example CSS is seen beside its control and on the docs page (RF-9)
     }
   });
 
-  it('shows each example class CSS on the docs page, once per language', async () => {
+  // The page shows one language at a time (spec 005, T-2): pick each with the switch and look there.
+  it('shows each example class CSS on the docs page, in each language', async () => {
     const page = await browser.newPage();
     try {
       await page.goto(`${served.url}iframe.html?id=button-documentation--docs&viewMode=docs`);
-      for (const [name, css] of Object.entries(exampleClasses)) {
-        const [first, last] = [cssLines(css)[0], cssLines(css).at(-2)!];
-        // <Source> renders after the page: wait until both languages carry the rule.
-        await page.waitForFunction(
-          ([a, b]) => (document.body.innerText.match(new RegExp(`${a}[\\s\\S]*?${b}`, 'g')) ?? []).length >= 2,
-          [first.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), last.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')],
-          { timeout: 30_000 },
-        ).catch(() => expect.fail(`.${name}: the docs page does not show its CSS in both languages`));
+      for (const language of ['Español', 'English']) {
+        await page.getByRole('button', { name: language }).click();
+        for (const [name, css] of Object.entries(exampleClasses)) {
+          const [first, last] = [cssLines(css)[0], cssLines(css).at(-2)!];
+          // <Source> renders after the page: wait until the chosen language carries the rule.
+          await page.waitForFunction(
+            ([a, b]) => new RegExp(`${a}[\\s\\S]*?${b}`).test(document.body.innerText),
+            [first.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), last.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')],
+            { timeout: 30_000 },
+          ).catch(() => expect.fail(`.${name}: the docs page does not show its CSS in ${language}`));
+        }
       }
     } finally {
       await page.close();

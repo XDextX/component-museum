@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "types": []
   },
-  "include": ["env.d.ts", "stories/**/*.tsx", ".storybook/*.ts", "lib/**/*.ts"]
+  "include": ["env.d.ts", "stories/**/*.tsx", ".storybook/*.ts", "lib/**/*.ts", "lib/**/*.tsx"]
 }

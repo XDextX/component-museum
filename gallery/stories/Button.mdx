@@ -1,13 +1,14 @@
 import { Meta, Source } from '@storybook/addon-docs/blocks';
 import { exampleClasses } from '../lib/example-classes.ts';
+import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
 
 <Meta title="Button/Documentation" />
 
 # Button
 
-[Español](#es) · [English](#en)
+<LanguageSwitch />
 
-<a id="es"></a>
+<Lang lang="es">
 
 ## Uso
 
@@ -91,7 +92,9 @@ import '@component-museum/astro/styles.css';
 
 **3. Utilidades.** Si tu proyecto usa Tailwind, sus utilidades también ganan a la capa del paquete. Se usan igual, como clase de tu proyecto, y no hay que configurar nada más. El paquete no define ninguna utilidad propia.
 
-<a id="en"></a>
+</Lang>
+
+<Lang lang="en">
 
 ## Usage
 
@@ -174,3 +177,5 @@ import '@component-museum/astro/styles.css';
 ```
 
 **3. Utilities.** If your project uses Tailwind, its utilities also beat the package layer. Use them the same way, as a class from your project; nothing more to configure. The package defines no utilities of its own.
+
+</Lang>
