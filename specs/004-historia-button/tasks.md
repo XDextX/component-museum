@@ -107,7 +107,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   RF-10, y una clase `px-4` en un código de uso del MDX, RF-8.
   Inyección vista: 2026-10-22 · a la vez, en copias de `Button.mdx` y `preview.ts`: borrar «How to alter it» (RF-2), `className="px-4"` en un snippet (RF-8), import `../../packages/react/styles.css` en `preview.ts` (RF-10) y otro CSS de `my-button` en el MDX inglés (RF-9) → 6 rojos de 23. El CSS distinto solo: 1 rojo (RF-9), 22 verdes. Restaurados, mismo sha256. RF-9 compara, normalizado en espacios, `exampleClasses` (historia) con las dos secciones «cómo alterarlo»; el MDX no puede importar la constante, así que el test mantiene igual la copia.
 
-- [ ] **T-9 — Los controles re-renderizan Button React**
+- [x] **T-9 — Los controles re-renderizan Button React**
   Cubre: RF-4
   Archivos: `tests/gallery-browser.test.ts`
   Hecho cuando: en Edge, sobre el Storybook construido y servido con `serve.ts`, cada arg
@@ -115,6 +115,12 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   del `<button>`, en los dos temas; un texto vacío no da error. La validación lo repite a mano
   desde `npm run gallery`.
   Inyección: una historia que ignora `args.variant` pone en rojo el caso de `variant`.
+  Inyección vista: una copia de la historia React con `render: ({ variant, ...args }) => <Button {...args} />`,
+  construida en un Storybook aparte (`gallery/.inject-T9/`, borrado después; la fuente sin tocar) →
+  los dos temas en rojo, solo con «variant:secondary: the <button> does not show it», exit 1; test
+  restaurado, idéntico según `cmp`. Riesgo del plan comprobado: los args por URL pasan la misma
+  validación que los controles (`variant:nope` se ignora) y el panel de controles del manager
+  muestra los valores llegados por URL, así que comparten el almacén de args.
 
 - [x] **T-10 — Cerrar las marcas «pendiente» de la constitución y `AGENTS.md`**
   Cubre: RF-11
