@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { findContractFiles, loadContract } from './lib/contract.ts';
 import { npmCli } from './lib/consumer.ts';
+import { entryExports } from '../gallery/lib/matrix.ts';
 import type { Framework } from './lib/paths.ts';
 import { run } from './lib/run.ts';
 
@@ -33,18 +34,6 @@ function packedFiles(dir: string): { name: string; files: string[] } {
   expect(result.code, result.output).toBe(0);
   const [packed] = JSON.parse(result.output.slice(result.output.indexOf('[')));
   return { name: packed.name, files: packed.files.map((file: { path: string }) => file.path) };
-}
-
-/** Value exports of an entry file: `export { A, default as B }` yes, `export type { ... }` no. */
-function entryExports(source: string): string[] {
-  const names: string[] = [];
-  for (const [, list] of source.matchAll(/^export\s+(?!type)\{([^}]*)\}/gm)) {
-    for (const item of list.split(',')) {
-      const name = item.trim().split(/\s+as\s+/).pop();
-      if (name) names.push(name);
-    }
-  }
-  return names;
 }
 
 /** RF-2: one message per component missing from a set the other two have. */

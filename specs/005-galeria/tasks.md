@@ -11,7 +11,7 @@ indicada toca cada archivo compartido:
 - `Button.mdx`: la T-2 y después la T-5;
 - `gallery/tsconfig.json` y `tests/snippets.test.ts`: la T-2.
 
-- [ ] **T-1 — Matriz de frameworks como dato, con un solo parser de entradas**
+- [x] **T-1 — Matriz de frameworks como dato, con un solo parser de entradas**
   Cubre: RF-4
   Archivos: `gallery/lib/matrix.ts` (`entryExports`, `frameworkMatrix`), `tests/matrix.test.ts`,
   `tests/packages.test.ts` (importa `entryExports` en lugar de su copia)
@@ -19,6 +19,7 @@ indicada toca cada archivo compartido:
   `entryExports` de la 002 siguen en verde; `tsc --noEmit -p gallery` termina en 0.
   Inyección: una copia en disco de la entrada de Astro sin el export de Button deja la celda
   `Button × astro` en `missing`; con el test esperando `present`, se pone en rojo.
+  Inyección vista: `frameworkMatrix` forzada a `present` en una copia de `matrix.ts` pone en rojo «marks Button x astro missing…» en `tests/matrix.test.ts`; restaurado con el mismo sha256.
 
 - [ ] **T-2 — Selector de idioma**
   Cubre: RF-1 y RF-5 (el contenido; los tests en el navegador son la T-6)
