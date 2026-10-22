@@ -78,7 +78,7 @@ indicada toca cada archivo compartido:
   Inyección: una historia con el `source.transform` quitado (en la rama del worktree) deja el código
   de uso sin los imports ni la variante, y el test se pone en rojo.
 
-- [ ] **T-6 — Idioma en el navegador**
+- [x] **T-6 — Idioma en el navegador**
   Cubre: RF-1, RF-5
   Archivos: `tests/gallery-i18n.test.ts`
   Hecho cuando:
@@ -87,6 +87,7 @@ indicada toca cada archivo compartido:
   - Pulsar «English» los cambia y oculta los españoles.
   - Recargar mantiene el inglés.
   Inyección: que `initialLanguage` devuelva `en` por defecto pone en rojo RF-5.
+  Inyección vista: `initialLanguage` devolviendo `en` por defecto (sobre `Lang.tsx`, restaurado con el mismo sha256) → `tests/gallery-i18n.test.ts` en rojo en la aserción de títulos en español, exit 1.
 
 - [ ] **T-7 — Tema y accesibilidad de los selectores en el navegador**
   Cubre: RF-3, NFR de accesibilidad
