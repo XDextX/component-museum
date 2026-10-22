@@ -10,7 +10,7 @@ Changed: 2026-10-19 · regla 10: su check cita el test de idiomas de las histori
 de spec · cambio de referencia, no de sentido
 Changed: 2026-10-22 · reglas 1 y 6: nombran la galería, los paquetes y sus entradas y la herramienta de
 versionado (`@s-ui/mono`) en lugar de «pendiente de la spec de arquitectura» · spec 004, cambio de
-referencia, no de sentido
+referencia, no de sentido · aprobado por el dueño el 2026-10-22
 
 **Propósito.** Este repo es el único hogar de los componentes con los que el dueño construye
 otros proyectos. Cada componente se publica como un paquete por cada framework que soporta, de
