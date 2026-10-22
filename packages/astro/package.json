@@ -27,6 +27,9 @@
   "sideEffects": [
     "*.css"
   ],
+  "scripts": {
+    "prepack": "node ../../scripts/sync-styles.mjs"
+  },
   "peerDependencies": {
     "astro": "^7.0.0"
   }

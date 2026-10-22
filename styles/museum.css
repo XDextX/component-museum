@@ -1,0 +1,11 @@
+/*
+ * The only CSS source of the component museum. Each package's styles.css is a byte-for-byte copy
+ * made by scripts/sync-styles.mjs on prepack: edit this file, never a package's own copy.
+ *
+ * Declaring base and components first puts museum inside components wherever Tailwind is imported:
+ * it beats Tailwind's preflight (base) and loses to the consumer's utilities (plan 003, block 4).
+ */
+@layer base, components;
+
+@layer components.museum {
+}

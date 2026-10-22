@@ -22,6 +22,9 @@
   "sideEffects": [
     "*.css"
   ],
+  "scripts": {
+    "prepack": "node ../../scripts/sync-styles.mjs"
+  },
   "peerDependencies": {
     "react": "^19.0.0"
   }

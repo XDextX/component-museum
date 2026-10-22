@@ -28,7 +28,8 @@ const manifestOf = (dir: string): Manifest => JSON.parse(readFileSync(join(dir, 
 
 /** What `npm pack` would publish, without writing a tarball. */
 function packedFiles(dir: string): { name: string; files: string[] } {
-  const result = run(process.execPath, [npmCli, 'pack', '--dry-run', '--json'], { cwd: dir });
+  // --silent: the prepack banner goes to stderr, which run() appends after the JSON.
+  const result = run(process.execPath, [npmCli, 'pack', '--dry-run', '--json', '--silent'], { cwd: dir });
   expect(result.code, result.output).toBe(0);
   const [packed] = JSON.parse(result.output.slice(result.output.indexOf('[')));
   return { name: packed.name, files: packed.files.map((file: { path: string }) => file.path) };
