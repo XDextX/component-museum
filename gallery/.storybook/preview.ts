@@ -19,6 +19,9 @@ const preview: Preview = {
   decorators: [withTheme],
   globalTypes: {
     theme: {
+      // Storybook names the toolbar button from this description (the toolbar title is not read):
+      // without it, screen readers hear the internal key, "theme".
+      description: 'Tema de la galería',
       toolbar: {
         title: 'Tema',
         icon: 'circlehollow',

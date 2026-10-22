@@ -100,7 +100,7 @@ indicada toca cada archivo compartido:
   Inyección: que `initialLanguage` devuelva `en` por defecto pone en rojo RF-5.
   Inyección vista: `initialLanguage` devolviendo `en` por defecto (sobre `Lang.tsx`, restaurado con el mismo sha256) → `tests/gallery-i18n.test.ts` en rojo en la aserción de títulos en español, exit 1.
 
-- [ ] **T-7 — Tema y accesibilidad de los selectores en el navegador**
+- [x] **T-7 — Tema y accesibilidad de los selectores en el navegador**
   Cubre: RF-3, NFR de accesibilidad
   Archivos: `tests/gallery-theme.test.ts`
   Hecho cuando:
@@ -110,6 +110,26 @@ indicada toca cada archivo compartido:
     `Tab` y tienen nombre accesible.
   Inyección: quitar el `title` del global `theme` (en una copia de la configuración, sobre un build
   aparte) deja el selector sin nombre accesible, y el test se pone en rojo.
+  Inyección vista: la del plan no muerde. Storybook 10 no lee el `title` de la barra para el nombre
+  accesible del botón: sale de la `description` del global, y sin ella, de la clave interna («theme
+  Sistema»). `preview.ts` gana `description: 'Tema de la galería'` y el test exige ese nombre. Una copia
+  de la configuración sin la `description`, en un Storybook aparte (`gallery/.inject-T7/`, borrado
+  después) → rojo con «theme Sistema», exit 1; test restaurado, idéntico según `cmp`, fuente sin tocar.
+  Ajustes: la tabla de la matriz no tenía nombre ni se alcanzaba con `Tab`; `Matrix.mdx` le da un
+  `<caption>` y la envuelve en una región con nombre y `tabIndex={0}`. La barra de Storybook es una
+  sola parada de `Tab` que se recorre con las flechas: el test llega así al selector de tema. Además
+  comprueba la regla 7 en cada tema y en las dos historias: texto ≥ 4.5:1 y anillo ≥ 3:1 frente al halo.
+  Corrección: el `afterAll` de `gallery-i18n.test.ts` (y antes el de `cascade.test.ts`) pasó a veces
+  de los 10 s de `hookTimeout`. No era el servidor (`closeAllConnections()`, 0-5 ms) ni el orden, ni
+  nada propio de `gallery-i18n`: medido dentro de `npm test`, cerrar Edge tarda 0,8-3,7 s, frente a
+  0,1-0,4 s en aislamiento, cuando varios ficheros cierran el suyo a la vez (cinco workers en 5 s), y
+  cerrar los contextos, hasta 1,9 s. Arreglo: los 7 `afterAll` que cierran Edge usan
+  `closeBrowserAndServers()` (`tests/lib/browser.ts`: contextos, Edge y servidores, en ese orden, y
+  avisa del paso que siga en marcha a los 10 o 20 s), y `vitest.config.ts` sube `hookTimeout` a
+  30 s con la medida en su comentario. Tres `npm test` seguidos lanzados como el coordinador
+  (`npm test > log 2>&1` desde Git Bash): exit 0 en los tres (99 s, 111 s y 102 s), 230 tests. Una
+  tanda anterior falló por npm, no por esto: `@volar/typescript@2.4.29` se publicó 4 s después de
+  que la instalación de `@astrojs/check` lo pidiera (ETARGET).
 
 ## Grafo de olas
 

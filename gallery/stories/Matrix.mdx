@@ -14,7 +14,10 @@ export const matrix = frameworkMatrix({ react: reactEntry, astro: astroEntry }, 
 
 Qué framework exporta cada componente. / Which framework exports each component.
 
+{/* A named region in the Tab order: keyboard users reach the table and hear what it is. */}
+<div role="region" aria-label="Matriz de frameworks / Framework matrix" tabIndex={0}>
 <table>
+  <caption>Componentes por framework / Components by framework</caption>
   <thead>
     <tr>
       <th scope="col">Componente</th>
@@ -40,3 +43,4 @@ Qué framework exporta cada componente. / Which framework exports each component
     )}
   </tbody>
 </table>
+</div>
