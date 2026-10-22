@@ -195,6 +195,10 @@ ejecución empaqueta un `dist/` fresco. `dist/` va a `.gitignore`.
 - `@component-museum/react` → `react ^19.0.0`.
 - `@component-museum/astro` → `astro ^7.0.0`.
 
+**Versión de Node de los paquetes (NFR «Plataformas»).** Los dos manifiestos declaran
+`engines.node: ^22.22.0 || >=24.0.0`, la misma que la raíz. El peer más exigente es Astro 7.4.1,
+que pide `>=22.22.0`, y ese rango ya lo cumple; React 19.3.1 solo pide `>=0.10.0`.
+
 ## 7. Estrategia de tests
 
 - **Como dato:** contrato (RF-6), API traducida (RF-7, RF-8, RF-10), exports (RF-2), manifiestos y

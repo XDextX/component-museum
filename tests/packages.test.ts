@@ -102,6 +102,13 @@ for (const { framework, dir, peers, keywords } of packages) {
       expect(declared).toEqual({ dependencies: [], peerDependencies: peers, optionalDependencies: [] });
     });
 
+    it('declares the same engines.node as the repo root (NFR Plataformas)', () => {
+      const root = manifestOf(repo).engines as Record<string, string> | undefined;
+      const own = manifestOf(dir).engines as Record<string, string> | undefined;
+      expect(root?.node).toBeTruthy();
+      expect(own?.node).toBe(root?.node);
+    });
+
     it.runIf(keywords.length > 0)(`lists the keywords ${keywords.join(', ')}`, () => {
       expect(manifestOf(dir).keywords ?? []).toEqual(expect.arrayContaining(keywords));
     });
