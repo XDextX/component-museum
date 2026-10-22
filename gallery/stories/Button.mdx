@@ -1,4 +1,5 @@
-import { Meta, Source } from '@storybook/addon-docs/blocks';
+import { Canvas, Controls, Meta, Source } from '@storybook/addon-docs/blocks';
+import * as ReactStories from './Button.react.stories.tsx';
 import { exampleClasses } from '../lib/example-classes.ts';
 import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
 
@@ -7,6 +8,10 @@ import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
 # Button
 
 <LanguageSwitch />
+
+<Canvas of={ReactStories.Default} sourceState="shown" />
+
+<Controls of={ReactStories.Default} />
 
 <Lang lang="es">
 
