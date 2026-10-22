@@ -83,7 +83,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   construir, para que un JSON viejo no tape una extracción rota. Tiempo de `npm test`: 92 s antes,
   85 s después; la galería se construye en paralelo con los consumidores y no alarga la ejecución.
 
-- [ ] **T-7 — Guardas de historias, controles y casos Astro**
+- [x] **T-7 — Guardas de historias, controles y casos Astro**
   Cubre: RF-1, RF-3, RF-5, RF-6
   Archivos: `tests/gallery.test.ts`
   Hecho cuando:
@@ -92,6 +92,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   - El JSON tiene cada caso, con `museum-button--<variant>`, un nombre accesible no vacío y su
     código de uso con la variante correcta.
   Inyección: una variante nueva en una copia del contrato sin su caso Astro pone en rojo RF-5.
+  Inyección vista: 2026-10-22 · una copia en memoria del contrato con la variante `ghost` sin caso Astro → «ghost: no Astro case» y «ghost-disabled: no Astro case» (el JSON se regenera desde el contrato, así que un contrato real no puede probarlo); lo fijan los tests `bites`. En la historia React, `argTypes` con `variant` sin `outline` y título `Button/Reakt` → rojo RF-3 («variant options differ from the contract») y RF-1 («Button has no React story titled Button/React», en fuente y en `index.json` del Storybook construido), 4 rojos de 10; restaurada con el mismo sha256. Tiempo: `npm test` 142 s con todo.
 
 - [ ] **T-8 — Guardas de documentación, códigos de uso e imports**
   Cubre: RF-2, RF-7, RF-8, RF-9, RF-10
