@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { exampleClasses } from '../gallery/lib/example-classes.ts';
 import { loadContract } from './lib/contract.ts';
 import { serve, type Served } from './lib/serve.ts';
 
@@ -79,8 +79,56 @@ describe('the React story re-renders Button for each control (RF-4)', { timeout:
   }
 });
 
-// Keeps the example class in step with the story that offers it.
+// Keeps the example class in step with the one source the story offers it from.
 it('offers the example class the cases use', () => {
-  const story = readFileSync(join(repo, 'gallery', 'stories', 'Button.react.stories.tsx'), 'utf8');
-  expect(story).toContain(`'${exampleClass}'`);
+  expect(Object.keys(exampleClasses)).toContain(exampleClass);
+});
+
+/** Every non-empty line of a CSS text, trimmed: what must be readable on the page, whatever the layout. */
+const cssLines = (css: string) => css.split('\n').map((l) => l.trim()).filter(Boolean);
+
+describe('the example CSS is seen beside its control and on the docs page (RF-9)', { timeout: 120_000 }, () => {
+  let served: Served;
+  let browser: Browser;
+  beforeAll(async () => {
+    served = await serve(inject('gallery').storybook);
+    browser = await chromium.launch({ channel: 'msedge' });
+  });
+  afterAll(async () => {
+    await browser?.close();
+    await served?.close();
+  });
+
+  it('shows each example class CSS in the className row of the controls panel', async () => {
+    const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+    try {
+      await page.goto(`${served.url}index.html?path=/story/button-react--default`);
+      const row = page.locator('tr', { has: page.locator('text=className') }).first();
+      await row.waitFor();
+      const text = await row.innerText();
+      for (const [name, css] of Object.entries(exampleClasses)) {
+        for (const line of cssLines(css)) expect(text, `.${name}: ${line}`).toContain(line);
+      }
+    } finally {
+      await page.close();
+    }
+  });
+
+  it('shows each example class CSS on the docs page, once per language', async () => {
+    const page = await browser.newPage();
+    try {
+      await page.goto(`${served.url}iframe.html?id=button-documentation--docs&viewMode=docs`);
+      for (const [name, css] of Object.entries(exampleClasses)) {
+        const [first, last] = [cssLines(css)[0], cssLines(css).at(-2)!];
+        // <Source> renders after the page: wait until both languages carry the rule.
+        await page.waitForFunction(
+          ([a, b]) => (document.body.innerText.match(new RegExp(`${a}[\\s\\S]*?${b}`, 'g')) ?? []).length >= 2,
+          [first.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), last.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')],
+          { timeout: 30_000 },
+        ).catch(() => expect.fail(`.${name}: the docs page does not show its CSS in both languages`));
+      }
+    } finally {
+      await page.close();
+    }
+  });
 });

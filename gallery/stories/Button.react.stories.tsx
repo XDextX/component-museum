@@ -4,13 +4,10 @@ import { Button } from '@component-museum/react';
 import '@component-museum/react/styles.css';
 import contractJson from '../../contracts/button.contract.json';
 import { argTypesFromContract, usageSnippet, type Contract } from '../lib/contract-args.ts';
+// The example class and its CSS, shown beside the class control (RF-9). Not layered, like a consumer's own rule.
+import { exampleClasses } from '../lib/example-classes.ts';
 
 const contract = contractJson as Contract;
-
-/** The example class and its CSS, shown beside the class control (RF-9). Not layered, like a consumer's own rule. */
-const exampleClasses = {
-  'my-button': '.my-button {\n  border-radius: 999px;\n  letter-spacing: 0.05em;\n  text-transform: uppercase;\n}',
-};
 
 const meta = {
   title: 'Button/React',
@@ -27,6 +24,8 @@ const meta = {
     ),
   ],
   parameters: {
+    // The expanded panel has the description column, where the class control shows its CSS (RF-9).
+    controls: { expanded: true },
     docs: {
       source: { transform: (_code: string, ctx: { args: Record<string, unknown> }) => usageSnippet('react', ctx.args, contract) },
     },
