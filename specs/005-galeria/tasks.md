@@ -41,7 +41,7 @@ indicada toca cada archivo compartido:
   Con una sola lengua visible, el test RF-9 de la 004 (`gallery-browser.test.ts`) elige cada
   idioma con el selector antes de buscar el CSS de ejemplo; antes lo esperaba dos veces a la vez.
 
-- [ ] **T-3 — Selector de tema en la barra de Storybook**
+- [x] **T-3 — Selector de tema en la barra de Storybook**
   Cubre: RF-3 (el contenido; el test es la T-7)
   Archivos: `gallery/.storybook/preview.ts` (sin JSX: `createElement`)
   Hecho cuando: el global `theme` (Sistema, Claro, Oscuro), con su `title`, sale en la barra; su
@@ -50,6 +50,14 @@ indicada toca cada archivo compartido:
   terminan en 0.
   Inyección: un decorador que olvida el `<div>` para la historia Astro deja sus tokens claros con
   `theme:dark`, y la T-7 se pone en rojo.
+  Archivo añadido: `tests/gallery-preview.test.ts` (decorador y global, como dato).
+  Inyección vista: una copia de `preview.ts` cuyo decorador no pone `data-theme`, importada por
+  `gallery-preview.test.ts` solo durante la prueba → rojo en «wraps the story in data-theme», exit 1;
+  test restaurado, idéntico según `cmp`, `preview.ts` sin tocar y la copia borrada. La primera
+  inyección registrada editaba el propio `preview.ts`; se repitió sobre la copia.
+  Ajustes al cerrarla: las opciones de la barra pasan a «Sistema, Claro, Oscuro» (título «Tema»),
+  como pide la tarea; y el `tsconfig.json` raíz incluye `gallery/env.d.ts`, porque el test importa
+  `preview.ts`, que importa la hoja (sin ello, `tsc --noEmit` daba TS2882 y cortaba `npm test`).
 
 - [ ] **T-4 — Página de la matriz**
   Cubre: RF-4 (se muestra en la galería)
