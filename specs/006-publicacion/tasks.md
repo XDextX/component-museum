@@ -34,7 +34,7 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   guardada y restaurada por sha256 `feef7f61…8c2d`) dio `## English: no stylesheet import`, 1 test
   en rojo. Restaurado: 4 de 4 en verde. `npm pack --dry-run` lista `README.md` en los dos paquetes.
 
-- [ ] **T-3 — Instalar `@s-ui/mono` y probar el cálculo de versiones**
+- [x] **T-3 — Instalar `@s-ui/mono` y probar el cálculo de versiones**
   Cubre: RF-3, RF-4, RF-5
   Archivos: `package.json` (raíz: `@s-ui/mono` `^2.46.0`, `config.sui-mono.access: "public"`),
   `package-lock.json`, `tests/lib/release-repo.ts`, `tests/release.test.ts`
@@ -46,6 +46,11 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   - Nunca se llama a `release`, y el repo temporal se borra al terminar.
   Inyección: quitar `packages/*` de las workspaces en la copia del manifiesto de la raíz del repo
   temporal deja a `check()` sin paquetes, y los casos que esperan 2 o 3 se ponen en rojo.
+  Hecho (2026-10-22): `@s-ui/mono` 2.46.0 (la última en npm). Comprobado primero: `check()` con npm 11.19
+  en Windows lista `packages/react` y `packages/astro`, sin `gallery` (es `private`). Inyección vista
+  en rojo: aplicada a todo repo temporal, 8 de 10 tests en rojo (la lista de paquetes, los cuatro
+  tipos, `BREAKING CHANGE`, `docs` y `feat` sin scope, con `check()` sin paquetes); revertida,
+  10 de 10 en verde. Un test de la suite deja la inyección fija (sin `packages/*`, `check()` da `{}`).
 
 - [ ] **T-4 — Nada de más en cada tarball**
   Cubre: RF-2
