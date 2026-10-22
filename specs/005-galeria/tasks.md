@@ -68,7 +68,7 @@ indicada toca cada archivo compartido:
   Inyección: leer la entrada de React por `../../packages/react/...` en una copia pone en rojo
   RF-10 de la 004, por usar una ruta en lugar del especificador.
 
-- [ ] **T-5 — El código de uso sigue a los controles**
+- [x] **T-5 — El código de uso sigue a los controles**
   Cubre: RF-2
   Archivos: `gallery/stories/Button.mdx` (`<Canvas>` y `<Controls>` de la historia React, fuera de
   las lenguas), `tests/gallery-snippet.test.ts`
@@ -77,6 +77,12 @@ indicada toca cada archivo compartido:
   `className="my-button"`; el código de uso sigue llevando los dos imports.
   Inyección: una historia con el `source.transform` quitado (en la rama del worktree) deja el código
   de uso sin los imports ni la variante, y el test se pone en rojo.
+  Inyección vista: copias del MDX y de la historia React sin su `source.transform`, en un
+  Storybook aparte (`gallery/.inject-T5/`, borrado después; la fuente sin tocar) → los 3 tests en
+  rojo: el código de uso pasa a `<r className="">` (nombre minificado) y pierde los imports,
+  exit 1; test restaurado, idéntico según `cmp`. Riesgo del plan comprobado: Storybook 10 vuelve a
+  ejecutar la transformación al mover un control de la página de documentación, así que no hace
+  falta un componente de código propio. El código del `<Canvas>` es el `<pre>` junto a la historia.
 
 - [ ] **T-6 — Idioma en el navegador**
   Cubre: RF-1, RF-5
