@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, it, inject } from 'vitest';
 import type { Framework } from './lib/paths.ts';
+import { closeBrowserAndServers } from './lib/browser.ts';
 import { serve, type Served } from './lib/serve.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -29,8 +30,7 @@ beforeAll(async () => {
   for (const f of frameworks) servers[f] = await serve(join(consumers.plain[f], 'dist'));
 });
 afterAll(async () => {
-  await browser?.close();
-  await Promise.all(Object.values(servers).map((s) => s.close()));
+  await closeBrowserAndServers(browser, Object.values(servers));
 });
 
 /** Opens the built consumer in a fresh context with an explicit viewport; the page is ready once Button is in the DOM. */

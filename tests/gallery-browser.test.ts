@@ -4,6 +4,7 @@ import { chromium, type Browser } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
 import { exampleClasses } from '../gallery/lib/example-classes.ts';
 import { loadContract } from './lib/contract.ts';
+import { closeBrowserAndServers } from './lib/browser.ts';
 import { serve, type Served } from './lib/serve.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -60,8 +61,7 @@ describe('the React story re-renders Button for each control (RF-4)', { timeout:
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {
-    await browser?.close();
-    await served?.close();
+    await closeBrowserAndServers(browser, [served]);
   });
 
   for (const theme of themes) {
@@ -95,8 +95,7 @@ describe('the example CSS is seen beside its control and on the docs page (RF-9)
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {
-    await browser?.close();
-    await served?.close();
+    await closeBrowserAndServers(browser, [served]);
   });
 
   it('shows each example class CSS in the className row of the controls panel', async () => {

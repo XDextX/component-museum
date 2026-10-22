@@ -1,5 +1,6 @@
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { closeBrowserAndServers } from './lib/browser.ts';
 import { serve, type Served } from './lib/serve.ts';
 
 const imports = ["import { Button } from '@component-museum/react';", "import '@component-museum/react/styles.css';"];
@@ -28,8 +29,7 @@ describe('the usage code follows the controls on the docs page (spec 005, RF-2)'
     await page.locator('.docs-story button').first().waitFor();
   });
   afterAll(async () => {
-    await browser?.close();
-    await served?.close();
+    await closeBrowserAndServers(browser, [served]);
   });
 
   it('starts with both imports and the default Button', async () => {

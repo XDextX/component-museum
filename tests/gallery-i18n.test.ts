@@ -1,5 +1,6 @@
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { closeBrowserAndServers } from './lib/browser.ts';
 import { serve, type Served } from './lib/serve.ts';
 
 const titles = {
@@ -18,8 +19,7 @@ describe('the docs page language switch in the browser (spec 005, RF-1 and RF-5)
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {
-    await browser?.close();
-    await served?.close();
+    await closeBrowserAndServers(browser, [served]);
   });
 
   it('starts in Spanish, switches to English, and keeps English after a reload', async () => {

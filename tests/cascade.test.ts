@@ -3,6 +3,7 @@ import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
 import { tailwindPages } from './lib/consumer.ts';
 import type { Framework } from './lib/paths.ts';
+import { closeBrowserAndServers } from './lib/browser.ts';
 import { serve, type Served } from './lib/serve.ts';
 
 const frameworks: Framework[] = ['react', 'astro'];
@@ -15,8 +16,7 @@ beforeAll(async () => {
   browser = await chromium.launch({ channel: 'msedge' });
 });
 afterAll(async () => {
-  await browser?.close();
-  await Promise.all(servers.map((s) => s.close()));
+  await closeBrowserAndServers(browser, servers);
 });
 
 /** Opens `route` of the built consumer in `dir` and waits until its Buttons are rendered. */

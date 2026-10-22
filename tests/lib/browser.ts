@@ -2,6 +2,33 @@ import { chromium, type Browser } from 'playwright-core';
 
 export type PageOptions = { colorScheme?: 'light' | 'dark'; javaScriptEnabled?: boolean };
 
+/**
+ * The one teardown for a test file's Edge and its servers: every context first, then Edge, then the
+ * servers, in that order. A step still running at 10 s or 20 s is reported by name, so a hook
+ * timeout names its own cause (see hookTimeout in vitest.config.ts).
+ */
+export async function closeBrowserAndServers(
+  browser: Browser | undefined,
+  servers: ({ close: () => Promise<void> } | undefined)[],
+): Promise<void> {
+  const step = async (name: string, run: () => Promise<unknown>) => {
+    // Warn while the step is still running, so a hook timeout still names its cause.
+    const timers = [10_000, 20_000].map((ms) =>
+      setTimeout(() => console.warn(`[museum] teardown: ${name} still running after ${ms} ms`), ms),
+    );
+    try {
+      await run();
+    } finally {
+      timers.forEach(clearTimeout);
+    }
+  };
+  if (browser) {
+    await step('closing the contexts', () => Promise.all(browser.contexts().map((context) => context.close())));
+    await step('closing Edge', () => browser.close());
+  }
+  await step('closing the servers', () => Promise.all(servers.map((server) => server?.close())));
+}
+
 async function launchEdge(): Promise<Browser> {
   try {
     return await chromium.launch({ channel: 'msedge' });
