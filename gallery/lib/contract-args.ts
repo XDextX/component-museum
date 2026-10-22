@@ -50,7 +50,7 @@ export function argTypesFromContract(contract: Contract, exampleClasses: Record<
 /**
  * The usage code of one state: both imports, then the markup with only the props off their default.
  * @param args React-style args (`className`, `children`); events never appear.
- * @returns the snippet; Astro writes `class`, React `className`.
+ * @returns the snippet; Astro writes `class`, React `className`, and puts the imports in its frontmatter.
  */
 export function usageSnippet(framework: Framework, args: Record<string, unknown>, contract: Contract): string {
   const pkg = `@component-museum/${framework}`;
@@ -67,7 +67,9 @@ export function usageSnippet(framework: Framework, args: Record<string, unknown>
   const open = [contract.name, ...attrs].join(' ');
   const text = contract.content && typeof args.children === 'string' ? args.children : '';
   const markup = text === '' ? `<${open} />` : `<${open}>${text}</${contract.name}>`;
-  return `import { ${contract.name} } from '${pkg}';\nimport '${pkg}/styles.css';\n\n${markup}`;
+  const imports = `import { ${contract.name} } from '${pkg}';\nimport '${pkg}/styles.css';\n`;
+  // Astro reads imports only inside the frontmatter fence; outside it they would be page text.
+  return framework === 'astro' ? `---\n${imports}---\n\n${markup}` : `${imports}\n${markup}`;
 }
 
 /**

@@ -65,7 +65,8 @@ de `Memory.md` lo decide el agente.
 - **NUNCA hagas push. NUNCA hagas commit si no te lo piden.** Terminar una tarea no implica hacer
   commit.
 - **Los commits siguen Conventional Commits** (`feat:`, `fix:`, `docs:`, `refactor:`…), que la
-  herramienta de changelog y versionado lee para versionar los paquetes (`@s-ui/mono`, que se instala al publicar por primera vez).
+  herramienta de changelog y versionado lee para versionar los paquetes (`@s-ui/mono`, que se
+  instala al publicar por primera vez).
 - **Una spec nueva se redacta desde `main`, y tiene su propia rama una vez aprobada**:
   `spec/NNN-<nombre>`. Dentro de una entrega, la primera spec sale de `main` y cada siguiente de
   la rama de la anterior, que aún no está en `main`; al cerrar la entrega se mergea a `main` la

@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { usageSnippet, type Contract } from '../gallery/lib/contract-args.ts';
+import { exampleClasses } from '../gallery/lib/example-classes.ts';
 import { loadContract } from './lib/contract.ts';
 
 const repo = resolve(import.meta.dirname, '..');
@@ -11,11 +12,8 @@ const read = (p: string) => readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 const mdx = read(join(gallery, 'stories/Button.mdx'));
 const reactStory = read(join(gallery, 'stories/Button.react.stories.tsx'));
 
-// The sheet's own classes, and the example classes the React story defines and shows (RF-8, RF-9).
+// The sheet's own classes, and the example classes the gallery defines once and shows (RF-8, RF-9).
 const sheetClasses = new Set(read(join(repo, 'styles/museum.css')).match(/\.museum-[\w-]+/g)!.map((c) => c.slice(1)));
-const exampleBlock = reactStory.match(/const exampleClasses = (\{[\s\S]*?\n\});/)![1];
-const exampleClasses = new Function(`return ${exampleBlock}`)() as Record<string, string>;
-const norm = (css: string) => css.replace(/\s+/g, ' ').trim();
 
 type Block = { lang: string; code: string };
 const blocks = (text: string): Block[] =>
@@ -44,6 +42,13 @@ function snippetProblems(lang: 'tsx' | 'astro', code: string): string[] {
   if (!sheet.includes(`@component-museum/${fw}/styles.css`)) problems.push(`no sheet import for ${fw}`);
   for (const spec of [...imports, ...sheet]) {
     if (!spec.startsWith(`@component-museum/${fw}`)) problems.push(`import ${spec} is not by package name`);
+  }
+  if (lang === 'astro') {
+    // Astro only reads imports inside the frontmatter fence: one outside it is page text, not an import.
+    const front = /^---\n([\s\S]*?)\n---\n/.exec(code);
+    if (!front) problems.push('no frontmatter fence (---) at the top');
+    const outside = front ? code.slice(front[0].length) : code;
+    if (/^import\b/m.test(outside)) problems.push('an import outside the frontmatter');
   }
   const classAttr = lang === 'tsx' ? 'className' : 'class';
   for (const [, attrs] of code.matchAll(/<Button\b([^>]*)>/g)) {
@@ -92,6 +97,13 @@ describe('usage code (RF-7, RF-8)', () => {
     expect(snippetProblems('tsx', base + '<Button tone="loud">x</Button>')).not.toEqual([]);
     expect(snippetProblems('tsx', base + '<Button class="my-button">x</Button>')).not.toEqual([]);
   });
+
+  it('flags an Astro snippet whose imports sit outside the frontmatter (the guard bites)', () => {
+    const imports = "import { Button } from '@component-museum/astro';\nimport '@component-museum/astro/styles.css';\n";
+    expect(snippetProblems('astro', imports + '\n<Button>x</Button>')).not.toEqual([]);
+    expect(snippetProblems('astro', '---\n---\n' + imports + '\n<Button>x</Button>')).not.toEqual([]);
+    expect(snippetProblems('astro', '---\n' + imports + '---\n\n<Button>x</Button>')).toEqual([]);
+  });
 });
 
 describe('example class CSS in every place (RF-9)', () => {
@@ -106,18 +118,19 @@ describe('example class CSS in every place (RF-9)', () => {
     expect([...used].filter((c) => !(c in exampleClasses))).toEqual([]);
   });
 
-  // The story holds the CSS once (exampleClasses); the control description and the decorator read it.
-  it('shows the story CSS beside the control: description and decorator read the same object', () => {
-    expect(reactStory).toMatch(/argTypesFromContract\(contract, exampleClasses\)/);
-    expect(reactStory).toMatch(/Object\.values\(exampleClasses\)\.join/);
+  // One source (gallery/lib/example-classes.ts): a copy anywhere else could drift. That it is seen
+  // beside the control and on the docs page is checked in the built Storybook (gallery-browser.test.ts).
+  it('the story and the docs page import the example CSS and keep no copy of it', () => {
+    for (const [file, text] of [['story', reactStory], ['MDX', mdx]] as const) {
+      expect(text, `${file} imports it`).toMatch(/import \{ exampleClasses \} from '\.\.\/lib\/example-classes\.ts';/);
+      for (const name of Object.keys(exampleClasses)) expect(text, `${file} has its own .${name} rule`).not.toContain(`.${name} {`);
+    }
   });
 
-  // The MDX cannot import the story's constant, so its copy is held equal by this test (byte-normalised).
-  it.each(Object.entries(SECTIONS))('%s "how to alter it" carries the same CSS as the story', (lang) => {
+  it.each(Object.entries(SECTIONS))('%s "how to alter it" shows every example class from that source', (lang) => {
     const how = langs[lang].split(/^## /m).find((s) => s.startsWith(SECTIONS[lang as 'es' | 'en'][2]))!;
-    const css = blocks(how).filter((b) => b.lang === 'css').map((b) => norm(b.code));
-    for (const [name, rule] of Object.entries(exampleClasses)) {
-      expect(css, `${lang}: .${name}`).toContain(norm(rule));
+    for (const name of Object.keys(exampleClasses)) {
+      expect(how, `${lang}: .${name}`).toContain(`<Source language="css" code={exampleClasses['${name}']} />`);
     }
   });
 });

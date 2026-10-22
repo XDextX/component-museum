@@ -1,4 +1,5 @@
-import { Meta } from '@storybook/addon-docs/blocks';
+import { Meta, Source } from '@storybook/addon-docs/blocks';
+import { exampleClasses } from '../lib/example-classes.ts';
 
 <Meta title="Button/Documentation" />
 
@@ -24,8 +25,10 @@ import '@component-museum/react/styles.css';
 En Astro:
 
 ```astro
+---
 import { Button } from '@component-museum/astro';
 import '@component-museum/astro/styles.css';
+---
 
 <Button variant="outline" size="lg">Button</Button>
 ```
@@ -64,13 +67,7 @@ Hay tres vías, de menos a más intrusiva. Como el CSS del paquete está en una 
 
 **2. Una regla sobre la clase.** Pasa tu propia clase (`className` en React, `class` en Astro). Se añade a las del componente, nunca las sustituye, y tu regla, al estar fuera de la capa, gana sin más. Esta historia define y muestra `my-button`, que es también la opción del control de clase:
 
-```css
-.my-button {
-  border-radius: 999px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-```
+<Source language="css" code={exampleClasses['my-button']} />
 
 En React:
 
@@ -84,8 +81,10 @@ import '@component-museum/react/styles.css';
 En Astro:
 
 ```astro
+---
 import { Button } from '@component-museum/astro';
 import '@component-museum/astro/styles.css';
+---
 
 <Button class="my-button">Button</Button>
 ```
@@ -110,8 +109,10 @@ import '@component-museum/react/styles.css';
 In Astro:
 
 ```astro
+---
 import { Button } from '@component-museum/astro';
 import '@component-museum/astro/styles.css';
+---
 
 <Button variant="outline" size="lg">Button</Button>
 ```
@@ -150,13 +151,7 @@ There are three ways, from least to most intrusive. Because the package CSS sits
 
 **2. A rule on the class.** Pass your own class (`className` in React, `class` in Astro). It is added to the component's, never replaces them, and your rule, being outside the layer, wins outright. This story defines and shows `my-button`, which is also the class control's option:
 
-```css
-.my-button {
-  border-radius: 999px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-```
+<Source language="css" code={exampleClasses['my-button']} />
 
 In React:
 
@@ -170,8 +165,10 @@ import '@component-museum/react/styles.css';
 In Astro:
 
 ```astro
+---
 import { Button } from '@component-museum/astro';
 import '@component-museum/astro/styles.css';
+---
 
 <Button class="my-button">Button</Button>
 ```

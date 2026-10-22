@@ -34,6 +34,11 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   - `astroCases` da cada variante, normal y `disabled`.
   Inyección: que `usageSnippet` omita el import de la hoja pone en rojo su test.
   Inyección vista: quitar el import de la hoja de `usageSnippet` dejó en rojo "always writes both imports and omits default props" (6 verdes, 1 rojo); restaurado con el mismo sha256.
+  Corrección tras validación (punto 2): `usageSnippet('astro', …)` dejaba los `import` fuera del
+  frontmatter, igual que los 4 bloques `astro` del MDX y los casos del JSON; ahora van entre `---`.
+  `snippetProblems` exige el frontmatter y ningún `import` fuera de él, con su caso «la guarda
+  muerde». Inyección vista: antes del arreglo, esa guarda dio rojo en los 4 bloques del MDX y en
+  los 2 estados de Astro (6 fallos, «an import outside the frontmatter»).
 
 - [x] **T-3 — Prerenderizar Button en Astro**
   Cubre: RF-5, RF-6 (el contenido; el test es la T-7)
@@ -59,6 +64,13 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   `storybook build` termina en 0.
   Inyección: un `argTypes` escrito a mano con una variante de menos pone en rojo RF-3 en la T-7.
   Inyección vista: 2026-10-22 · las guardas de RF-3 (T-7) y RF-10 (T-8) aún no existen, así que ningún test se pone en rojo. Probe por sustitución: `import { Button } from '../../packages/react/src/index.ts'` en la historia → un grep de rutas a `packages/` en `gallery/` la detecta (limpio en la base); restaurada con el mismo sha256. `storybook build` pasa con y sin la violación: el build no es la guarda, lo son T-7/T-8.
+  Corrección tras validación (punto 1): el CSS de `my-button` no se veía junto al control (el panel
+  solo mostraba «Name» y «Control»). La historia activa `controls.expanded` y el CSS tiene una sola
+  fuente, `gallery/lib/example-classes.ts`, que importan la historia y el MDX (con `<Source>`).
+  `tests/gallery-browser.test.ts` lo comprueba en el Storybook construido: la fila `className` del
+  panel y la página de documentación, en los dos idiomas. Inyección vista: una copia de la
+  historia sin `controls.expanded`, en un Storybook aparte → rojo («expected 'className…' to
+  contain '.my-button {'»), exit 1; test restaurado, idéntico según `cmp`, fuente sin tocar.
 
 - [x] **T-5 — Documentación de Button en español y en inglés**
   Cubre: RF-2, RF-9 (en «cómo alterarlo»)
@@ -82,6 +94,12 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   exit 1; restaurado, idéntico según `cmp`. El `globalSetup` borra `gallery/generated/` antes de
   construir, para que un JSON viejo no tape una extracción rota. Tiempo de `npm test`: 92 s antes,
   85 s después; la galería se construye en paralelo con los consumidores y no alarga la ejecución.
+  Corrección tras validación (punto 3): `npm test` comprueba los tipos de `gallery/` (`tsc -p
+  gallery`: historias, `.storybook/*.ts`, `lib/`) y `astro check --root gallery/astro-render`;
+  `gallery/env.d.ts` declara los imports de CSS (los 3 TS2882). El prerenderizado y la extracción
+  pasan al script `gallery:astro`, que va antes de `tsc` porque la historia Astro importa el JSON.
+  Inyección vista: una historia temporal con `const wrong: number = 'not a number'` → `npm test`
+  cortado en `tsc -p gallery` (TS2322), exit 2, antes de Vitest; borrada.
 
 - [x] **T-7 — Guardas de historias, controles y casos Astro**
   Cubre: RF-1, RF-3, RF-5, RF-6
