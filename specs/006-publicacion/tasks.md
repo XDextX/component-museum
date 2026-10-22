@@ -62,7 +62,7 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   Inyección: un script `"release": "sui-mono release"` en una copia del manifiesto de la raíz, o un
   `.npmrc` en una copia del árbol, pone el test en rojo.
 
-- [ ] **T-6 — Procedimiento de publicación del dueño**
+- [x] **T-6 — Procedimiento de publicación del dueño**
   Cubre: RF-7
   Archivos: `docs/publicacion.md`, `tests/publish-doc.test.ts`
   Hecho cuando: el documento lista, en orden:
@@ -76,6 +76,8 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   exige todos los pasos y en orden. Arma en ejecución las cadenas que la T-5 prohíbe (`npm publish`,
   `sui-mono release`), para que la guarda no lo encuentre.
   Inyección: una copia del documento con `npm publish` antes de `npm login` pone en rojo el orden.
+  Visto en rojo (2026-10-22): copia del documento con la línea de publicar antepuesta, vía
+  `PUBLISH_DOC`; falló «names them in order»; con el documento real, 4 de 4 en verde.
 
 - [ ] **T-7 — Texto de la enmienda de `AGENTS.md`**
   Cubre: RF-8
