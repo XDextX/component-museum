@@ -89,6 +89,7 @@ Paso de cierre de la entrega 2, no de esta spec: el dueño crea la organización
   del consumidor) coinciden, tras normalizar `data-astro-*`.
   Inyección: añadir una clase solo en React pone el test en rojo.
   Inyección vista: en copias temporales, sin tocar `packages/`: `className: 'injected'` solo en React → rojo con «injected» en las clases de las 9 combinaciones; `title: 'injected'` solo en React → rojo con el atributo de más en las 9. Se comparan todos los atributos salvo `data-astro-*` y `data-museum-button` (gancho del script de Astro; React no lo emite).
+  Después: la T-9 hizo que React emita data-museum-button; RF-9 ya solo excluye data-astro-*.
 
 - [x] **T-9 — Pasar los atributos HTML al `<button>` y resolver los choques**
   Cubre: RF-11
