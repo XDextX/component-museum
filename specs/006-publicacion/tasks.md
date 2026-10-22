@@ -21,7 +21,7 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   la 002 y la 003 que leen el tarball siguen en verde.
   Inyección: una copia en disco de un manifiesto con `directory: "packages/otro"` pone en rojo RF-1.
 
-- [ ] **T-2 — README bilingüe de cada paquete**
+- [x] **T-2 — README bilingüe de cada paquete**
   Cubre: RF-9
   Archivos: `packages/react/README.md`, `packages/astro/README.md`, `tests/readme.test.ts`
   Hecho cuando: cada README tiene `## Español` y `## English`, y cada sección lleva el
@@ -29,6 +29,9 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   `https://github.com/XDextX/component-museum`; `npm pack --dry-run` lista `README.md`.
   Inyección: una copia en disco del README de Astro sin el import de la hoja en `## English` pone en
   rojo RF-9.
+  Visto en rojo: el README de Astro con las líneas de `styles.css` quitadas de `## English` (copia
+  guardada y restaurada por sha256 `feef7f61…8c2d`) dio `## English: no stylesheet import`, 1 test
+  en rojo. Restaurado: 4 de 4 en verde. `npm pack --dry-run` lista `README.md` en los dos paquetes.
 
 - [ ] **T-3 — Instalar `@s-ui/mono` y probar el cálculo de versiones**
   Cubre: RF-3, RF-4, RF-5
