@@ -10,13 +10,14 @@ Paquetes: `@component-museum/react` (`packages/react`) y `@component-museum/astr
 
 ## Primera publicación (0.1.0)
 
-Hoy ningún commit lleva scope, así que `@s-ui/mono` no publicaría nada. Por eso la primera versión
-se publica a mano.
+`@s-ui/mono` cuenta cada versión desde el commit y el tag de release anteriores del paquete
+(paso 4), y la primera no tiene ninguno. Por eso la primera versión se publica a mano.
 
 1. **`npm login`** con la cuenta del dueño.
 2. **Crear la organización `component-museum`** en npmjs.com. Sin ella, la publicación falla.
 3. **`npm publish` de `0.1.0` en cada paquete**, desde su carpeta (`packages/react` y
-   `packages/astro`). El `prepack` copia `LICENSE` y `styles.css` al paquete. La política de
+   `packages/astro`). El `prepack` compila `dist/` en React y copia `LICENSE` y `styles.css` al
+   paquete, así que no hace falta compilar antes. La política de
    acceso `public` ya está en cada `package.json`.
 4. **Commits y tags de release de cada paquete**, con el mismo formato que escribe `@s-ui/mono`
    (`release(<scope>): v<versión>` y tag `<scope>-<versión>`), para que cuente desde ahí:

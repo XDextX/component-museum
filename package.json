@@ -10,7 +10,7 @@
     "node": "^22.22.0 || >=24.0.0"
   },
   "scripts": {
-    "build:packages": "tsc -p packages/react/tsconfig.build.json && npm run prepack --workspace=@component-museum/react --workspace=@component-museum/astro",
+    "build:packages": "npm run prepack --workspace=@component-museum/react --workspace=@component-museum/astro",
     "gallery": "npm run build:packages && npm run dev --workspace=@component-museum/gallery",
     "test": "tsc -p packages/react/tsconfig.build.json && npm run gallery:astro && tsc --noEmit && tsc --noEmit -p gallery && astro check --root tests/fixtures/test-package && astro check --root packages/astro && astro check --root gallery/astro-render && vitest run",
     "gallery:astro": "astro build --root gallery/astro-render && node gallery/scripts/extract-astro.mjs"

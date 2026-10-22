@@ -1,5 +1,6 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { findContractFiles, loadContract } from './lib/contract.ts';
@@ -80,7 +81,7 @@ describe('crossProblems (RF-2)', () => {
 });
 
 /** Spec 006 RF-1: what a publishable manifest still lacks; `folder` is the package folder under packages/. */
-export function publishProblems(manifest: Record<string, unknown>, folder: string): string[] {
+export function manifestPublishProblems(manifest: Record<string, unknown>, folder: string): string[] {
   const repository = manifest.repository as { type?: string; url?: string; directory?: string } | undefined;
   const publishConfig = manifest.publishConfig as { access?: string } | undefined;
   const problems: string[] = [];
@@ -99,20 +100,52 @@ export function licenseProblems(text: string): string[] {
   return problems;
 }
 
-describe('publishProblems and licenseProblems (spec 006 RF-1)', () => {
+// Spec 006, correction after validation (round 1): `npm pack` from a fresh clone has no dist/, so
+// the React package must build it itself, or the tarball ships an entry that does not exist.
+describe('packing React from a fresh clone, with no dist/ yet (rule 2)', { timeout: 120_000 }, () => {
+  it('ships the import and the types its exports point to', () => {
+    // A copy of what git tracks, laid out like the repo so the prepack's ../../scripts paths hold;
+    // the repo's node_modules is reached through a junction, as a fresh clone has it after npm install.
+    const base = mkdtempSync(join(tmpdir(), 'cm-clean-pack-'));
+    try {
+      // Tracked files plus new ones not yet committed but not ignored: what a clone would hold.
+      const tracked = run('git', ['ls-files', '--cached', '--others', '--exclude-standard', 'packages/react', 'scripts', 'styles', 'LICENSE'], { cwd: repo });
+      expect(tracked.code, tracked.output).toBe(0);
+      for (const file of tracked.output.split('\n').map((f) => f.trim()).filter(Boolean)) {
+        mkdirSync(dirname(join(base, file)), { recursive: true });
+        copyFileSync(join(repo, file), join(base, file));
+      }
+      symlinkSync(join(repo, 'node_modules'), join(base, 'node_modules'), 'junction');
+      const dir = join(base, 'packages', 'react');
+      expect(existsSync(join(dir, 'dist'))).toBe(false);
+
+      const { files } = packedFiles(dir);
+      const entry = (manifestOf(dir).exports as Record<string, Record<string, string>>)['.'];
+      for (const path of [entry.import, entry.types]) {
+        expect(files, `${path} is not in the packed files`).toContain(path.replace(/^\.\//, ''));
+      }
+    } finally {
+      // The junction first, so the recursive delete never follows it into the repo.
+      rmSync(join(base, 'node_modules'), { force: true });
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('manifestPublishProblems and licenseProblems (spec 006 RF-1)', () => {
   const good = {
     license: 'MIT',
     repository: { type: 'git', url: 'git+https://github.com/XDextX/component-museum.git', directory: 'packages/react' },
     publishConfig: { access: 'public' },
   };
   it('is quiet for a complete manifest', () => {
-    expect(publishProblems(good, 'react')).toEqual([]);
+    expect(manifestPublishProblems(good, 'react')).toEqual([]);
   });
   it('names each missing or wrong field', () => {
-    expect(publishProblems({ ...good, license: 'ISC' }, 'react')).toEqual(['license is not MIT']);
-    expect(publishProblems({ ...good, repository: { ...good.repository, directory: 'packages/otro' } }, 'react')).toEqual(['repository.directory is not packages/react']);
-    expect(publishProblems({ ...good, publishConfig: undefined }, 'react')).toEqual(['publishConfig.access is not public']);
-    expect(publishProblems({ ...good, repository: undefined }, 'react')).toHaveLength(2);
+    expect(manifestPublishProblems({ ...good, license: 'ISC' }, 'react')).toEqual(['license is not MIT']);
+    expect(manifestPublishProblems({ ...good, repository: { ...good.repository, directory: 'packages/otro' } }, 'react')).toEqual(['repository.directory is not packages/react']);
+    expect(manifestPublishProblems({ ...good, publishConfig: undefined }, 'react')).toEqual(['publishConfig.access is not public']);
+    expect(manifestPublishProblems({ ...good, repository: undefined }, 'react')).toHaveLength(2);
   });
   it('accepts only an MIT LICENSE in the name of XDextX', () => {
     expect(licenseProblems('MIT License\n\nCopyright (c) 2026 XDextX\n')).toEqual([]);
@@ -144,7 +177,7 @@ for (const { framework, dir, peers, keywords, allowed } of packages) {
     });
 
     it('declares license, repository directory and public access, and the root LICENSE is MIT by XDextX (spec 006 RF-1)', () => {
-      expect(publishProblems(manifestOf(dir), framework)).toEqual([]);
+      expect(manifestPublishProblems(manifestOf(dir), framework)).toEqual([]);
       expect(licenseProblems(readFileSync(join(repo, 'LICENSE'), 'utf8'))).toEqual([]);
     });
 

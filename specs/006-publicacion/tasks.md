@@ -70,6 +70,19 @@ su rama `spec/006-publicacion-T-n` y su `node_modules`. Las T-7 y T-8 son de tex
   `contract.test.ts` RF-6 en el checkout principal. Se añade `.claude` a `SKIP`. Inyección: copia de
   `button.contract.json` en `.claude/x/` del worktree: sin el arreglo, RF-6 en rojo
   (`expected [ Array(1) ] to deeply equal []`, 1 de 15); con él, 15 de 15 en verde; copia borrada.
+  Corrección tras validación (ronda 1): el `prepack` de React solo copiaba la hoja y `LICENSE`, y
+  `dist/` está en `.gitignore`: un pack desde un clon recién hecho salía sin `dist/`, y en este
+  checkout llevaba el `dist/` que hubiera, viejo o no. `scripts/build-dist.mjs` compila `src/` con
+  `tsconfig.build.json` en el `prepack`, en una carpeta temporal, y pasa cada archivo a `dist/` por
+  `rename`; borra de `dist/` lo que ya no tiene fuente. `build:packages` de la raíz queda en el
+  `prepack` de los dos paquetes. El test nuevo de `tests/packages.test.ts` copia lo que tendría un
+  clon (`git ls-files --cached --others --exclude-standard`), sin `dist/`, y exige en el tarball
+  el `import` y los `types` de `exports`.
+  Inyección vista: test primero, con el `prepack` de entonces (sin compilar) → rojo, el tarball solo
+  con `LICENSE`, `README.md`, `package.json` y `styles.css`, «./dist/index.js is not in the packed
+  files»; con `build-dist.mjs`, verde. Comprobado además a mano: un `dist/stale.js` desaparece en el
+  `prepack`, y 4 `npm pack --dry-run` a la vez desde `dist/` vacío listan los 4 archivos de `dist/`
+  cada uno, sin carpetas `.dist-build-*` sobrantes.
 
   Va tras la T-1 y la T-2 porque necesita `LICENSE` y `README.md` en el tarball.
 
