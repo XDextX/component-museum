@@ -65,7 +65,7 @@ guarda propio de la 002 (T-6).
 | `tests/lib/api.ts` | sí | Extrae, con la API de TypeScript, las props que declara cada implementación. |
 | `tests/contract.test.ts` | sí | RF-6, RF-7, RF-8, RF-10. |
 | `tests/packages.test.ts` | sí | RF-1, RF-2, RF-4. |
-| `tests/markup.test.ts` | sí | RF-9. |
+| `tests/markup.test.ts` | sí | RF-9 y RF-11; tipa `react-dom/server` con `@types/react-dom`, sin `@ts-expect-error`. |
 | `tests/global-setup.ts`, `tests/consumer.test.ts`, `tests/lib/consumer.ts` | modificado | Instalar los paquetes en los consumidores y crear los dos consumidores con guarda de la 002 (RF-3, RF-5). |
 | `package.json` | modificado | Script `test` que construye los paquetes antes de comprobar, y las dependencias nuevas. |
 | `tsconfig.json` | modificado | Incluye `packages/react/src` y `tests/lib/**`. |
@@ -131,8 +131,8 @@ borra el archivo.
 - **Astro:** el elemento con ese `id` en el `dist/index.html` del consumidor Astro.
 
 Las dos cadenas se cargan en Edge y se extrae el nombre del elemento, la lista de clases ordenada
-y los atributos `aria-*` y `disabled`/`type`. Se normalizan los `data-astro-*` y los ids, y el
-resultado tiene que tener 0 diferencias.
+y los atributos `aria-*`, `data-museum-button` y `disabled`/`type`. Solo se excluyen los
+`data-astro-*` y se normalizan los ids; el resultado tiene que tener 0 diferencias.
 
 **Atributos libres y choques (T-9).** Por framework, Button se renderiza con `data-x="1"`,
 `aria-label="Etiqueta"` e `id="b1"` (React con `renderToStaticMarkup`; Astro en la página del
@@ -143,7 +143,8 @@ así:
 - La clase del consumidor (`className` o `class`) **se suma** a las clases del componente; no las
   sustituye. Lo exige la 003 (RF-8).
 - Los atributos que el componente pone para sí mismo y que no son del contrato (el gancho
-  `data-museum-button` del script de Astro) **ganan** al del consumidor, porque el evento
+  `data-museum-button`, que Astro usa para su script de clic y React emite igual) **ganan** al del
+  consumidor, porque el evento
   depende de ellos. El componente aplica primero los atributos libres y después los suyos.
 
 **Build de los paquetes.** El script `test` pasa a ser
@@ -180,11 +181,15 @@ ejecución empaqueta un `dist/` fresco. `dist/` va a `.gitignore`.
 | **Sin workspaces de npm todavía.** Los tests empaquetan desde la ruta del paquete. | Declararlos ahora: enlazarían los paquetes en el `node_modules` de la raíz, justo lo que la 001 trata de que no se cuele; la galería de la 004 los decidirá. |
 | **Los paquetes se instalan en los consumidores sin tocar existentes**, y hay dos consumidores con guarda nuevos solo para la 002. | Cuatro consumidores nuevos: unos 20–40 s más por ejecución. Reusar los consumidores con guarda de la 001: su paquete de prueba importa un módulo no declarado, y su build falla a propósito. |
 | **RF-9 compara en Edge** el HTML de React en el servidor con el del build de Astro. | La Container API de Astro: experimental y necesita el Vite de Astro dentro de Vitest. |
+| **React emite también `data-museum-button`** (decisión del dueño, 2026-10-21), para que el HTML de los dos Button sea idéntico y RF-9 no tenga que excluirlo. | Excluir `data-museum-button` de la comparación: deja una diferencia de HTML sin probar entre los dos frameworks. |
+| **`@types/react-dom` como dependencia de desarrollo** (decisión del dueño, 2026-10-21). | Dejar el `@ts-expect-error` en el import de `react-dom/server`: oculta cualquier error de tipos real en ese uso. |
 | **El versionado** (regla 6) lo nombra la 004 (su RF-11); aquí los dos paquetes empiezan en `0.1.0`. | Elegir ahora la herramienta: nada se publica hasta cerrar la entrega 2. |
 
 **Dependencias de desarrollo nuevas (regla 9).** Todas en la raíz; ninguna llega a un consumidor.
 - `react` 19.3.1 y `@types/react` 19.3.0 — compilar y comprobar los tipos del Button de React.
 - `react-dom` 19.3.1 — `renderToStaticMarkup` en RF-9.
+- `@types/react-dom` 19.3.0 (pide `@types/react ^19.3.0`, que ya está) — mismo motivo que
+  `react-dom`: que `tsc --noEmit` compruebe el uso de `react-dom/server` en `tests/markup.test.ts`.
 
 **Dependencias de los paquetes.** Solo el framework, como peer (RF-4):
 - `@component-museum/react` → `react ^19.0.0`.
