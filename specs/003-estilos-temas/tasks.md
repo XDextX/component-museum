@@ -74,7 +74,7 @@ archivo.
   la preferencia del sistema en `<html data-theme="light">`, y el test se pone en rojo (en una
   copia de la hoja inyectada en la página, no en la fuente).
 
-- [ ] **T-7 — Consumidores con Tailwind v4, uno por framework, con dos órdenes de import**
+- [x] **T-7 — Consumidores con Tailwind v4, uno por framework, con dos órdenes de import**
   Cubre: base de RF-9 y RF-10
   Archivos: `tests/lib/consumer.ts`, `tests/global-setup.ts`
   Hecho cuando: el `globalSetup` crea y construye, en paralelo con los demás, un consumidor por
@@ -83,6 +83,7 @@ archivo.
   el tiempo de `npm test` se mide antes y después.
   Inyección: quitar el plugin de Tailwind de la configuración deja `px-8` sin generar, y la
   comprobación de la tarea (la regla `.px-8` existe en el CSS construido) se pone en rojo.
+  Inyección vista: con el plugin de Tailwind puesto, quitar `px-8` del Button `#tw-px8` (clase y texto: Tailwind también escanea el texto) deja el build en 0 y pone en rojo los 4 tests `.px-8` de `tests/tailwind.test.ts`; sin el plugin, los 6 en rojo porque el build falla antes; revertido, mismo sha256. `npm test`: +23 s.
 
 - [ ] **T-8 — El consumidor gana: reglas propias y Tailwind en los dos órdenes**
   Cubre: RF-8, RF-9, RF-10

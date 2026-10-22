@@ -23,6 +23,8 @@ export type SharedConsumers = {
   packageGuarded: Record<Framework, string>;
   /** Starters as scaffolded, not installed: the reference for the untouched config. */
   starters: Record<Framework, string>;
+  /** Spec 003 T-7: consumers with Tailwind v4 and two pages (tailwindPages), built once and read-only. */
+  tailwind: Record<Framework, string>;
   /** Parent of the guarded consumers, where RF-5 puts museum-undeclared in node_modules. */
   guardParent: string;
   /** The test package plus an import of museum-undeclared it does not declare. */
@@ -35,7 +37,7 @@ declare module 'vitest' {
     /** The repo before anything ran (RF-6). */
     treeBefore: Snapshot;
     /** Spec 002 RF-3: each consumer that installs the framework packages, built once here. */
-    builds: Record<'plain' | 'packageGuarded', Record<Framework, RunResult>>;
+    builds: Record<'plain' | 'packageGuarded' | 'tailwind', Record<Framework, RunResult>>;
     /** Spec 002 RF-5: each guarded 002 consumer's type check, clean and with variant="nope". */
     typeChecks: Record<Framework, { clean: RunResult; nope: RunResult }>;
   }
@@ -93,8 +95,9 @@ export default async function setup(project: TestProject): Promise<() => void> {
   const guardRunId = `${runId}-guard`;
   const guardParent = join(base, `cm-${guardRunId}`);
   const packageRunId = `${runId}-pkg`;
+  const tailwindRunId = `${runId}-tw`;
   const starterParent = join(base, `cm-${runId}-starter`);
-  const created = [join(base, `cm-${runId}`), guardParent, join(base, `cm-${packageRunId}`), starterParent];
+  const created = [join(base, `cm-${runId}`), guardParent, join(base, `cm-${packageRunId}`), join(base, `cm-${tailwindRunId}`), starterParent];
   const teardown = () => {
     created.forEach((dir) => rmSync(dir, { recursive: true, force: true }));
     releaseLock();
@@ -114,22 +117,26 @@ export default async function setup(project: TestProject): Promise<() => void> {
     mkdirSync(leftoverDir, { recursive: true });
     writeFileSync(join(leftoverDir, 'leftover.txt'), 'from an earlier run');
 
-    const [plainReact, plainAstro, guardedReact, guardedAstro, packageReact, packageAstro] = await Promise.all([
+    const [plainReact, plainAstro, guardedReact, guardedAstro, packageReact, packageAstro, tailwindReact, tailwindAstro] = await Promise.all([
       createConsumer(base, runId, 'react', testPackage, { starter: starters.react, packages: [frameworkPackage('react')] }),
       createConsumer(base, runId, 'astro', testPackage, { starter: starters.astro, packages: [frameworkPackage('astro')] }),
       createConsumer(base, guardRunId, 'react', undeclaringPackage, { starter: starters.react, guardResolution: true }),
       createConsumer(base, guardRunId, 'astro', undeclaringPackage, { starter: starters.astro, guardResolution: true }),
       createConsumer(base, packageRunId, 'react', testPackage, { starter: starters.react, guardResolution: true, packages: [frameworkPackage('react')] }),
       createConsumer(base, packageRunId, 'astro', testPackage, { starter: starters.astro, guardResolution: true, packages: [frameworkPackage('astro')] }),
+      // Spec 003 T-7: Tailwind v4 consumers (no guard), two pages each.
+      createConsumer(base, tailwindRunId, 'react', testPackage, { starter: starters.react, packages: [frameworkPackage('react')], tailwind: true }),
+      createConsumer(base, tailwindRunId, 'astro', testPackage, { starter: starters.astro, packages: [frameworkPackage('astro')], tailwind: true }),
     ]);
 
     // Built here, not in a test: the shared consumers stay read-only for every test file.
-    const [buildPlainReact, buildPlainAstro, buildPackageReact, buildPackageAstro] = await Promise.all(
-      [plainReact, plainAstro, packageReact, packageAstro].map(buildConsumerAsync),
+    const [buildPlainReact, buildPlainAstro, buildPackageReact, buildPackageAstro, buildTailwindReact, buildTailwindAstro] = await Promise.all(
+      [plainReact, plainAstro, packageReact, packageAstro, tailwindReact, tailwindAstro].map(buildConsumerAsync),
     );
     project.provide('builds', {
       plain: { react: buildPlainReact, astro: buildPlainAstro },
       packageGuarded: { react: buildPackageReact, astro: buildPackageAstro },
+      tailwind: { react: buildTailwindReact, astro: buildTailwindAstro },
     });
 
     // 002 RF-5, after the builds: a wrong variant must break each guarded consumer's own type check.
@@ -147,6 +154,7 @@ export default async function setup(project: TestProject): Promise<() => void> {
       guarded: { react: guardedReact, astro: guardedAstro },
       packageGuarded: { react: packageReact, astro: packageAstro },
       starters,
+      tailwind: { react: tailwindReact, astro: tailwindAstro },
       guardParent,
       undeclaringPackage,
     });
