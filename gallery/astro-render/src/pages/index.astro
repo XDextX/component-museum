@@ -1,0 +1,25 @@
+---
+// Every Astro case of the contract, rendered with the real component and extracted by
+// gallery/scripts/extract-astro.mjs (spec 004, RF-5 and RF-6).
+import { Button } from '@component-museum/astro';
+import contract from '../../../../contracts/button.contract.json';
+import { astroCases, type Contract } from '../../../lib/contract-args.ts';
+
+const cases = astroCases(contract as Contract);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Button cases</title>
+  </head>
+  <body>
+    {
+      cases.map(({ id, props: { children, ...props } }) => (
+        <div id={`case-${id}`}>
+          <Button {...props}>{children}</Button>
+        </div>
+      ))
+    }
+  </body>
+</html>

@@ -35,7 +35,7 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   Inyección: que `usageSnippet` omita el import de la hoja pone en rojo su test.
   Inyección vista: quitar el import de la hoja de `usageSnippet` dejó en rojo "always writes both imports and omits default props" (6 verdes, 1 rojo); restaurado con el mismo sha256.
 
-- [ ] **T-3 — Prerenderizar Button en Astro**
+- [x] **T-3 — Prerenderizar Button en Astro**
   Cubre: RF-5, RF-6 (el contenido; el test es la T-7)
   Archivos: `gallery/astro-render/` (`astro.config.mjs`, `src/pages/index.astro`,
   `tsconfig.json`; sin `package.json` propio: usa el `astro` de la raíz con `astro build --root`),
@@ -44,6 +44,12 @@ mergea las ramas en `spec/004-historia-button`. Los archivos compartidos los toc
   con un caso por variante, normal y `disabled`, cada uno con su HTML real y su código de uso.
   Inyección: quitar `disabled` de `astroCases` deja el JSON sin esos casos, y el recuento de la
   tarea (variantes × 2) se pone en rojo.
+  Inyección vista: `astroCases` con `[false]` en lugar de `[false, true]` → `extract-astro.mjs` en
+  rojo («expected 6 Astro cases (each variant, normal and disabled), got 3»), exit 1; el recuento
+  sale del contrato, no de `astroCases`. Restaurado, idéntico según `cmp`, y de nuevo 6 casos.
+  Riesgo del plan comprobado: `astro build` compila `@component-museum/astro` enlazado por las
+  workspaces sin `ssr.noExternal`. Cada caso guarda solo el `<button>`: Astro emite el script del
+  clic una vez por página, junto al primer caso.
 
 - [ ] **T-4 — Historia React de Button con sus controles**
   Cubre: RF-3, RF-9 (junto al control)
