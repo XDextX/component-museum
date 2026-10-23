@@ -86,7 +86,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   y los idiomas; quitar el `<script>` de un caso Astro del HTML extraído no cambia el JSON de
   Button.
 
-- [ ] **T-4 — Contrato e Input de React, con su historia y su documentación**
+- [x] **T-4 — Contrato e Input de React, con su historia y su documentación**
   Cubre: RF-1, RF-2 a RF-6 (marcado), RF-10 (React y docs)
   Archivos: `contracts/input.contract.json` (exacto, plan, bloque 4),
   `packages/react/src/Input/Input.tsx`, `packages/react/src/index.ts`,
@@ -106,6 +106,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
     antes del commit.
   Inyección: quitar `htmlFor` de la etiqueta pone en rojo el caso de RF-2; poner la ayuda antes
   del error en `aria-describedby` pone en rojo el caso de los dos.
+  Visto en rojo y restaurado: sin `htmlFor` en la etiqueta fallan 8 de los 10 tests de marcado (todos los que la pintan, RF-2 entre ellos); con la ayuda antes del error en `aria-describedby`, falla el caso de los dos (1 test). Los tres commits los hace la sesión git.
 
   Va en la ola 2 junto a la T-3: no comparten archivos. Las dos necesitan la T-1.
 

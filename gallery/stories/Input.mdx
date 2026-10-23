@@ -1,0 +1,183 @@
+import { Canvas, Controls, Meta, Source } from '@storybook/addon-docs/blocks';
+import * as ReactStories from './Input.react.stories.tsx';
+import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
+
+<Meta title="Input/Documentation" />
+
+# Input
+
+<LanguageSwitch />
+
+<Canvas of={ReactStories.Default} sourceState="shown" />
+
+<Controls of={ReactStories.Default} />
+
+<Lang lang="es">
+
+## Uso
+
+Input es el campo de una línea con su etiqueta, su ayuda y su error ya cableados: no hay que escribir ningún `id` ni atributo ARIA. `label` es obligatoria y siempre visible; `hint` (ayuda) y `error` son textos opcionales; `type` admite `text`, `email`, `password`, `search`, `tel`, `url` y `number`; `size` es `sm`, `md` o `lg`; `disabled` y `required` son estados. Se instala desde el paquete de tu framework y se importa siempre por su nombre de paquete, junto con su hoja de estilos.
+
+En React:
+
+```tsx
+import { Input } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Input label="Email" type="email" hint="Nunca lo compartimos" required />
+```
+
+En Astro:
+
+```astro
+---
+import { Input } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Input label="Email" type="email" hint="Nunca lo compartimos" required />
+```
+
+Solo se escriben las props que no tienen su valor por defecto (`text`, `md`, sin ayuda, sin error, sin `disabled` ni `required`). Cualquier otro atributo HTML (`name`, `value`, `placeholder`, `autocomplete`…) llega al `<input>`. Los eventos `input` y `change` son los nativos del navegador. El componente muestra el `error` que recibe; quién valida es tu código.
+
+## Construcción
+
+Input son dos implementaciones de un mismo contrato (`contracts/input.contract.json`) que comparten una sola hoja de estilos. Las dos emiten el mismo marcado:
+
+- **Etiqueta:** un `<label for>` que apunta al `id` del control; con `required`, añade un `*` oculto a los lectores de pantalla (el `required` nativo ya dice «obligatorio»).
+- **Control:** un `<input>` con las clases `museum-input`, `museum-input--<size>` y la clase que pases, y `data-museum-input`. Si pasas tu propio `id`, ese es el del control.
+- **Ayuda y error:** dos `<p>` bajo el control, que solo existen si hay texto. `aria-describedby` los enlaza, el error primero y después la ayuda, y detrás los `id` que tú pases. Con error, el control lleva `aria-invalid="true"`; sin error, no lleva ni ese atributo ni el nodo.
+- **`id`:** en React, `useId()`; en Astro, un contador, sin `Math.random()`, así que dos campos con la misma etiqueta no chocan y el marcado se repite build a build.
+- **CSS:** vive en la capa `components.museum`. Cada color, tamaño y fuente sale de una variable `--museum-*`. A igual `size`, Input y Button miden lo mismo de alto.
+- **Temas:** el claro es el de por defecto; el oscuro llega con `prefers-color-scheme` o con `data-theme="dark"`. El error no depende solo del color: su texto siempre está.
+
+## Cómo alterarlo
+
+Como el CSS del paquete está en una capa, **tu CSS siempre gana**: no hace falta subir la especificidad ni usar `!important`.
+
+**1. Tokens.** Redefine una variable `--museum-*` en un contenedor o en `:root`:
+
+- Campo: `--museum-control-bg`, `--museum-control-fg`, `--museum-control-border`, `--museum-control-placeholder`.
+- Texto: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (que también es el borde en error).
+- Forma y tamaño: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity` y la escala `--museum-space-*`.
+- Foco: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-control-border: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+**2. Una regla sobre la clase.** Pasa tu propia clase (`className` en React, `class` en Astro): va al `<input>`, se añade a las del componente y, al estar fuera de la capa, gana sin más. Esta historia define y muestra `my-input`, que es también la opción del control de clase:
+
+<Source language="css" code={ReactStories.exampleInputClasses['my-input']} />
+
+En React:
+
+```tsx
+import { Input } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Input label="Email" className="my-input" />
+```
+
+En Astro:
+
+```astro
+---
+import { Input } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Input label="Email" class="my-input" />
+```
+
+**3. Utilidades.** Si tu proyecto usa Tailwind, sus utilidades también ganan a la capa del paquete. Se usan igual, como clase de tu proyecto. El envoltorio del campo (`museum-field`) no se personaliza con una prop: se alcanza con los tokens.
+
+</Lang>
+
+<Lang lang="en">
+
+## Usage
+
+Input is the single-line field with its label, hint and error already wired: you never write an `id` or an ARIA attribute. `label` is required and always visible; `hint` and `error` are optional texts; `type` accepts `text`, `email`, `password`, `search`, `tel`, `url` and `number`; `size` is `sm`, `md` or `lg`; `disabled` and `required` are states. Install it from your framework's package and always import it by package name, together with its stylesheet.
+
+In React:
+
+```tsx
+import { Input } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Input label="Email" type="email" hint="We never share it" required />
+```
+
+In Astro:
+
+```astro
+---
+import { Input } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Input label="Email" type="email" hint="We never share it" required />
+```
+
+Only write the props that are off their default (`text`, `md`, no hint, no error, not `disabled` or `required`). Any other HTML attribute (`name`, `value`, `placeholder`, `autocomplete`…) reaches the `<input>`. The `input` and `change` events are the browser's own. The component shows the `error` it receives; validating is your code's job.
+
+## How it is built
+
+Input is two implementations of one contract (`contracts/input.contract.json`) sharing a single stylesheet. Both emit the same markup:
+
+- **Label:** a `<label for>` pointing at the control's `id`; with `required`, it adds a `*` hidden from screen readers (the native `required` already says "required").
+- **Control:** an `<input>` with the classes `museum-input`, `museum-input--<size>` and the class you pass, plus `data-museum-input`. If you pass your own `id`, that is the control's.
+- **Hint and error:** two `<p>` below the control, which exist only when there is text. `aria-describedby` links them, error first and then hint, followed by any `id` you pass. With an error the control carries `aria-invalid="true"`; without one, neither that attribute nor the node exists.
+- **`id`:** in React, `useId()`; in Astro, a counter, never `Math.random()`, so two fields with the same label never clash and the markup repeats build to build.
+- **CSS:** it lives in the `components.museum` layer. Every color, size and font comes from a `--museum-*` variable. At the same `size`, Input and Button are equally tall.
+- **Themes:** light is the default; dark arrives through `prefers-color-scheme` or `data-theme="dark"`. The error does not rely on color alone: its text is always there.
+
+## How to alter it
+
+Because the package CSS sits in a layer, **your CSS always wins**: no need to raise specificity or use `!important`.
+
+**1. Tokens.** Redefine a `--museum-*` variable on a container or on `:root`:
+
+- Field: `--museum-control-bg`, `--museum-control-fg`, `--museum-control-border`, `--museum-control-placeholder`.
+- Text: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (also the border in error).
+- Shape and size: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity` and the `--museum-space-*` scale.
+- Focus: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-control-border: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+**2. A rule on the class.** Pass your own class (`className` in React, `class` in Astro): it goes to the `<input>`, is added to the component's and, being outside the layer, wins outright. This story defines and shows `my-input`, which is also the class control's option:
+
+<Source language="css" code={ReactStories.exampleInputClasses['my-input']} />
+
+In React:
+
+```tsx
+import { Input } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Input label="Email" className="my-input" />
+```
+
+In Astro:
+
+```astro
+---
+import { Input } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Input label="Email" class="my-input" />
+```
+
+**3. Utilities.** If your project uses Tailwind, its utilities also beat the package layer. Use them the same way, as a class from your project. The field wrapper (`museum-field`) has no prop of its own: reach it through the tokens.
+
+</Lang>
