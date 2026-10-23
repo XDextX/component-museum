@@ -1,10 +1,11 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { usageSnippet, type Contract } from '../gallery/lib/contract-args.ts';
+import { exampleText, usageSnippet, type Contract } from '../gallery/lib/contract-args.ts';
 import { exampleClasses } from '../gallery/lib/example-classes.ts';
 import { initialLanguage } from '../gallery/lib/Lang.tsx';
 import { loadContract } from './lib/contract.ts';
+import { docLanguages, docsFile, docsProblems, exportedContracts, readText, storyFile } from './lib/gallery-pages.ts';
 
 const repo = resolve(import.meta.dirname, '..');
 const gallery = join(repo, 'gallery');
@@ -13,6 +14,10 @@ const read = (p: string) => readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 const mdx = read(join(gallery, 'stories/Button.mdx'));
 const reactStory = read(join(gallery, 'stories/Button.react.stories.tsx'));
 
+// Every component a package exports with a contract (spec 009, RF-10); Button keeps its own exact checks.
+const components = exportedContracts(repo);
+const mdxOf = (name: string) => readText(repo, docsFile(name));
+
 // The sheet's own classes, and the example classes the gallery defines once and shows (RF-8, RF-9).
 const sheetClasses = new Set(read(join(repo, 'styles/museum.css')).match(/\.museum-[\w-]+/g)!.map((c) => c.slice(1)));
 
@@ -20,20 +25,15 @@ type Block = { lang: string; code: string };
 const blocks = (text: string): Block[] =>
   [...text.matchAll(/```(\w+)\n([\s\S]*?)```/g)].map((m) => ({ lang: m[1], code: m[2] }));
 
-/** The body of each `<Lang lang="…">` block of the MDX (spec 005, T-2), keyed by language. */
-function languages(text: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const [, lang, body] of text.matchAll(/^<Lang lang="(es|en)">\n([\s\S]*?)\n<\/Lang>$/gm)) out[lang] = body;
-  return out;
-}
+const languages = docLanguages;
 
 const SECTIONS = {
   es: ['Uso', 'Construcción', 'Cómo alterarlo'],
   en: ['Usage', 'How it is built', 'How to alter it'],
 };
 
-/** Returns every violation of RF-7 and RF-8 in one usage snippet (tsx or astro). */
-function snippetProblems(lang: 'tsx' | 'astro', code: string): string[] {
+/** Returns every violation of RF-7 and RF-8 in one usage snippet (tsx or astro) of the component `c`. */
+function snippetProblems(lang: 'tsx' | 'astro', code: string, c: Contract = contract): string[] {
   const fw = lang === 'tsx' ? 'react' : 'astro';
   const problems: string[] = [];
   const imports = [...code.matchAll(/^import .*? from '([^']+)';$/gm)].map((m) => m[1]);
@@ -51,21 +51,34 @@ function snippetProblems(lang: 'tsx' | 'astro', code: string): string[] {
     if (/^import\b/m.test(outside)) problems.push('an import outside the frontmatter');
   }
   const classAttr = lang === 'tsx' ? 'className' : 'class';
-  for (const [, attrs] of code.matchAll(/<Button\b([^>]*)>/g)) {
+  for (const [, attrs] of code.matchAll(new RegExp(`<${c.name}\\b([^>]*)>`, 'g'))) {
     for (const [, name, value] of attrs.matchAll(/([\w:-]+)(?:="([^"]*)")?/g)) {
       if (name === classAttr) {
         for (const cls of value.split(/\s+/).filter(Boolean)) {
           if (!sheetClasses.has(cls) && !(cls in exampleClasses)) problems.push(`class ${cls} is neither museum-* nor an example class`);
         }
-      } else if (!(name in contract.props)) problems.push(`prop ${name} is not in the contract`);
+      } else if (!(name in c.props)) problems.push(`prop ${name} is not in the contract`);
     }
   }
   return problems;
 }
 
+/** Every prop off its default at once: the fullest state a usage snippet can show for a contract. */
+function fullArgs(c: Contract): Record<string, unknown> {
+  const args: Record<string, unknown> = {};
+  for (const [name, spec] of Object.entries(c.props)) {
+    args[name] = spec.type === 'enum' ? spec.values.find((v) => v !== spec.default) : spec.type === 'boolean' ? true : exampleText(name);
+  }
+  if (c.content) args.children = 'Hi';
+  if (c.classProp) args.className = Object.keys(exampleClasses)[0];
+  return args;
+}
+
 const mdxSnippets = blocks(mdx).filter((b) => b.lang === 'tsx' || b.lang === 'astro');
 const allArgs = { variant: 'outline', size: 'lg', type: 'submit', disabled: true, children: 'Hi', className: 'my-button' };
-const STATES = (['react', 'astro'] as const).flatMap((fw) => [{}, allArgs].map((args) => ({ fw, args })));
+const statesOf = (c: Contract, full: Record<string, unknown>) =>
+  (['react', 'astro'] as const).flatMap((fw) => [{}, full].map((args) => ({ fw, args })));
+const STATES = statesOf(contract, allArgs);
 
 describe('documentation in both languages (spec 004, RF-2)', () => {
   const langs = languages(mdx);
@@ -82,6 +95,23 @@ describe('documentation in both languages (spec 004, RF-2)', () => {
     expect(mdx).toMatch(/^<LanguageSwitch \/>$/m);
     const outside = mdx.replace(/^<Lang lang="(es|en)">\n[\s\S]*?\n<\/Lang>$/gm, '');
     expect([...outside.matchAll(/^## (.+)$/gm)].map((m) => m[1])).toEqual([]);
+  });
+});
+
+// Spec 009, RF-10: the same rules for every exported component, not only Button.
+describe.each(components.map((c) => [c.name] as const))('%s has a docs page in both languages', (name) => {
+  it('has both languages with sections, the switch, and nothing outside a <Lang>', () => {
+    expect(docsProblems(name, mdxOf(name))).toEqual([]);
+  });
+});
+
+describe('the docs page check bites (spec 009, RF-10)', () => {
+  it('reports a component with no docs page, no English block, no switch or a stray section', () => {
+    expect(docsProblems('Second', undefined)).toEqual([`Second has no docs page ${docsFile('Second')}`]);
+    const es = '<Lang lang="es">\n## Uso\n\nTexto\n</Lang>';
+    expect(docsProblems('Second', `<LanguageSwitch />\n\n${es}`)).toEqual(['Second docs: no <Lang lang="en"> block']);
+    expect(docsProblems('Second', `${es}\n\n<Lang lang="en">\n## Usage\n\nText\n</Lang>`)).toEqual(['Second docs: no language switch']);
+    expect(docsProblems('Second', `<LanguageSwitch />\n\n${es}\n\n<Lang lang="en">\n## Usage\n\nText\n</Lang>\n\n## Loose`)).toEqual(['Second docs: a section outside a <Lang>']);
   });
 });
 
@@ -126,10 +156,36 @@ describe('usage code (RF-7, RF-8)', () => {
   });
 });
 
+// Spec 009, RF-10: every other exported component's snippets, MDX and generated, under the same rules.
+describe.each(components.filter((c) => c.name !== 'Button').map((c) => [c.name, c] as const))('usage code of %s (RF-7, RF-8)', (name, c) => {
+  const snippets = blocks(mdxOf(name) ?? '').filter((b) => b.lang === 'tsx' || b.lang === 'astro');
+
+  it('has MDX snippets in both frameworks', () => {
+    expect(snippets.map((b) => b.lang).sort()).toEqual(expect.arrayContaining(['astro', 'tsx']));
+  });
+
+  it('has clean MDX snippets', () => {
+    expect(snippets.flatMap((b) => snippetProblems(b.lang as 'tsx' | 'astro', b.code, c))).toEqual([]);
+  });
+
+  it('has clean generated snippets', () => {
+    for (const s of statesOf(c, fullArgs(c))) {
+      expect(snippetProblems(s.fw === 'react' ? 'tsx' : 'astro', usageSnippet(s.fw, s.args, c), c), JSON.stringify(s)).toEqual([]);
+    }
+  });
+});
+
 describe('example class CSS in every place (RF-9)', () => {
   const langs = languages(mdx);
   const used = new Set(
-    [...mdxSnippets.map((b) => b.code), ...STATES.map((s) => usageSnippet(s.fw, s.args, contract))]
+    [
+      ...mdxSnippets.map((b) => b.code),
+      ...STATES.map((s) => usageSnippet(s.fw, s.args, contract)),
+      ...components.filter((c) => c.name !== 'Button').flatMap((c) => [
+        ...blocks(mdxOf(c.name) ?? '').map((b) => b.code),
+        ...statesOf(c, fullArgs(c)).map((s) => usageSnippet(s.fw, s.args, c)),
+      ]),
+    ]
       .flatMap((c) => [...c.matchAll(/class(?:Name)?="([^"]*)"/g)].flatMap((m) => m[1].split(/\s+/)))
       .filter((c) => c && !sheetClasses.has(c)),
   );
@@ -144,6 +200,15 @@ describe('example class CSS in every place (RF-9)', () => {
     for (const [file, text] of [['story', reactStory], ['MDX', mdx]] as const) {
       expect(text, `${file} imports it`).toMatch(/import \{ exampleClasses \} from '\.\.\/lib\/example-classes\.ts';/);
       for (const name of Object.keys(exampleClasses)) expect(text, `${file} has its own .${name} rule`).not.toContain(`.${name} {`);
+    }
+  });
+
+  // Every component with a class prop takes its class control from the same source and keeps no copy.
+  it.each(components.filter((c) => c.name !== 'Button').map((c) => [c.name, c] as const))('the %s story and docs keep no copy of the example CSS', (name, c) => {
+    const story = readText(repo, storyFile(name, 'react')) ?? '';
+    if (c.classProp) expect(story, 'the story imports it').toMatch(/import \{ exampleClasses \} from '\.\.\/lib\/example-classes\.ts';/);
+    for (const text of [story, mdxOf(name) ?? '']) {
+      for (const cls of Object.keys(exampleClasses)) expect(text, `.${cls} rule`).not.toContain(`.${cls} {`);
     }
   });
 

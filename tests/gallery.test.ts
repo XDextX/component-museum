@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { describe, expect, inject, it } from 'vitest';
-import { argTypesFromContract, type ArgTypes, type Contract } from '../gallery/lib/contract-args.ts';
+import { argTypesFromContract, astroCases, usageSnippet, type ArgTypes, type Contract } from '../gallery/lib/contract-args.ts';
 import { loadContract } from './lib/contract.ts';
+import { declaredTitles, exportedContracts, packageExports, slug, storyFile, storyProblems } from './lib/gallery-pages.ts';
 
 const repo = resolve(import.meta.dirname, '..');
-const read = (path: string) => readFileSync(resolve(repo, path), 'utf8');
 const contract: Contract = loadContract(resolve(repo, 'contracts/button.contract.json'));
 const variants = (c: Contract) => (c.props.variant as { values: string[] }).values;
 const grow = (c: Contract) => {
@@ -16,22 +16,9 @@ const grow = (c: Contract) => {
 
 type AstroCase = { id: string; props: Record<string, unknown>; html: string; usage: string };
 
-/** Value exports of an entry file: `export { A, default as B }` yes, `export type { ... }` no. */
-function entryExports(source: string): string[] {
-  const code = source.replace(/\/\/.*$/gm, '');
-  return [...code.matchAll(/export\s*\{([^}]*)\}/g)].flatMap(([, names]) =>
-    names.split(',').map((n) => n.trim().split(/\s+as\s+/).pop()!).filter(Boolean),
-  );
-}
-
-/** RF-1: one message per export lacking its story in a framework, titled `<Export>/<Framework>`. */
-function storyProblems(exports: Record<string, string[]>, titles: string[]): string[] {
-  return Object.entries(exports).flatMap(([framework, names]) =>
-    names
-      .filter((name) => !titles.includes(`${name}/${framework}`))
-      .map((name) => `${name} has no ${framework} story titled ${name}/${framework}`),
-  );
-}
+// Every component a package exports with a contract: the rules below hold for each (spec 009, RF-10).
+const components = exportedContracts(repo);
+const exports = packageExports(repo);
 
 /** RF-3: differences between the story's controls and what the contract asks for. */
 function argTypeProblems(c: Contract, argTypes: ArgTypes, exampleClasses: string[]): string[] {
@@ -42,6 +29,8 @@ function argTypeProblems(c: Contract, argTypes: ArgTypes, exampleClasses: string
     else if (spec.type === 'enum') {
       if (got.control.type !== 'select') out.push(`${name} is not a closed list`);
       if (JSON.stringify(got.options) !== JSON.stringify(spec.values)) out.push(`${name} options differ from the contract`);
+    } else if (spec.type === 'string') {
+      if (got.control.type !== 'text') out.push(`${name} is not a text field`);
     } else if (got.control.type !== 'boolean') out.push(`${name} is not a switch`);
   }
   if (c.content && !argTypes.children) out.push('missing control children');
@@ -55,7 +44,7 @@ function argTypeProblems(c: Contract, argTypes: ArgTypes, exampleClasses: string
   return out;
 }
 
-/** RF-5 and RF-6: one message per missing case, wrong HTML, empty accessible name or foreign usage code. */
+/** RF-5 and RF-6 for Button: one message per missing case, wrong HTML, empty accessible name or foreign usage code. */
 function astroProblems(c: Contract, cases: AstroCase[]): string[] {
   const out: string[] = [];
   for (const v of variants(c)) {
@@ -82,14 +71,28 @@ function astroProblems(c: Contract, cases: AstroCase[]): string[] {
   return out;
 }
 
+/** RF-5 and RF-6 for any contract: every `astroCases` state, with the component's class, a name, its own usage code and no script. */
+function astroCaseProblems(c: Contract, cases: AstroCase[]): string[] {
+  const out: string[] = [];
+  const wanted = astroCases(c);
+  for (const { id, props } of wanted) {
+    const found = cases.find((x) => x.id === id);
+    if (!found) {
+      out.push(`${id}: no Astro case`);
+      continue;
+    }
+    if (!found.html.includes(`museum-${slug(c.name)}`)) out.push(`${id}: html lacks museum-${slug(c.name)}`);
+    if (/<script/i.test(found.html)) out.push(`${id}: html carries a <script>`);
+    if (!found.html.replace(/<[^>]*>/g, '').trim() && !/\saria-label="[^"]+"/.test(found.html)) out.push(`${id}: no accessible name`);
+    if (found.usage !== usageSnippet('astro', props, c)) out.push(`${id}: usage code is not the contract's usage of those props`);
+  }
+  for (const { id } of cases) if (cases.filter((x) => x.id === id).length > 1) out.push(`${id}: duplicated`);
+  if (cases.length !== wanted.length) out.push(`expected ${wanted.length} cases, got ${cases.length}`);
+  return out;
+}
+
 describe('RF-1: a story per framework for every exported component', () => {
-  const exports = {
-    React: entryExports(read('packages/react/src/index.ts')),
-    Astro: entryExports(read('packages/astro/index.js')),
-  };
-  const titles = ['react', 'astro'].flatMap((fw) =>
-    [...read(`gallery/stories/Button.${fw}.stories.tsx`).matchAll(/title:\s*'([^']+)'/g)].map((m) => m[1]),
-  );
+  const titles = components.flatMap((c) => declaredTitles(repo, c.name));
 
   it('finds the exports', () => {
     expect(exports.React).toContain('Button');
@@ -112,18 +115,25 @@ describe('RF-1: a story per framework for every exported component', () => {
     expect(storyProblems({ React: ['Button', 'Card'], Astro: ['Button'] }, ['Button/React', 'Button/Astro'])).toEqual(['Card has no React story titled Card/React']);
     expect(storyProblems({ React: ['Button'], Astro: ['Button'] }, ['Button/React'])).toEqual(['Button has no Astro story titled Button/Astro']);
   });
+
+  it('bites: a second exported component without a story is reported in both frameworks', () => {
+    const second = { React: [...exports.React, 'Second'], Astro: [...exports.Astro, 'Second'] };
+    expect(storyProblems(second, titles)).toEqual(['Second has no React story titled Second/React', 'Second has no Astro story titled Second/Astro']);
+  });
 });
 
-describe('RF-3: the React story has a control per contract prop', () => {
+describe.each(components.map((c) => [c.name, c] as const))('RF-3: the %s React story has a control per contract prop', (name, c) => {
   it('matches the contract', async () => {
     // A variable specifier keeps the root tsc out of gallery/, which has its own build (Storybook).
-    const story = '../gallery/stories/Button.react.stories.tsx';
+    const story = `../${storyFile(name, 'react')}`;
     const { default: meta } = (await import(/* @vite-ignore */ story)) as { default: { argTypes: ArgTypes } };
     const { argTypes } = meta;
-    expect(argTypeProblems(contract, argTypes, argTypes.className?.options?.slice(1) ?? [])).toEqual([]);
-    expect(argTypes.className.options).toEqual(['', 'my-button']);
+    expect(argTypeProblems(c, argTypes, argTypes.className?.options?.slice(1) ?? [])).toEqual([]);
+    if (name === 'Button') expect(argTypes.className.options).toEqual(['', 'my-button']);
   });
+});
 
+describe('RF-3: the controls check bites', () => {
   const good = argTypesFromContract(contract, { 'my-button': 'x' });
   it('bites: a variant list short of one value, a text variant, no class control or a foreign class', () => {
     const short = { ...good, variant: { control: { type: 'select' as const }, options: variants(contract).slice(1) } };
@@ -138,26 +148,52 @@ describe('RF-3: the React story has a control per contract prop', () => {
   it('bites: a contract variant the controls do not know', () => {
     expect(argTypeProblems(grow(contract), good, ['my-button'])).toEqual(['variant options differ from the contract']);
   });
+
+  it('bites: a text prop whose control is not a text field', () => {
+    const withText: Contract = { ...contract, props: { ...contract.props, label: { type: 'string', required: true } } };
+    const switchy = { ...argTypesFromContract(withText, { 'my-button': 'x' }), label: { control: { type: 'boolean' as const } } };
+    expect(argTypeProblems(withText, switchy, ['my-button'])).toEqual(['label is not a text field']);
+  });
 });
 
-describe('RF-5 and RF-6: every variant is prerendered with its usage code', () => {
-  const cases = JSON.parse(readFileSync(inject('gallery').astroJson, 'utf8')) as AstroCase[];
+describe('RF-5 and RF-6: every state of every Astro component is prerendered with its usage code', () => {
+  const casesOf = (name: string) =>
+    JSON.parse(readFileSync(join(dirname(inject('gallery').astroJson), `astro-${slug(name)}.json`), 'utf8')) as AstroCase[];
+  const astroComponents = components.filter((c) => exports.Astro.includes(c.name));
 
-  it('has every case, with museum-button--<variant>, an accessible name and its own usage code', () => {
-    expect(astroProblems(contract, cases)).toEqual([]);
-    expect(cases).toHaveLength(variants(contract).length * 2);
+  it.each(astroComponents.map((c) => [c.name, c] as const))('%s has every case, with museum-%s, a name and its own usage code', (name, c) => {
+    expect(astroCaseProblems(c, casesOf(name))).toEqual([]);
   });
 
-  it('bites: a variant new to the contract without its Astro case is reported', () => {
-    expect(astroProblems(grow(contract), cases)).toEqual(['ghost: no Astro case', 'ghost-disabled: no Astro case']);
-  });
-
-  it('bites: wrong class, empty name, missing usage code, or usage code naming another variant', () => {
+  it('bites: a case with a <script>, a missing case or foreign usage code is reported', () => {
+    const cases = casesOf('Button');
     const first = cases[0];
     const swap = (patch: Partial<AstroCase>) => cases.map((x) => (x === first ? { ...x, ...patch } : x));
-    expect(astroProblems(contract, swap({ html: first.html.replaceAll('museum-button--', 'x-') }))).not.toEqual([]);
-    expect(astroProblems(contract, swap({ html: '<button class="museum-button--primary"></button>' }))).toEqual([`${first.id}: no accessible name`]);
-    expect(astroProblems(contract, swap({ usage: '' }))).toEqual([`${first.id}: no usage code`]);
-    expect(astroProblems(contract, swap({ usage: first.usage.replace('<Button', '<Button variant="outline"') }))).toEqual([`${first.id}: usage code names variant outline`]);
+    expect(astroCaseProblems(contract, swap({ html: `${first.html}<script>1</script>` }))).toEqual([`${first.id}: html carries a <script>`]);
+    expect(astroCaseProblems(contract, cases.slice(1))).toEqual([`${first.id}: no Astro case`, `expected ${cases.length} cases, got ${cases.length - 1}`]);
+    expect(astroCaseProblems(contract, swap({ usage: 'x' }))).toEqual([`${first.id}: usage code is not the contract's usage of those props`]);
+  });
+
+  // Button's own checks stay as they were: the exact <button>, its variant class and the six cases.
+  describe('Button', () => {
+    const cases = casesOf('Button');
+
+    it('has every case, with museum-button--<variant>, an accessible name and its own usage code', () => {
+      expect(astroProblems(contract, cases)).toEqual([]);
+      expect(cases).toHaveLength(variants(contract).length * 2);
+    });
+
+    it('bites: a variant new to the contract without its Astro case is reported', () => {
+      expect(astroProblems(grow(contract), cases)).toEqual(['ghost: no Astro case', 'ghost-disabled: no Astro case']);
+    });
+
+    it('bites: wrong class, empty name, missing usage code, or usage code naming another variant', () => {
+      const first = cases[0];
+      const swap = (patch: Partial<AstroCase>) => cases.map((x) => (x === first ? { ...x, ...patch } : x));
+      expect(astroProblems(contract, swap({ html: first.html.replaceAll('museum-button--', 'x-') }))).not.toEqual([]);
+      expect(astroProblems(contract, swap({ html: '<button class="museum-button--primary"></button>' }))).toEqual([`${first.id}: no accessible name`]);
+      expect(astroProblems(contract, swap({ usage: '' }))).toEqual([`${first.id}: no usage code`]);
+      expect(astroProblems(contract, swap({ usage: first.usage.replace('<Button', '<Button variant="outline"') }))).toEqual([`${first.id}: usage code names variant outline`]);
+    });
   });
 });

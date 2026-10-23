@@ -69,7 +69,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va en la ola 1 junto a la T-1: no comparten archivos, y la página fija no espera a los paquetes.
 
-- [ ] **T-3 — Tests de galería por contrato**
+- [x] **T-3 — Tests de galería por contrato**
   Cubre: RF-10 (los tests)
   Archivos: `tests/lib/gallery-pages.ts`, `tests/gallery.test.ts`, `tests/snippets.test.ts`,
   `tests/gallery-browser.test.ts`, `tests/gallery-i18n.test.ts`, `tests/gallery-overflow.test.ts`,
@@ -85,6 +85,13 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   Inyección: un segundo componente en memoria, exportado y sin historia, pone en rojo la regla 5
   y los idiomas; quitar el `<script>` de un caso Astro del HTML extraído no cambia el JSON de
   Button.
+  Hecho: inyecciones vistas en rojo y restauradas. Con `storyProblems` sin filtro, fallan los 2 tests
+  que lo muerden (regla 5); con `docsProblems` sin el aviso de la página que falta, falla el que
+  muerde los idiomas. El JSON de Button es idéntico byte a byte al de antes (`cmp`), con la
+  extracción ya recortando los `<script>`. Tests de Button: 49 antes (gallery 10, snippets 27,
+  gallery-browser 5, gallery-i18n 1, gallery-overflow 6), 55 después (gallery 14, snippets 29,
+  los otros tres igual); ninguno quitado ni aflojado. `global-setup.ts` y `Button.astro.stories.tsx`
+  no se tocaron: el JSON de Button sigue en `generated/astro-button.json`.
 
 - [ ] **T-4 — Contrato e Input de React, con su historia y su documentación**
   Cubre: RF-1, RF-2 a RF-6 (marcado), RF-10 (React y docs)
