@@ -61,3 +61,14 @@ aún no está en `main` (`AGENTS.md`).
   de línea.
 - Clarify, ronda 2: React con `value` sin `onChange` es de solo lectura, como en React nativo; se
   documenta y `defaultValue` da el texto editable. No se añade `onChange` propio.
+
+## Clarify del plan (2026-10-23, menores decididos por el planner)
+
+- El ayudante de campo va en su propia tarea (T-1), antes de Textarea, como archivo en la raíz de
+  `src/` de cada paquete (una carpeta contaría como componente sin export, regla 3).
+- Contrato, dos frameworks e historias en una tarea (T-3), para no dejar en rojo el cruce de
+  paquetes ni la regla 5 entre olas (lección de la 009).
+- Clases propias de Textarea con selectores agrupados; los tests de la 009 se generalizan a campos
+  con `git mv`, sin quitar ningún caso de Input.
+- Un `value` que empieza por salto de línea se conserva en Astro como lo hace React.
+- La inyección de la T-4 se hace en el ayudante de la rama, no en la copia del consumidor.
