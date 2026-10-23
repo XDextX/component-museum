@@ -31,6 +31,13 @@
     --museum-font-size-sm: 0.875rem;
     --museum-font-size-md: 1rem;
     --museum-font-size-lg: 1.125rem;
+
+    /* Checkbox: the pressable height (WCAG 2.2, 2.5.8), the square per size and the mark's shape. */
+    --museum-checkbox-target: 1.5rem;
+    --museum-checkbox-size-sm: 1rem;
+    --museum-checkbox-size-md: 1rem;
+    --museum-checkbox-size-lg: 1.125rem;
+    --museum-checkbox-mark-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 
   /* Light theme: the default, and any container that asks for it or for the system's (the @media below overrides). */
@@ -47,6 +54,8 @@
     --museum-field-label: #111827;
     --museum-field-hint: #4b5563;
     --museum-field-error: #b91c1c;
+    --museum-checkbox-checked-bg: #1d4ed8;
+    --museum-checkbox-mark: #ffffff;
 
     --museum-button-primary-bg: #1d4ed8;
     --museum-button-primary-fg: #ffffff;
@@ -74,6 +83,8 @@
       --museum-field-label: #f9fafb;
       --museum-field-hint: #d1d5db;
       --museum-field-error: #fca5a5;
+      --museum-checkbox-checked-bg: #3b82f6;
+      --museum-checkbox-mark: #111827;
 
       --museum-button-primary-bg: #2563eb;
       --museum-button-primary-fg: #ffffff;
@@ -101,6 +112,8 @@
     --museum-field-label: #f9fafb;
     --museum-field-hint: #d1d5db;
     --museum-field-error: #fca5a5;
+    --museum-checkbox-checked-bg: #3b82f6;
+    --museum-checkbox-mark: #111827;
 
     --museum-button-primary-bg: #2563eb;
     --museum-button-primary-fg: #ffffff;
@@ -286,5 +299,130 @@
   .museum-textarea:disabled {
     opacity: var(--museum-disabled-opacity);
     cursor: not-allowed;
+  }
+
+  /* Checkbox: a drawn square on the native input; the label comes after it, so the field is two columns
+     (control, text) and the hint and error sit under the text. Each label line is as tall as the target,
+     so the square centres on the first line however long the label is. */
+  .museum-field--inline {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--museum-space-sm-y);
+    align-items: start;
+  }
+
+  .museum-field--inline .museum-field__label {
+    min-height: var(--museum-checkbox-target);
+    line-height: var(--museum-checkbox-target);
+    overflow-wrap: anywhere;
+  }
+
+  .museum-field--inline .museum-field__hint,
+  .museum-field--inline .museum-field__error {
+    grid-column: 2;
+  }
+
+  .museum-checkbox {
+    appearance: none;
+    box-sizing: border-box;
+    display: grid;
+    grid: 1fr / 1fr;
+    margin: 0;
+    border-width: var(--museum-border-width);
+    border-style: solid;
+    border-color: var(--museum-control-border);
+    border-radius: calc(var(--museum-radius) / 2);
+    background-color: var(--museum-control-bg);
+    cursor: pointer;
+  }
+
+  .museum-checkbox--sm {
+    width: var(--museum-checkbox-size-sm);
+    height: var(--museum-checkbox-size-sm);
+    margin-block-start: calc((var(--museum-checkbox-target) - var(--museum-checkbox-size-sm)) / 2);
+  }
+
+  .museum-checkbox--md {
+    width: var(--museum-checkbox-size-md);
+    height: var(--museum-checkbox-size-md);
+    margin-block-start: calc((var(--museum-checkbox-target) - var(--museum-checkbox-size-md)) / 2);
+  }
+
+  .museum-checkbox--lg {
+    width: var(--museum-checkbox-size-lg);
+    height: var(--museum-checkbox-size-lg);
+    margin-block-start: calc((var(--museum-checkbox-target) - var(--museum-checkbox-size-lg)) / 2);
+  }
+
+  .museum-checkbox--sm + .museum-field__label { font-size: var(--museum-font-size-sm); }
+  .museum-checkbox--md + .museum-field__label { font-size: var(--museum-font-size-md); }
+  .museum-checkbox--lg + .museum-field__label { font-size: var(--museum-font-size-lg); }
+
+  /* The mark is painted by a mask, so its colour is a token; it grows in when the box is checked. */
+  .museum-checkbox::before {
+    content: "";
+    width: 100%;
+    height: 100%;
+    background-color: var(--museum-checkbox-mark);
+    mask-image: var(--museum-checkbox-mark-image);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    transform: scale(0);
+  }
+
+  .museum-checkbox:checked {
+    border-color: var(--museum-checkbox-checked-bg);
+    background-color: var(--museum-checkbox-checked-bg);
+  }
+
+  .museum-checkbox:checked::before {
+    transform: scale(1);
+  }
+
+  /* An error keeps its border, checked or not. */
+  .museum-checkbox[aria-invalid="true"],
+  .museum-checkbox[aria-invalid="true"]:checked {
+    border-color: var(--museum-field-error);
+  }
+
+  /* The same two-tone keyboard ring as Button; it sits outside the border, so the error border stays seen. */
+  .museum-checkbox:focus-visible {
+    outline: var(--museum-focus-width) solid var(--museum-focus-ring);
+    outline-offset: var(--museum-focus-offset);
+    box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) var(--museum-surface);
+  }
+
+  /* Only the square is dimmed (its mark with it): the label, hint and error keep their contrast. */
+  .museum-checkbox:disabled {
+    opacity: var(--museum-disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  /* Forced colors repaint backgrounds and would turn the mark into the canvas colour: the square keeps
+     its own, drawn with system colours. */
+  @media (forced-colors: active) {
+    .museum-checkbox {
+      forced-color-adjust: none;
+      border-color: CanvasText;
+      background-color: Canvas;
+    }
+
+    .museum-checkbox::before {
+      background-color: HighlightText;
+    }
+
+    .museum-checkbox:checked {
+      border-color: Highlight;
+      background-color: Highlight;
+    }
+
+    .museum-checkbox:focus-visible {
+      outline-color: CanvasText;
+      box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) Canvas;
+    }
+
+    .museum-checkbox:disabled {
+      border-color: GrayText;
+    }
   }
 }

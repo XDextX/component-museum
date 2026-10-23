@@ -86,6 +86,58 @@
       <textarea id="ta-disabled" class="museum-textarea museum-textarea--md" aria-describedby="ta-disabled-error" aria-invalid="true" disabled data-museum-textarea>Value</textarea>
       <p id="ta-disabled-error" class="museum-field__error">Error</p>
     </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-sm" type="checkbox" class="museum-checkbox museum-checkbox--sm" data-museum-checkbox />
+      <label class="museum-field__label" for="cb-sm">Small</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-md" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-md-hint" data-museum-checkbox />
+      <label class="museum-field__label" for="cb-md">Medium</label>
+      <p id="cb-md-hint" class="museum-field__hint">Hint</p>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-lg" type="checkbox" class="museum-checkbox museum-checkbox--lg" data-museum-checkbox />
+      <label class="museum-field__label" for="cb-lg">Large</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-sm-checked" type="checkbox" class="museum-checkbox museum-checkbox--sm" checked data-museum-checkbox />
+      <label class="museum-field__label" for="cb-sm-checked">Small checked</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-md-checked" type="checkbox" class="museum-checkbox museum-checkbox--md" checked data-museum-checkbox />
+      <label class="museum-field__label" for="cb-md-checked">Medium checked</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-lg-checked" type="checkbox" class="museum-checkbox museum-checkbox--lg" checked data-museum-checkbox />
+      <label class="museum-field__label" for="cb-lg-checked">Large checked</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-error" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-error-error cb-error-hint" aria-invalid="true" required data-museum-checkbox />
+      <label class="museum-field__label" for="cb-error">Error<span class="museum-field__required" aria-hidden="true">*</span></label>
+      <p id="cb-error-hint" class="museum-field__hint">Hint</p>
+      <p id="cb-error-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-error-checked" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-error-checked-error" aria-invalid="true" checked data-museum-checkbox />
+      <label class="museum-field__label" for="cb-error-checked">Error checked</label>
+      <p id="cb-error-checked-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-disabled" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-disabled-error" aria-invalid="true" disabled data-museum-checkbox />
+      <label class="museum-field__label" for="cb-disabled">Disabled</label>
+      <p id="cb-disabled-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-disabled-checked" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-disabled-checked-error" aria-invalid="true" checked disabled data-museum-checkbox />
+      <label class="museum-field__label" for="cb-disabled-checked">Disabled checked</label>
+      <p id="cb-disabled-checked-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="narrow">
+      <div class="museum-field museum-field--inline" id="long-field-cb">
+        <input id="cb-long" type="checkbox" class="museum-checkbox museum-checkbox--md" data-museum-checkbox />
+        <label class="museum-field__label" for="cb-long">A very long label that has to break into several lines on the right of the square, which must stay on top of the first one xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</label>
+      </div>
+    </div>
     <div class="narrow">
       <div class="museum-field" id="long-field">
         <label class="museum-field__label" for="in-long">Long</label>

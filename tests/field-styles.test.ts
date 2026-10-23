@@ -11,7 +11,7 @@ const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const css = readFileSync(join(repo, 'styles', 'museum.css'), 'utf8').replace(/\r\n/g, '\n');
 const html = readFileSync(join(repo, 'tests', 'fixtures', 'field.html'), 'utf8').replace('<!-- museum.css -->', `<style>${css}</style>`);
 const sizes = ['sm', 'md', 'lg'];
-const tokens = ['control-bg', 'control-fg', 'control-border', 'control-placeholder', 'field-label', 'field-hint', 'field-error'];
+const tokens = ['control-bg', 'control-fg', 'control-border', 'control-placeholder', 'field-label', 'field-hint', 'field-error', 'checkbox-checked-bg', 'checkbox-mark'];
 
 // The five ways a page gets a theme (spec 011): it asks for light, dark or the system's, or asks for nothing and gets light.
 const modes = [
@@ -92,6 +92,19 @@ async function expectTexts(page: Page): Promise<void> {
   }
 }
 
+describe('every Checkbox rule reads only var(--museum-*) or a system color (spec 012)', () => {
+  const bodies = [...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter((m) => /\.museum-(checkbox|field--inline)/.test(m[1]))
+    .flatMap((m) => m[2].split(';').map((d) => d.trim()).filter(Boolean).map((d) => ({ rule: m[1].trim(), decl: d })));
+  it('has rules, among them the forced-colors ones', () => {
+    expect(bodies.length).toBeGreaterThan(10);
+    expect(bodies.some(({ decl }) => /^forced-color-adjust:\s*none$/.test(decl))).toBe(true);
+  });
+  it('has no literal color or length', () => {
+    expect(bodies.filter(({ decl }) => /#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(|\d(px|rem|em)\b/i.test(decl.replace(/var\([^)]*\)/g, '')))).toEqual([]);
+  });
+});
+
 describe('RF-5 (spec 011): a field on a dark page that asks for no theme stays legible', { timeout: 60_000 }, () => {
   // The page is dark (#111827) and sets no data-theme: the package is light, and the field paints its own surface.
   for (const scheme of ['light', 'dark'] as const) {
@@ -159,6 +172,125 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
       });
     });
   }
+
+  const cbSizes = ['sm', 'md', 'lg'];
+  /** What a Checkbox paints: its square, its mark, and the surface under it (the field's own). */
+  const cb = (page: Page, id: string) =>
+    page.locator(`#${id}`).evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { border: s.borderTopColor, bg: s.backgroundColor, mark: getComputedStyle(el, '::before').backgroundColor, scale: getComputedStyle(el, '::before').transform, markWidth: parseFloat(getComputedStyle(el, '::before').width), surface: getComputedStyle(el.closest('.museum-field')!).backgroundColor };
+    });
+
+  for (const mode of modes) {
+    describe(`Checkbox, ${mode.name}`, () => {
+      it('RF-7: the border of the unchecked square is 3:1 against the surface, at rest and in error', async () => {
+        const page = await open(mode);
+        for (const id of ['cb-md', 'cb-error', 'cb-disabled']) {
+          const p = await cb(page, id);
+          expect(contrastRatio(parseRgb(p.border), parseRgb(p.surface)), id).toBeGreaterThanOrEqual(3);
+        }
+        // In error the border is the error colour, not the resting one.
+        const [rest, error] = [await cb(page, 'cb-md'), await cb(page, 'cb-error')];
+        expect(error.border).not.toBe(rest.border);
+        await page.context().close();
+      });
+
+      it('RF-8: the mark is 3:1 against the checked square, and the square against the surface', async () => {
+        const page = await open(mode);
+        for (const id of ['cb-sm-checked', 'cb-md-checked', 'cb-lg-checked', 'cb-error-checked', 'cb-disabled-checked']) {
+          const p = await cb(page, id);
+          expect(contrastRatio(parseRgb(p.mark), parseRgb(p.bg)), `${id} mark`).toBeGreaterThanOrEqual(3);
+          expect(contrastRatio(parseRgb(p.bg), parseRgb(p.surface)), `${id} square`).toBeGreaterThanOrEqual(3);
+          expect(p.scale, `${id} mark is shown`).toBe('matrix(1, 0, 0, 1, 0, 0)');
+          expect(p.markWidth, `${id} mark has a size`).toBeGreaterThanOrEqual(8);
+        }
+        // Unchecked, the mark is scaled away.
+        expect((await cb(page, 'cb-md')).scale).toBe('matrix(0, 0, 0, 0, 0, 0)');
+        await page.context().close();
+      });
+
+      it('RF-9: the label, hint and error of every Checkbox (also the disabled with error) keep 4.5:1', async () => {
+        const page = await open(mode);
+        const texts = await visibleTexts(page);
+        const rated = texts.filter((t) => /Small|Medium|Large|Error|Disabled|Hint|very long/.test(t.text)).map((t) => ({ text: t.text, ratio: contrastRatio(parseRgb(t.fg), parseRgb(t.bg)) }));
+        expect(rated.length).toBeGreaterThan(15);
+        expect(rated.filter((r) => r.ratio < 4.5)).toEqual([]);
+        await page.context().close();
+      });
+
+      it('RF-10: control and label together measure at least 24 x 24 px in every size', async () => {
+        const page = await open(mode);
+        for (const id of ['cb-sm', 'cb-md', 'cb-lg', 'cb-sm-checked', 'cb-lg-checked']) {
+          const box = await page.evaluate((i) => {
+            const a = document.getElementById(i)!.getBoundingClientRect();
+            const b = document.querySelector(`label[for="${i}"]`)!.getBoundingClientRect();
+            return { w: Math.max(a.right, b.right) - Math.min(a.left, b.left), h: Math.max(a.bottom, b.bottom) - Math.min(a.top, b.top) };
+          }, id);
+          expect(box.w, id).toBeGreaterThanOrEqual(24);
+          expect(box.h, id).toBeGreaterThanOrEqual(24);
+        }
+        await page.context().close();
+      });
+
+      it('RF-11: the focus ring is 3:1 around the square, and in error the border stays the error one', async () => {
+        const page = await open(mode);
+        await page.keyboard.press('Tab');
+        for (const id of ['cb-md', 'cb-error', 'cb-error-checked']) {
+          await page.locator(`#${id}`).focus();
+          const ring = await page.evaluate(() => {
+            const el = document.activeElement as HTMLElement;
+            const s = getComputedStyle(el);
+            return { id: el.id, visible: el.matches(':focus-visible'), color: s.outlineColor, width: parseFloat(s.outlineWidth), style: s.outlineStyle, offset: parseFloat(s.outlineOffset), border: s.borderTopColor, surface: getComputedStyle(el.closest('.museum-field')!).backgroundColor };
+          });
+          expect(ring.id).toBe(id);
+          expect(ring.visible, id).toBe(true);
+          expect(ring.style, id).not.toBe('none');
+          expect(ring.width, id).toBeGreaterThanOrEqual(2);
+          expect(ring.offset, id).toBeGreaterThan(0);
+          expect(contrastRatio(parseRgb(ring.color), parseRgb(ring.surface)), id).toBeGreaterThanOrEqual(3);
+          if (id.startsWith('cb-error')) {
+            const error = await page.locator('#cb-error-error').evaluate((el) => getComputedStyle(el).color);
+            expect(ring.border, id).toBe(error);
+          }
+        }
+        await page.context().close();
+      });
+
+      it('a long label breaks on the right of the square, which sits on its first line, with no overflow', async () => {
+        const page = await open(mode, 800);
+        const box = await page.evaluate(() => {
+          const field = document.getElementById('long-field-cb')!;
+          const input = document.getElementById('cb-long')!.getBoundingClientRect();
+          const labelEl = document.querySelector('label[for="cb-long"]')!;
+          const label = labelEl.getBoundingClientRect();
+          return { field: field.getBoundingClientRect().width, scroll: field.scrollWidth, height: label.height, line: parseFloat(getComputedStyle(labelEl).lineHeight), top: input.top - label.top, h: input.height };
+        });
+        expect(box.field).toBe(320);
+        expect(box.scroll).toBeLessThanOrEqual(320);
+        expect(box.height).toBeGreaterThan(box.line * 1.5);
+        // The square is centred on the first line.
+        expect(box.top + box.h / 2).toBeCloseTo(box.line / 2, 0);
+        await page.context().close();
+      });
+    });
+  }
+
+  it('RF-13: with forced colors, the checked square and the unchecked one differ, and the mark differs from its square', async () => {
+    for (const mode of [modes[0], modes[3]]) {
+      const page = await (await browser.newContext({ colorScheme: mode.scheme, forcedColors: 'active', viewport: { width: 1024, height: 900 } })).newPage();
+      await page.setContent(html);
+      if (mode.attribute) await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), mode.attribute);
+      for (const size of cbSizes) {
+        const off = await cb(page, `cb-${size}`);
+        const on = await cb(page, `cb-${size}-checked`);
+        expect(on.bg, `${size} checked vs unchecked fill`).not.toBe(off.bg);
+        expect(on.mark, `${size} mark vs its square`).not.toBe(on.bg);
+        expect(on.scale, `${size} mark shown`).toBe('matrix(1, 0, 0, 1, 0, 0)');
+        expect(off.border, `${size} border vs the canvas`).not.toBe(off.bg);
+      }
+      await page.context().close();
+    }
+  });
 
   it('RF-9: Input and Button of the same size are the same height', async () => {
     const page = await open(modes[2]);
