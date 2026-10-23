@@ -1,0 +1,23 @@
+<style>
+  /* Spec 007, RF-7: wide content scrolls inside itself instead of widening the page. */
+  /* The usage code is a grid item of the Astro story: min-width:0 lets the grid shrink below it. */
+  #storybook-root section {
+    min-width: 0;
+  }
+  #storybook-root pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  /* Long custom property names in the docs prose have no break point of their own. */
+  .sbdocs-content li code,
+  .sbdocs-content p code {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  /* The props table of the docs page is about 547 px wide at its narrowest. */
+  .docblock-argstable {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+</style>
