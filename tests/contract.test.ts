@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { declaredProps, diffApi, eventLiterals } from './lib/api.ts';
@@ -11,10 +11,25 @@ import {
   findContractFiles,
   loadContract,
   problems,
+  type Contract,
 } from './lib/contract.ts';
 
 const root = resolve(import.meta.dirname, '..');
 const button = loadContract(resolve(root, 'contracts/button.contract.json'));
+const field: Contract = {
+  name: 'Field',
+  props: {
+    label: { type: 'string', required: true },
+    hint: { type: 'string', default: '' },
+    size: { type: 'enum', values: ['sm', 'md'], default: 'md' },
+    disabled: { type: 'boolean', default: false },
+  },
+  events: [],
+  content: false,
+  classProp: true,
+};
+const fieldType = (label: string, hint = 'hint?: string') =>
+  `export type FieldProps = { ${label}; ${hint}; size?: "sm" | "md"; disabled?: boolean; className?: string };`;
 
 describe('name rules', () => {
   it('derives event names per framework (RF-8)', () => {
@@ -57,6 +72,32 @@ describe('expectedApi', () => {
   });
 });
 
+describe('expectedApi with text props', () => {
+  it('translates an optional text prop to string and a required one to string!', () => {
+    expect(expectedApi(field, 'react')).toEqual({
+      label: 'string!',
+      hint: 'string',
+      size: ['sm', 'md'],
+      disabled: 'boolean',
+      className: 'any',
+    });
+    expect(expectedApi(field, 'astro')).toMatchObject({ label: 'string!', hint: 'string', class: 'any' });
+  });
+
+  it('reads text props from a declared type, optional or required', () => {
+    const { own } = declaredProps('virtual-field.tsx', 'FieldProps', fieldType('label: string'));
+    expect(own).toMatchObject({ label: 'string!', hint: 'string' });
+    expect(diffApi(expectedApi(field, 'react'), own)).toEqual([]);
+  });
+
+  it('flags a required text prop declared optional, and a text prop of another type', () => {
+    const optional = declaredProps('virtual-field.tsx', 'FieldProps', fieldType('label?: string'));
+    expect(diffApi(expectedApi(field, 'react'), optional.own)).toEqual(['prop label is "string", expected "string!"']);
+    const mistyped = declaredProps('virtual-field.tsx', 'FieldProps', fieldType('label: string', 'hint?: boolean'));
+    expect(diffApi(expectedApi(field, 'react'), mistyped.own)).toHaveLength(1);
+  });
+});
+
 describe('problems', () => {
   const c = (name: string) => ({ file: `${name}.contract.json`, name });
 
@@ -90,35 +131,47 @@ describe('RF-6: one contract per component, in the real repo', () => {
   });
 });
 
-describe('RF-7, RF-8, RF-10: each implementation against the contract', () => {
-  const impls = {
-    react: { file: resolve(root, 'packages/react/src/Button/Button.tsx'), type: 'ButtonProps' },
-    astro: { file: resolve(root, 'packages/astro/src/Button/Button.astro'), type: 'Props' },
-  } as const;
+describe('RF-7, RF-8, RF-10: each implementation against its contract', () => {
+  const impl = (name: string, framework: 'react' | 'astro') => ({
+    file: resolve(root, `packages/${framework}/src/${name}/${name}.${framework === 'react' ? 'tsx' : 'astro'}`),
+    type: framework === 'react' ? `${name}Props` : 'Props',
+  });
+  const contracts = findContractFiles(root).map((f) => loadContract(resolve(root, f)));
 
-  for (const framework of ['react', 'astro'] as const) {
-    const { file, type } = impls[framework];
-    const other = framework === 'react' ? 'class' : 'className';
+  // Every contract, in every framework whose folder exists (Button always does).
+  for (const contract of contracts) {
+    for (const framework of ['react', 'astro'] as const) {
+      const { file, type } = impl(contract.name, framework);
+      if (!existsSync(file)) continue;
+      const lower = contract.name.toLowerCase();
+      const other = framework === 'react' ? 'class' : 'className';
 
-    it(`${framework}: own props match the translated contract (RF-7, RF-10)`, () => {
-      const { own, all } = declaredProps(file, type);
-      expect(diffApi(expectedApi(button, framework), own)).toEqual([]);
-      expect(all).toContain(classProp(framework));
-      expect(all).not.toContain(other);
-    });
+      it(`${contract.name} ${framework}: own props match the translated contract (RF-7, RF-10)`, () => {
+        const { own, all } = declaredProps(file, type);
+        expect(diffApi(expectedApi(contract, framework), own)).toEqual([]);
+        expect(all).toContain(classProp(framework));
+        expect(all).not.toContain(other);
+      });
+
+      if (framework === 'react') {
+        it(`${contract.name} react: on* props are exactly the contract events (RF-8)`, () => {
+          const { own } = declaredProps(file, type);
+          expect(Object.keys(own).filter((n) => /^on[A-Z]/.test(n))).toEqual(
+            contract.events.map((e) => eventName('react', lower, e)),
+          );
+        });
+      } else {
+        it(`${contract.name} astro: dispatches only the derived DOM events (RF-8)`, () => {
+          expect(eventLiterals(readFileSync(file, 'utf8'))).toEqual(
+            contract.events.map((e) => eventName('astro', lower, e)).sort(),
+          );
+        });
+      }
+    }
   }
 
-  it('react: on* props are exactly the contract events (RF-8)', () => {
-    const { own } = declaredProps(impls.react.file, impls.react.type);
-    expect(Object.keys(own).filter((n) => /^on[A-Z]/.test(n))).toEqual(
-      button.events.map((e) => eventName('react', 'button', e)),
-    );
-  });
-
-  it('astro: dispatches only the derived DOM events (RF-8)', () => {
-    expect(eventLiterals(readFileSync(impls.astro.file, 'utf8'))).toEqual(
-      button.events.map((e) => eventName('astro', 'button', e)).sort(),
-    );
+  it('Button is among the contracts checked', () => {
+    expect(contracts.map((c) => c.name)).toContain('Button');
   });
 
   it('flags a prop that is missing, extra, mistyped or misnamed', () => {

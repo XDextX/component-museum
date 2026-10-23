@@ -59,6 +59,7 @@ export function declaredProps(file: string, typeName: string, source?: string): 
     const t = checker.getNonNullableType(checker.getTypeOfSymbol(prop));
     if (t.flags & ts.TypeFlags.Boolean) own[prop.name] = 'boolean';
     else if (t.isUnion() && t.types.every((u) => u.isStringLiteral())) own[prop.name] = t.types.map((u) => (u as ts.StringLiteralType).value);
+    else if (t.flags & ts.TypeFlags.String) own[prop.name] = prop.flags & ts.SymbolFlags.Optional ? 'string' : 'string!';
     else own[prop.name] = 'any';
   }
   return { own, all };

@@ -20,13 +20,14 @@ type Rendered = { classes: string[]; attributes: Record<string, string>; text: s
  * Then the content and the class controls (RF-4).
  */
 const cases: { arg: string; shows: (b: Rendered) => boolean }[] = [
-  ...Object.entries(contract.props).map(([name, spec]) => {
-    if (spec.type === 'boolean') return { arg: `${name}:!${!spec.default}`, shows: (b: Rendered) => name in b.attributes };
+  ...Object.entries(contract.props).flatMap(([name, spec]) => {
+    if (spec.type === 'string') return []; // Button has no text props
+    if (spec.type === 'boolean') return [{ arg: `${name}:!${!spec.default}`, shows: (b: Rendered) => name in b.attributes }];
     const value = spec.values.find((v) => v !== spec.default)!;
-    return {
+    return [{
       arg: `${name}:${value}`,
       shows: (b: Rendered) => b.classes.includes(`museum-button--${value}`) || b.attributes[name] === value,
-    };
+    }];
   }),
   { arg: 'children:Hola', shows: (b) => b.text === 'Hola' },
   { arg: `className:${exampleClass}`, shows: (b) => b.classes.includes(exampleClass) },
