@@ -1,6 +1,7 @@
 # Spec 010 — textarea
 
-**Status:** approved · **Approved:** 2026-10-23 · el coordinator en modo autónomo, tras 2 rondas de clarify
+**Status:** implemented · **Approved:** 2026-10-23 · el coordinator en modo autónomo, tras 2 rondas de clarify
+**Implemented:** 2026-10-23 · 4 tareas en 3 olas con worktrees, más el arreglo del conteo de Tab del test de Button; validada por el reviewer en 1 vuelta; `npm test` 550/550 (+1 omitido)
 **Size:** L (11 RF) · **Entrega:** 4 (009–013, formulario) · **Depende de:** 009
 
 ## Contexto y objetivo
