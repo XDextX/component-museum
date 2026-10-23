@@ -12,7 +12,13 @@ import { serve, type Served } from './lib/serve.ts';
 // tests/lib/consumer.ts.
 const consumers = inject('consumers');
 const frameworks: Framework[] = ['react', 'astro'];
-const themes = ['light', 'dark'] as const;
+// How the page gets its theme (spec 011): dark is asked for with data-theme under a light system; light is what a
+// page that asks for nothing gets under a dark system; "system" follows the dark system.
+const modes = [
+  { name: 'light', scheme: 'dark', attribute: undefined, surface: 'rgb(255, 255, 255)' },
+  { name: 'dark', scheme: 'light', attribute: 'dark', surface: 'rgb(17, 24, 39)' },
+  { name: 'system', scheme: 'dark', attribute: 'system', surface: 'rgb(17, 24, 39)' },
+] as const;
 const sizes = ['sm', 'md', 'lg'];
 
 type Kind = {
@@ -100,12 +106,20 @@ for (const kind of kinds) describe.each(frameworks)(`${kind.name} in the %s cons
   });
   afterAll(() => server.close());
 
-  describe.each(themes)('%s', (theme) => {
+  describe.each(modes)('$name', ({ name: theme, scheme, attribute, surface }) => {
     let context: BrowserContext;
     let page: Page;
     let cdp: CDPSession;
     beforeAll(async () => {
-      context = await browser.newContext({ colorScheme: theme, viewport: { width: 1024, height: 900 } });
+      context = await browser.newContext({ colorScheme: scheme, viewport: { width: 1024, height: 900 } });
+      // The attribute is written into the served HTML, on <html>, as a page asking for the theme would.
+      if (attribute) {
+        await context.route(server.url + '**', async (route) => {
+          const response = await route.fetch();
+          const body = await response.text();
+          await route.fulfill({ response, body: response.headers()['content-type']?.includes('text/html') ? body.replace('<html', `<html data-theme="${attribute}"`) : body });
+        });
+      }
       page = await context.newPage();
       cdp = await context.newCDPSession(page);
       await page.goto(server.url);
@@ -123,6 +137,18 @@ for (const kind of kinds) describe.each(frameworks)(`${kind.name} in the %s cons
       return { name: nodes[0].name?.value ?? '', description: nodes[0].description?.value ?? '', invalid: props.invalid, required: props.required === true };
     }
     const activeKey = () => page.evaluate(() => (document.activeElement as HTMLInputElement).name || (document.activeElement as HTMLInputElement).id);
+
+    it('the mode gives the theme it stands for', async () => {
+      const resolved = await page.evaluate(() => {
+        const probe = document.createElement('div');
+        probe.style.backgroundColor = 'var(--museum-surface)';
+        document.body.append(probe);
+        const color = getComputedStyle(probe).backgroundColor;
+        probe.remove();
+        return color;
+      });
+      expect(resolved).toBe(surface);
+    });
 
     it('RF-2: each label finds its control and pressing it focuses it, twins included', { timeout: 60_000 }, async () => {
       for (const [key, label] of Object.entries(labelOf)) {

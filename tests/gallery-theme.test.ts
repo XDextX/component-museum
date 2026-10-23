@@ -14,7 +14,8 @@ const stories = ['button-react--default', 'button-astro--variants'];
 
 /** A token's value in the sheet's `[data-theme="<theme>"]` block, as getComputedStyle writes it. */
 function token(theme: string, name: string): string {
-  const block = new RegExp(`\\[data-theme="${theme}"\\] \\{([^}]*)\\}`).exec(sheet)![1];
+  // The light block's selector list ends with [data-theme="system"] (spec 011).
+  const block = new RegExp(`\\[data-theme="${theme}"\\](?:,\\s*\\[data-theme="system"\\])?\\s*\\{([^}]*)\\}`).exec(sheet)![1];
   const hex = new RegExp(`--museum-${name}:\\s*(#[0-9a-f]{6})`, 'i').exec(block)![1];
   return `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`;
 }
@@ -103,6 +104,35 @@ describe('gallery theme and keyboard access (spec 005, RF-3 and accessibility)',
           expect(problems).toEqual([]);
         } finally {
           await page.context().close();
+        }
+      });
+    }
+  }
+
+  // Spec 011, RF-4: with "Sistema" the canvas asks for data-theme="system", so the package follows the system.
+  for (const id of stories) {
+    for (const scheme of ['light', 'dark'] as const) {
+      it(`${id}, theme system under a ${scheme} system: the canvas asks for data-theme="system" and Button takes the ${scheme} tokens`, async () => {
+        const context = await browser.newContext({ colorScheme: scheme });
+        const page = await context.newPage();
+        try {
+          await page.goto(`${served.url}iframe.html?id=${id}&viewMode=story&globals=theme:system`);
+          await page.locator('#storybook-root .museum-button--primary').first().waitFor();
+          const seen = () => page.locator('#storybook-root .museum-button--primary').first().evaluate((el) => {
+            const wrapper = el.closest('[data-theme]');
+            return {
+              theme: wrapper?.getAttribute('data-theme'),
+              canvas: wrapper ? getComputedStyle(wrapper).backgroundColor : '',
+              bg: getComputedStyle(el).backgroundColor,
+            };
+          });
+          expect(await seen()).toEqual({ theme: 'system', canvas: token(scheme, 'surface'), bg: token(scheme, 'button-primary-bg') });
+          // Live: the system changes with the story open and the tokens follow it.
+          const other = scheme === 'dark' ? 'light' : 'dark';
+          await page.emulateMedia({ colorScheme: other });
+          expect(await seen()).toEqual({ theme: 'system', canvas: token(other, 'surface'), bg: token(other, 'button-primary-bg') });
+        } finally {
+          await context.close();
         }
       });
     }

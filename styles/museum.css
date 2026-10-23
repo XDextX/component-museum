@@ -33,9 +33,10 @@
     --museum-font-size-lg: 1.125rem;
   }
 
-  /* Light theme: the default, and any container with data-theme="light". */
+  /* Light theme: the default, and any container that asks for it or for the system's (the @media below overrides). */
   :root,
-  [data-theme="light"] {
+  [data-theme="light"],
+  [data-theme="system"] {
     --museum-surface: #ffffff;
     --museum-focus-ring: #1d4ed8;
 
@@ -60,9 +61,9 @@
     --museum-button-outline-border: #1d4ed8;
   }
 
-  /* Dark theme from the system, unless the page asks for light. */
+  /* Dark theme from the system, only where the page asks to follow it. */
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
+    [data-theme="system"] {
       --museum-surface: #111827;
       --museum-focus-ring: #93c5fd;
 
