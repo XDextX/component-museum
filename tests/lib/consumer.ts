@@ -178,12 +178,38 @@ function textareaInstances(framework: Framework): string {
   ].join(framework === 'react' ? '\n      ' : '\n\t\t');
 }
 
-/** Makes the consumer's entry import Button, Input, Textarea and the stylesheet once, and render every instance. */
+/**
+ * Spec 012 T-4: the Checkbox instances `field-a11y.test.ts` measures. Labels start with "Tick" (the twins,
+ * "Pair") so none contains a label of Input or Textarea: `getByLabel` matches substrings. The twins' names do
+ * not start with `twins-`, which Input's twin selectors read. `checkbox-checked` starts marked,
+ * `checkbox-locked` is marked and disabled, `checkbox-disabled` is disabled with an error, and `checkbox-long`
+ * carries a 200-character label with an 80-character word in it.
+ */
+export const checkboxLongLabel = `Tick long ${'lorem ipsum dolor sit amet '.repeat(3)}${'x'.repeat(80)} end`;
+function checkboxInstances(framework: Framework): string {
+  return [
+    ...['sm', 'md', 'lg'].map((s) => `<Checkbox id="checkbox-${s}" label="Tick ${s}" size="${s}" />`),
+    '<Checkbox id="checkbox-hint" label="Tick hint" hint="Tick hint text" />',
+    '<Checkbox id="checkbox-error" label="Tick error" error="Tick error text" />',
+    '<Checkbox id="checkbox-both" label="Tick both" hint="Tick hint text" error="Tick error text" />',
+    '<Checkbox id="checkbox-required" label="Tick required" required />',
+    '<Checkbox id="checkbox-disabled" label="Tick disabled" error="Tick disabled error" disabled />',
+    '<Checkbox id="checkbox-locked" label="Tick locked" defaultChecked disabled />',
+    '<Checkbox id="checkbox-checked" label="Tick checked" defaultChecked />',
+    '<Checkbox name="pair-a" label="Pair" />',
+    '<Checkbox name="pair-b" label="Pair" />',
+    '<p id="checkbox-own-note">Tick own note</p>',
+    '<Checkbox id="checkbox-own" label="Tick own" hint="Tick own hint" aria-describedby="checkbox-own-note" />',
+    `<Checkbox id="checkbox-long" label="${checkboxLongLabel}" />`,
+  ].join(framework === 'react' ? '\n      ' : '\n\t\t');
+}
+
+/** Makes the consumer's entry import Button, Input, Textarea, Checkbox and the stylesheet once, and render every instance. */
 function useButtons(framework: Framework, dir: string, name: string): void {
   if (framework === 'react') {
     writeFileSync(
       join(dir, 'src', 'MuseumButtons.tsx'),
-      `import { Button, Input, Textarea } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n      ${inputInstances(framework)}\n      ${textareaInstances(framework)}\n    </>\n  )\n}\n`,
+      `import { Button, Checkbox, Input, Textarea } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n      ${inputInstances(framework)}\n      ${textareaInstances(framework)}\n      ${checkboxInstances(framework)}\n    </>\n  )\n}\n`,
     );
     patch(join(dir, entries.react), (source) =>
       `import MuseumButtons from './MuseumButtons.tsx'\n${source.replace('<App />', '<App />\n    <MuseumButtons />')}`,
@@ -191,8 +217,8 @@ function useButtons(framework: Framework, dir: string, name: string): void {
   } else {
     patch(join(dir, entries.astro), (source) =>
       source
-        .replace(/^---\r?\n/, `---\nimport { Button, Input, Textarea } from '${name}';\nimport '${name}/styles.css';\n`)
-        .replace('</body>', `\t${buttonInstances(framework)}\n\t\t${inputInstances(framework)}\n\t\t${textareaInstances(framework)}\n\t</body>`),
+        .replace(/^---\r?\n/, `---\nimport { Button, Checkbox, Input, Textarea } from '${name}';\nimport '${name}/styles.css';\n`)
+        .replace('</body>', `\t${buttonInstances(framework)}\n\t\t${inputInstances(framework)}\n\t\t${textareaInstances(framework)}\n\t\t${checkboxInstances(framework)}\n\t</body>`),
     );
   }
 }

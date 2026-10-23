@@ -112,7 +112,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va sola en la ola 2: necesita el ayudante (T-1), y sus capturas, la hoja (T-2).
 
-- [ ] **T-4 — Checkbox en los consumidores: accesibilidad en Edge**
+- [x] **T-4 — Checkbox en los consumidores: accesibilidad en Edge**
   Cubre: RF-2 a RF-13 (en el navegador), NFR de accesibilidad y regla 2
   Archivos: `tests/lib/consumer.ts` (`checkboxInstances`, plan, bloque 4),
   `tests/field-a11y.test.ts` (`kind` Checkbox)
@@ -129,6 +129,42 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - Input y Textarea siguen con sus casos: da el número antes y después.
   Inyección: quitar `for` de la etiqueta en el ayudante de la rama pone en rojo RF-2; quitar
   `min-height` de la etiqueta en línea pone en rojo RF-10 en `sm`.
+  Hecho (2026-10-23, rama `spec/012-checkbox-T-4`, sin commit):
+  - Inyecciones vistas en rojo y restauradas por ruta (`git checkout -- <ruta>`, CRLF comprobado): sin
+    `htmlFor` en `packages/react/src/field.tsx`, RF-2 cae en Checkbox (`RF-2` compartido, el de estado, `RF-12`,
+    `RF-9` por la etiqueta que no se encuentra, etiqueta larga y `RF-10`), y también `RF-2` y `RF-6` de Input y
+    Textarea en React: 33 rojos de 210. Con la inyección de la tarea tal cual (quitar solo `min-height` de
+    `.museum-field--inline .museum-field__label`) NO cae nada, como avisó la T-2: la etiqueta usa
+    `line-height: 1.5rem`. Quitando `min-height` y `line-height` cae RF-10 en `sm` (`checkbox-sm height: expected 20
+    to be greater than or equal to 24`), 6 rojos de 6 (React y Astro, tres modos). Otras, todas en `styles/museum.css`:
+    marca igual al cuadro marcado, RF-8 (`checkbox-sm mark on box: expected 1 to be greater than or equal to 3`, 6 de
+    6); `outline-offset: 0`, RF-11 (`checkbox-sm ring offset: expected 0 to be greater than 0`); el borde de error
+    sin el color de error, RF-7 y RF-11; `@media (forced-colors: none)`, RF-13 (`checked box vs unchecked box`); texto
+    de ayuda y error gris claro, RF-9 en claro.
+  - Input y Textarea: `field-a11y.test.ts` tenía 120 tests antes (Input 54, Textarea 66) y tiene 210 después: los 120
+    con los mismos nombres y Checkbox suma 90 (15 por framework y modo). Cambios en lo compartido, sin aflojar nada
+    de Input ni de Textarea: el `kind` lleva `hook`, `twinLabel`, `twinPrefix` y `twinTotal` (4 para Input y Textarea,
+    como el `toBe(4)` de antes); `RF-7` y `RF-8` de campos de texto (borde, valor, marcador de posición) se saltan
+    para Checkbox, que tiene los suyos; las etiquetas se comparan recortadas a 40 caracteres, como las lee
+    `visibleTexts`. Las etiquetas de Checkbox empiezan por «Tick» y las gemelas se llaman «Pair» (`getByLabel` busca
+    subcadenas y `Twin` sigue siendo de Input y Textarea); los `name` de las gemelas no empiezan por `twins-`.
+  - Hallazgos de Edge, no del componente: su árbol de accesibilidad no da la propiedad `required` a un checkbox, así
+    que RF-6 lo lee del DOM (`el.required`) para Checkbox; y marca como `invalid` un checkbox `required` sin marcar
+    por su validez nativa, sin `aria-invalid`, así que RF-5 no lo mira en `checkbox-required` y sí el atributo.
+  - Medido en Edge, React y Astro iguales, claro / oscuro (sistema = oscuro): borde sin marcar 4.83 / 6.99, en
+    error 6.47 / 9.35 (también `disabled`), con el borde de error igual a `--museum-field-error`; marcado, marca contra
+    cuadro 6.70 / 4.82, cuadro contra fondo 6.70 / 4.82 y borde 6.70 / 4.82, en los tres `size` (cuadro 16, 16 y 18 px,
+    marca 14, 14 y 16 px a escala 1); `disabled` marcado, opacidad 0.5 y marca a escala 1; etiquetas 17.74 / 16.98,
+    ayuda 7.56 / 12.04, error y marcador 6.47 / 9.35, también el error del `disabled`. RF-10: la unión de cuadro y
+    etiqueta mide 24 px de alto en los tres `size` (la etiqueta sola, 24) y 48 la etiqueta larga a 1024 px; el ancho es
+    el del campo. RF-11: anillo de 2 px con `outline-offset` de 2 px y 6.70 / 9.84 contra lo que lo rodea, el borde
+    (4.83 / 6.99, 6.47 / 9.35 en error, 6.70 / 4.82 marcado) sigue siendo el suyo con el foco, `Tab` salta `disabled` y
+    `Espacio` marca y desmarca (también en el árbol de accesibilidad). RF-12: solo `checkbox-checked` y
+    `checkbox-locked` empiezan marcados; una pulsación desmarca. RF-13, con `forcedColors: 'active'`: sin marcar
+    cuadro negro y borde blanco; marcado cuadro y borde cian (26, 235, 255) y marca negra (en oscuro, morado y marca
+    blanca); la marca sin marcar, a escala 0. Etiqueta larga a 320 px: se parte en 144 px de alto (6 líneas de 24), el
+    cuadro de 16 px queda 4 px bajo su borde superior (centrado en la primera línea) y el campo no desborda
+    (`scrollWidth` igual a `clientWidth`).
 
 ## Grafo de olas
 
