@@ -1,0 +1,54 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { fieldIds } from '../field.js';
+
+/** Checkbox's own API, from contracts/checkbox.contract.json translated to Astro. */
+interface OwnProps {
+  label: string;
+  hint?: string;
+  error?: string;
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  required?: boolean;
+  defaultChecked?: boolean;
+  /** Added to the component's own classes, never replacing them. */
+  class?: string;
+}
+
+/** Any other HTML attribute reaches the `<input>`; the Omit keeps the own props single. */
+export interface Props extends OwnProps, Omit<HTMLAttributes<'input'>, keyof OwnProps | 'type'> {}
+
+// The hook is the component's own: a consumer's data-museum-checkbox is dropped, not rendered twice.
+const {
+  label,
+  hint = '',
+  error = '',
+  size = 'md',
+  disabled = false,
+  required = false,
+  defaultChecked = false,
+  class: className,
+  id,
+  'aria-describedby': describedBy,
+  'data-museum-checkbox': _hook,
+  ...attributes
+} = Astro.props;
+const { controlId, hintId, errorId, describedBy: description } = fieldIds('museum-checkbox', id, hint, error, describedBy);
+---
+
+<div class="museum-field museum-field--inline">
+  <input
+    {...attributes}
+    id={controlId}
+    class:list={['museum-checkbox', `museum-checkbox--${size}`, className]}
+    type="checkbox"
+    disabled={disabled}
+    required={required}
+    aria-describedby={description}
+    aria-invalid={error ? 'true' : undefined}
+    data-museum-checkbox
+    checked={defaultChecked} />
+  <label class="museum-field__label" for={controlId}>{label}{required && <span class="museum-field__required" aria-hidden="true">*</span>}</label>
+  {hint && <p id={hintId} class="museum-field__hint">{hint}</p>}
+  {error && <p id={errorId} class="museum-field__error">{error}</p>}
+</div>
