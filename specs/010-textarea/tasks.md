@@ -90,6 +90,9 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va sola en la ola 2: necesita el ayudante (T-1), y sus capturas necesitan la hoja (T-2).
 
+  Añadido por el dueño tras la T-1: un caso de Astro con ayuda y error juntos (en Input y en
+  Textarea), para que la comparación con React vigile el orden error-ayuda.
+
 - [ ] **T-4 — Textarea en los consumidores: accesibilidad en Edge**
   Cubre: RF-2 a RF-11 (en el navegador), NFR de accesibilidad y regla 2
   Archivos: `tests/lib/consumer.ts` (`textareaInstances`, plan, bloque 4),
