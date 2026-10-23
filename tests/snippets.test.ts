@@ -55,7 +55,7 @@ function snippetProblems(lang: 'tsx' | 'astro', code: string, c: Contract = cont
     for (const [, name, value] of attrs.matchAll(/([\w:-]+)(?:="([^"]*)")?/g)) {
       if (name === classAttr) {
         for (const cls of value.split(/\s+/).filter(Boolean)) {
-          if (!sheetClasses.has(cls) && !(cls in exampleClasses)) problems.push(`class ${cls} is neither museum-* nor an example class`);
+          if (!sheetClasses.has(cls) && !(cls in (exampleClasses[c.name] ?? {}))) problems.push(`class ${cls} is neither museum-* nor an example class`);
         }
       } else if (!(name in c.props)) problems.push(`prop ${name} is not in the contract`);
     }
@@ -70,7 +70,7 @@ function fullArgs(c: Contract): Record<string, unknown> {
     args[name] = spec.type === 'enum' ? spec.values.find((v) => v !== spec.default) : spec.type === 'boolean' ? true : exampleText(name);
   }
   if (c.content) args.children = 'Hi';
-  if (c.classProp) args.className = Object.keys(exampleClasses)[0];
+  if (c.classProp) args.className = Object.keys(exampleClasses[c.name] ?? {})[0];
   return args;
 }
 
@@ -177,21 +177,24 @@ describe.each(components.filter((c) => c.name !== 'Button').map((c) => [c.name, 
 
 describe('example class CSS in every place (RF-9)', () => {
   const langs = languages(mdx);
-  const used = new Set(
-    [
-      ...mdxSnippets.map((b) => b.code),
-      ...STATES.map((s) => usageSnippet(s.fw, s.args, contract)),
-      ...components.filter((c) => c.name !== 'Button').flatMap((c) => [
-        ...blocks(mdxOf(c.name) ?? '').map((b) => b.code),
-        ...statesOf(c, fullArgs(c)).map((s) => usageSnippet(s.fw, s.args, c)),
-      ]),
-    ]
-      .flatMap((c) => [...c.matchAll(/class(?:Name)?="([^"]*)"/g)].flatMap((m) => m[1].split(/\s+/)))
-      .filter((c) => c && !sheetClasses.has(c)),
-  );
+  // Each component's snippets, by component name: Button's own, then every other component's.
+  const snippetsOf: [string, string[]][] = [
+    ['Button', [...mdxSnippets.map((b) => b.code), ...STATES.map((s) => usageSnippet(s.fw, s.args, contract))]],
+    ...components.filter((c) => c.name !== 'Button').map((c): [string, string[]] => [c.name, [
+      ...blocks(mdxOf(c.name) ?? '').map((b) => b.code),
+      ...statesOf(c, fullArgs(c)).map((s) => usageSnippet(s.fw, s.args, c)),
+    ]]),
+  ];
+  const allExampleClasses = Object.values(exampleClasses).flatMap((classes) => Object.keys(classes));
 
-  it('uses only example classes the story defines', () => {
-    expect([...used].filter((c) => !(c in exampleClasses))).toEqual([]);
+  // A component's snippets use its own example classes only: Button's my-button never shows on Input.
+  it.each(snippetsOf)('%s uses only example classes its story defines', (name, codes) => {
+    const used = new Set(
+      codes
+        .flatMap((c) => [...c.matchAll(/class(?:Name)?="([^"]*)"/g)].flatMap((m) => m[1].split(/\s+/)))
+        .filter((c) => c && !sheetClasses.has(c)),
+    );
+    expect([...used].filter((c) => !(c in (exampleClasses[name] ?? {})))).toEqual([]);
   });
 
   // One source (gallery/lib/example-classes.ts): a copy anywhere else could drift. That it is seen
@@ -199,23 +202,27 @@ describe('example class CSS in every place (RF-9)', () => {
   it('the story and the docs page import the example CSS and keep no copy of it', () => {
     for (const [file, text] of [['story', reactStory], ['MDX', mdx]] as const) {
       expect(text, `${file} imports it`).toMatch(/import \{ exampleClasses \} from '\.\.\/lib\/example-classes\.ts';/);
-      for (const name of Object.keys(exampleClasses)) expect(text, `${file} has its own .${name} rule`).not.toContain(`.${name} {`);
+      for (const name of allExampleClasses) expect(text, `${file} has its own .${name} rule`).not.toContain(`.${name} {`);
     }
   });
 
   // Every component with a class prop takes its class control from the same source and keeps no copy.
   it.each(components.filter((c) => c.name !== 'Button').map((c) => [c.name, c] as const))('the %s story and docs keep no copy of the example CSS', (name, c) => {
     const story = readText(repo, storyFile(name, 'react')) ?? '';
-    if (c.classProp) expect(story, 'the story imports it').toMatch(/import \{ exampleClasses \} from '\.\.\/lib\/example-classes\.ts';/);
-    for (const text of [story, mdxOf(name) ?? '']) {
-      for (const cls of Object.keys(exampleClasses)) expect(text, `.${cls} rule`).not.toContain(`.${cls} {`);
+    const docs = mdxOf(name) ?? '';
+    if (c.classProp) {
+      expect(story, 'the story imports it').toMatch(/import \{ exampleClasses \} from '\.\.\/lib\/example-classes\.ts';/);
+      expect(docs, 'the docs page imports it').toMatch(/import \{ exampleClasses \} from '\.\.\/lib\/example-classes\.ts';/);
+    }
+    for (const text of [story, docs]) {
+      for (const cls of allExampleClasses) expect(text, `.${cls} rule`).not.toContain(`.${cls} {`);
     }
   });
 
   it.each(Object.entries(SECTIONS))('%s "how to alter it" shows every example class from that source', (lang) => {
     const how = langs[lang].split(/^## /m).find((s) => s.startsWith(SECTIONS[lang as 'es' | 'en'][2]))!;
-    for (const name of Object.keys(exampleClasses)) {
-      expect(how, `${lang}: .${name}`).toContain(`<Source language="css" code={exampleClasses['${name}']} />`);
+    for (const name of Object.keys(exampleClasses.Button)) {
+      expect(how, `${lang}: .${name}`).toContain(`<Source language="css" code={exampleClasses.Button['${name}']} />`);
     }
   });
 });

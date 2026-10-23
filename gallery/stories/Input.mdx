@@ -1,6 +1,7 @@
 import { Canvas, Controls, Meta, Source } from '@storybook/addon-docs/blocks';
 import * as ReactStories from './Input.react.stories.tsx';
 import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
+import { exampleClasses } from '../lib/example-classes.ts';
 
 <Meta title="Input/Documentation" />
 
@@ -71,7 +72,7 @@ Como el CSS del paquete está en una capa, **tu CSS siempre gana**: no hace falt
 
 **2. Una regla sobre la clase.** Pasa tu propia clase (`className` en React, `class` en Astro): va al `<input>`, se añade a las del componente y, al estar fuera de la capa, gana sin más. Esta historia define y muestra `my-input`, que es también la opción del control de clase:
 
-<Source language="css" code={ReactStories.exampleInputClasses['my-input']} />
+<Source language="css" code={exampleClasses.Input['my-input']} />
 
 En React:
 
@@ -156,7 +157,7 @@ Because the package CSS sits in a layer, **your CSS always wins**: no need to ra
 
 **2. A rule on the class.** Pass your own class (`className` in React, `class` in Astro): it goes to the `<input>`, is added to the component's and, being outside the layer, wins outright. This story defines and shows `my-input`, which is also the class control's option:
 
-<Source language="css" code={ReactStories.exampleInputClasses['my-input']} />
+<Source language="css" code={exampleClasses.Input['my-input']} />
 
 In React:
 

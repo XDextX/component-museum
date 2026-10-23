@@ -73,7 +73,7 @@ Hay tres vías, de menos a más intrusiva. Como el CSS del paquete está en una 
 
 **2. Una regla sobre la clase.** Pasa tu propia clase (`className` en React, `class` en Astro). Se añade a las del componente, nunca las sustituye, y tu regla, al estar fuera de la capa, gana sin más. Esta historia define y muestra `my-button`, que es también la opción del control de clase:
 
-<Source language="css" code={exampleClasses['my-button']} />
+<Source language="css" code={exampleClasses.Button['my-button']} />
 
 En React:
 
@@ -159,7 +159,7 @@ There are three ways, from least to most intrusive. Because the package CSS sits
 
 **2. A rule on the class.** Pass your own class (`className` in React, `class` in Astro). It is added to the component's, never replaces them, and your rule, being outside the layer, wins outright. This story defines and shows `my-button`, which is also the class control's option:
 
-<Source language="css" code={exampleClasses['my-button']} />
+<Source language="css" code={exampleClasses.Button['my-button']} />
 
 In React:
 

@@ -9,7 +9,6 @@ import { exportedContracts, packageExports, slug, storyId } from './lib/gallery-
 import { serve, type Served } from './lib/serve.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const exampleClass = 'my-button';
 const themes = ['light', 'dark'] as const;
 
 type Rendered = { classes: string[]; attributes: Record<string, string>; text: string; shown: string; error: boolean };
@@ -25,6 +24,8 @@ const components = exportedContracts(repo).filter((c) => packageExports(repo).Re
  */
 function casesOf(contract: Contract): { arg: string; shows: (b: Rendered) => boolean }[] {
   const name = slug(contract.name);
+  // The component's own example class, from the one source its story offers it from.
+  const exampleClass = Object.keys(exampleClasses[contract.name] ?? {})[0];
   return [
     ...Object.entries(contract.props).flatMap(([prop, spec]) => {
       if (spec.type === 'string') {
@@ -92,9 +93,9 @@ describe.each(components.map((c) => [c.name, c] as const))('the React story re-r
   }
 });
 
-// Keeps the example class in step with the one source the story offers it from.
-it('offers the example class the cases use', () => {
-  expect(Object.keys(exampleClasses)).toContain(exampleClass);
+// Every component with a class prop has an example class for its className case to set.
+it.each(components.filter((c) => c.classProp).map((c) => [c.name] as const))('offers %s an example class for its className case', (name) => {
+  expect(Object.keys(exampleClasses[name] ?? {})).not.toEqual([]);
 });
 
 /** Every non-empty line of a CSS text, trimmed: what must be readable on the page, whatever the layout. */
@@ -118,7 +119,7 @@ describe('the example CSS is seen beside its control and on the docs page (RF-9)
       const row = page.locator('tr', { has: page.locator('text=className') }).first();
       await row.waitFor();
       const text = await row.innerText();
-      for (const [cls, css] of Object.entries(exampleClasses)) {
+      for (const [cls, css] of Object.entries(exampleClasses[name])) {
         for (const line of cssLines(css)) expect(text, `.${cls}: ${line}`).toContain(line);
       }
     } finally {
@@ -127,14 +128,14 @@ describe('the example CSS is seen beside its control and on the docs page (RF-9)
   });
 
   // The page shows one language at a time (spec 005, T-2): pick each with the switch and look there.
-  // Button's docs page is where the example classes are shown in full.
-  it('shows each example class CSS on the docs page, in each language', async () => {
+  // Each component's docs page is where its example classes are shown in full.
+  it.each(components.filter((c) => c.classProp).map((c) => [c.name] as const))('shows each %s example class CSS on its docs page, in each language', async (component) => {
     const page = await browser.newPage();
     try {
-      await page.goto(`${served.url}iframe.html?id=button-documentation--docs&viewMode=docs`);
+      await page.goto(`${served.url}iframe.html?id=${slug(component)}-documentation--docs&viewMode=docs`);
       for (const language of ['Español', 'English']) {
         await page.getByRole('button', { name: language }).click();
-        for (const [name, css] of Object.entries(exampleClasses)) {
+        for (const [name, css] of Object.entries(exampleClasses[component])) {
           const [first, last] = [cssLines(css)[0], cssLines(css).at(-2)!];
           // <Source> renders after the page: wait until the chosen language carries the rule.
           await page.waitForFunction(

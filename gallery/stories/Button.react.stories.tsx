@@ -13,12 +13,12 @@ const meta = {
   title: 'Button/React',
   component: Button,
   // Contract-derived controls, never hand-written: a new variant shows up here without an edit.
-  argTypes: argTypesFromContract(contract, exampleClasses),
+  argTypes: argTypesFromContract(contract, exampleClasses.Button),
   args: { children: 'Button', className: '' },
   decorators: [
     (Story) => (
       <>
-        <style>{Object.values(exampleClasses).join('\n')}</style>
+        <style>{Object.values(exampleClasses.Button).join('\n')}</style>
         <Story />
       </>
     ),

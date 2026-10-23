@@ -117,6 +117,28 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va en la ola 2 junto a la T-3: no comparten archivos. Las dos necesitan la T-1.
 
+  Corrección tras merge de la ola 2 (T-3 con T-4; 6 rojos, del 2 al 7):
+  - Clases de ejemplo (rojos 2 y 3 en `className`, 4, 5, 6 y 7). La T-4 dio a Input su propia copia
+    (`exampleInputClasses` en la historia) y la T-3 suponía `my-button` para todo componente. Mal los
+    dos lados: `gallery/lib/example-classes.ts` pasa a ser la fuente única por componente
+    (`exampleClasses.Button`, `exampleClasses.Input`), y la historia y el MDX de Input la importan
+    como los de Button. Los tests toman la clase de cada componente: el caso `className`, la fila del
+    panel y la página de documentación (ahora de cada componente con clase, no solo Button) en
+    `gallery-browser.test.ts`; en `snippets.test.ts`, que cada componente use solo sus clases (antes
+    se aceptaba cualquiera de la lista), que el MDX de cada componente también importe la fuente y
+    que ningún archivo copie ninguna regla.
+  - `label` (rojos 2 y 3). La historia tenía `label: 'Label'` por defecto, el mismo valor del caso,
+    `exampleText('label')`: el lado mal era la historia, no el caso, porque `exampleText` lo usan
+    también los casos prerenderizados y sus tests. La historia pasa a `label: 'Email'`.
+  Inyección vista, restaurando por ruta con el mismo sha256 (historia `19dfdb31…1978`, MDX
+  `560220e0…2888`):
+  - Historia con `label: 'Label'` y las clases de Button: `gallery-browser.test.ts` en rojo en 3
+    tests, «label:Label: the default component already shows it» y «className:my-input: the
+    component does not show it» en claro y en oscuro, y «.my-input {» ausente de la fila del panel.
+  - Historia con una copia de `.my-input {` y un `className="my-button"` en el MDX de Input:
+    `snippets.test.ts` en rojo en 3 tests, el MDX sin limpiar, «Input uses only example classes its
+    story defines» (`['my-button']`) y «the Input story and docs keep no copy».
+
 - [ ] **T-5 — Input de Astro, con su historia**
   Cubre: RF-1, RF-2 a RF-6 (marcado), RF-10 (Astro)
   Archivos: `packages/astro/src/Input/Input.astro`, `packages/astro/index.js`,

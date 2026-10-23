@@ -4,25 +4,22 @@ import { Input } from '@component-museum/react';
 import '@component-museum/react/styles.css';
 import contractJson from '../../contracts/input.contract.json';
 import { argTypesFromContract, usageSnippet, type Contract } from '../lib/contract-args.ts';
+// The example class and its CSS, shown beside the class control (RF-9). Not layered, like a consumer's own rule.
+import { exampleClasses } from '../lib/example-classes.ts';
 
 const contract = contractJson as Contract;
-
-/** The example class shown beside the class control; the documentation page imports it too. */
-export const exampleInputClasses: Record<string, string> = {
-  'my-input': '.my-input {\n  border-radius: 999px;\n  letter-spacing: 0.05em;\n}',
-};
 
 const meta = {
   title: 'Input/React',
   component: Input,
   // Contract-derived controls, never hand-written: a new prop shows up here without an edit.
-  argTypes: argTypesFromContract(contract, exampleInputClasses),
-  args: { label: 'Label', className: '' },
-  excludeStories: ['exampleInputClasses'],
+  argTypes: argTypesFromContract(contract, exampleClasses.Input),
+  // Not the generic example text (`Label`): the gallery test sets that one and needs a default without it.
+  args: { label: 'Email', className: '' },
   decorators: [
     (Story) => (
       <>
-        <style>{Object.values(exampleInputClasses).join('\n')}</style>
+        <style>{Object.values(exampleClasses.Input).join('\n')}</style>
         <Story />
       </>
     ),
