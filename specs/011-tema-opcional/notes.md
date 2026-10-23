@@ -85,3 +85,19 @@ Vistos por el coordinator en un recorrido como usuario (2026-10-23):
 - La tabla de props muestra `""` como valor por defecto de `hint` y `error`, en vez de «-».
 - Con un campo en error y enfocado, el anillo de foco tapa el borde rojo: mientras se escribe no se
   ve el estado de error.
+
+## Clarify del plan (2026-10-23, menores decididos por el planner)
+
+- `[data-theme="system"]` también en el bloque claro, para que un `system` dentro de un `dark` con
+  el sistema en claro dé el claro.
+- La hoja, el decorador y los seis tests que dependen de ella van en una sola tarea (T-1); la
+  documentación, en otra (T-2), en paralelo.
+- Cada test que emulaba el sistema prueba dos cosas: el tema pedido y el claro por defecto con el
+  sistema en oscuro.
+- La línea `Changed:` de la 003 la escribe la T-2 sin frase de aprobación: vale la de la 011.
+
+## Pregunta para el dueño (con recomendación)
+
+- La galería arranca con «Sistema» (`initialGlobals`). Recomendado: mantenerlo. Así la galería se
+  ve como prefiere quien la lee, y los tests de la 005, la 007 y la 008 no cambian. La alternativa
+  es arrancar en «Claro» para imitar el claro por defecto del paquete.
