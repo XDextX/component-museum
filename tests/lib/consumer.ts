@@ -133,7 +133,7 @@ function buttonInstances(framework: Framework, tailwind = false): string {
 }
 
 /**
- * Spec 009 T-6: the Input instances `input-a11y.test.ts` measures. Ids are the control's own (RF-2:
+ * Spec 009 T-6: the Input instances `field-a11y.test.ts` measures. Ids are the control's own (RF-2:
  * a consumer id is respected); the twins share a label and tell apart by `name`.
  */
 function inputInstances(framework: Framework): string {
@@ -153,12 +153,37 @@ function inputInstances(framework: Framework): string {
   ].join(framework === 'react' ? '\n      ' : '\n\t\t');
 }
 
-/** Makes the consumer's entry import Button, Input and the stylesheet once, and render every instance. */
+/**
+ * Spec 010 T-4: the Textarea instances `field-a11y.test.ts` measures, in the shapes of Input's but with
+ * their own labels and texts, so an Input and a Textarea sit on one page (the twins share "Twin" on purpose).
+ * `textarea-escape` and `textarea-newline` carry the RF-11 values; React alone adds a `value` without
+ * `onChange`, which is read-only there.
+ */
+function textareaInstances(framework: Framework): string {
+  const value = framework === 'react' ? 'defaultValue' : 'value';
+  return [
+    ...['sm', 'md', 'lg'].map((s) => `<Textarea id="textarea-${s}" label="Area ${s}" size="${s}" ${value}="Value" placeholder="Placeholder" />`),
+    '<Textarea id="textarea-hint" label="Area hint" hint="Area hint text" />',
+    '<Textarea id="textarea-error" label="Area error" error="Area error text" />',
+    '<Textarea id="textarea-both" label="Area both" hint="Area hint text" error="Area error text" />',
+    '<Textarea id="textarea-required" label="Area required" required />',
+    '<Textarea id="textarea-disabled" label="Area disabled" error="Area disabled error" disabled />',
+    '<Textarea name="twins-ta-a" label="Twin" />',
+    '<Textarea name="twins-ta-b" label="Twin" />',
+    '<p id="textarea-own-note">Area own note</p>',
+    '<Textarea id="textarea-own" label="Area own" hint="Area own hint" aria-describedby="textarea-own-note" />',
+    `<Textarea id="textarea-escape" label="Area escape" ${value}={'<b>&\\nx'} />`,
+    `<Textarea id="textarea-newline" label="Area newline" ${value}={'\\nx'} />`,
+    ...(framework === 'react' ? ['<Textarea id="textarea-readonly" label="Area read only" value="Fixed text" />'] : []),
+  ].join(framework === 'react' ? '\n      ' : '\n\t\t');
+}
+
+/** Makes the consumer's entry import Button, Input, Textarea and the stylesheet once, and render every instance. */
 function useButtons(framework: Framework, dir: string, name: string): void {
   if (framework === 'react') {
     writeFileSync(
       join(dir, 'src', 'MuseumButtons.tsx'),
-      `import { Button, Input } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n      ${inputInstances(framework)}\n    </>\n  )\n}\n`,
+      `import { Button, Input, Textarea } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n      ${inputInstances(framework)}\n      ${textareaInstances(framework)}\n    </>\n  )\n}\n`,
     );
     patch(join(dir, entries.react), (source) =>
       `import MuseumButtons from './MuseumButtons.tsx'\n${source.replace('<App />', '<App />\n    <MuseumButtons />')}`,
@@ -166,8 +191,8 @@ function useButtons(framework: Framework, dir: string, name: string): void {
   } else {
     patch(join(dir, entries.astro), (source) =>
       source
-        .replace(/^---\r?\n/, `---\nimport { Button, Input } from '${name}';\nimport '${name}/styles.css';\n`)
-        .replace('</body>', `\t${buttonInstances(framework)}\n\t\t${inputInstances(framework)}\n\t</body>`),
+        .replace(/^---\r?\n/, `---\nimport { Button, Input, Textarea } from '${name}';\nimport '${name}/styles.css';\n`)
+        .replace('</body>', `\t${buttonInstances(framework)}\n\t\t${inputInstances(framework)}\n\t\t${textareaInstances(framework)}\n\t</body>`),
     );
   }
 }
