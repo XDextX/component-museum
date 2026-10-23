@@ -77,7 +77,7 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   rojo.
   Inyección vista en rojo (2026-10-22): quitar `copyable` de `SyntaxHighlighter` dejó los 6 casos sin botón y puso el test en rojo (7 de 10 fallan: los 6 de copiar y el de `Tab`); restaurado, 10 de 10 en verde.
 
-- [ ] **T-6 — Sin desborde horizontal desde 320 px**
+- [x] **T-6 — Sin desborde horizontal desde 320 px**
   Cubre: RF-7
   Archivos: `tests/gallery-overflow.test.ts`, `gallery/.storybook/preview-head.html` (si el
   desborde sale de Storybook) o el archivo de la galería que lo cause
@@ -86,6 +86,11 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   `scrollWidth ≤ clientWidth` a 320 y a 542 px.
   Inyección: un elemento de 600 px de ancho fijo en una copia de la página, inyectado con
   `addStyleTag`, pone el test en rojo a 542 px; y el mismo test con `--hide-scrollbars` no lo vería.
+  Hecho: desbordaban (a 320 y/o 542) la tabla de props de la página de documentación (547 px
+  mínimos), el `pre` de uso de la historia Astro (item de rejilla sin `min-width: 0`) y los `code`
+  en línea de la prosa de la página de documentación (`white-space: nowrap`). Arreglo: CSS en
+  `gallery/.storybook/preview-head.html`. Inyección vista en rojo: `body::after` de 600 px, activada
+  con `MUSEUM_OVERFLOW_INJECT=1`, pone en rojo los 6 casos (incluido 542 px); sin ella, 6 en verde.
 
 ## Grafo de olas
 
