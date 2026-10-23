@@ -1,6 +1,7 @@
 # Spec 007 — pulido-galeria
 
-**Status:** approved · **Approved:** 2026-10-22 · el dueño, tras 2 rondas de clarify
+**Status:** implemented · **Approved:** 2026-10-22 · el dueño, tras 2 rondas de clarify
+**Implemented:** 2026-10-22 · 6 tareas en 2 olas con worktrees, más 3 correcciones tras el merge (guarda de la regla 7 limitada a los Button del museo, tipos de la T-2, color del texto de la página en oscuro); validada por el reviewer en 1 vuelta; `npm test` 314/314 (+1 omitido)
 **Size:** M (7 RF) · **Entrega:** 3 (abre con esta spec) · **Depende de:** 005
 
 ## Contexto y objetivo
