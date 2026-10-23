@@ -53,7 +53,7 @@ Textarea son dos implementaciones de un mismo contrato (`contracts/textarea.cont
 - **`id`:** en React, `useId()`; en Astro, un contador, sin `Math.random()`, así que dos campos con la misma etiqueta no chocan y el marcado se repite build a build.
 - **Tamaño:** el alto inicial lo dan las filas (`rows`). El usuario lo agranda solo en vertical (`resize: vertical`); el ancho lo decide la página. Un texto largo se parte en líneas sin ensanchar el campo.
 - **CSS:** vive en la capa `components.museum`. Cada color, tamaño y fuente sale de una variable `--museum-*`. A igual `size`, Textarea y Input tienen el mismo aspecto.
-- **Temas:** el claro es el de por defecto; el oscuro llega con `prefers-color-scheme` o con `data-theme="dark"`. El error no depende solo del color: su texto siempre está.
+- **Temas:** el claro es el de por defecto; el oscuro se pide con `data-theme="dark"` en cualquier contenedor, y `data-theme="system"` sigue la preferencia del sistema. Sin atributo, el paquete no mira el sistema. El error no depende solo del color: su texto siempre está.
 
 ## Cómo alterarlo
 
@@ -143,7 +143,7 @@ Textarea is two implementations of one contract (`contracts/textarea.contract.js
 - **`id`:** in React, `useId()`; in Astro, a counter, never `Math.random()`, so two fields with the same label never clash and the markup repeats build to build.
 - **Size:** the rows (`rows`) give the initial height. The user can enlarge it vertically only (`resize: vertical`); the page decides the width. Long text wraps without widening the field.
 - **CSS:** it lives in the `components.museum` layer. Every color, size and font comes from a `--museum-*` variable. At the same `size`, Textarea and Input look the same.
-- **Themes:** light is the default; dark arrives through `prefers-color-scheme` or `data-theme="dark"`. The error does not rely on color alone: its text is always there.
+- **Themes:** light is the default; dark is requested with `data-theme="dark"` on any container, and `data-theme="system"` follows the system preference. Without the attribute, the package does not look at the system. The error does not rely on color alone: its text is always there.
 
 ## How to alter it
 

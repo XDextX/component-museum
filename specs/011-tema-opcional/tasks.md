@@ -68,7 +68,7 @@ Ningún archivo es compartido:
   - Para la validación: el borde de RF-5 se mide contra la superficie del campo (lo que lo rodea), no
     contra el `body` oscuro (el borde de error da 2.74:1 contra `#111827`).
 
-- [ ] **T-2 — Documentar cómo se pide el tema**
+- [x] **T-2 — Documentar cómo se pide el tema**
   Cubre: RF-6, RF-7
   Archivos: `packages/react/README.md`, `packages/astro/README.md`, `gallery/stories/Button.mdx`,
   `gallery/stories/Input.mdx`, `gallery/stories/Textarea.mdx`, `specs/003-estilos-temas/spec.md`
@@ -86,6 +86,9 @@ Ningún archivo es compartido:
   - Commits: `docs(packages/react)`, `docs(packages/astro)`, `docs:` (MDX y 003) y `test:`.
   Inyección: devolver «arrives through `prefers-color-scheme`» al README de Astro pone en rojo
   RF-6; quitar la línea `Changed:` de la 003 pone en rojo RF-7.
+  Hecho (2026-10-23): inyección vista en rojo y restaurada: «arrives through `prefers-color-scheme`» en el
+  README de Astro puso en rojo RF-6 (1 caso); quitar la línea `Changed:` puso en rojo RF-7 (1 caso).
+  Sin las ediciones, el test nuevo daba 9 casos en rojo de 11.
 
   Va en la ola 1 junto a la T-1: no comparten archivos.
 
