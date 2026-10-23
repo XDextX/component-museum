@@ -70,6 +70,22 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   marcado y marca 6.70 y 4.82. La etiqueta usa `line-height` de 1.5rem, así que `min-height` queda como
   segundo seguro: quitarlo solo no pone en rojo RF-10 (la T-4 deberá inyectar otra cosa).
 
+  Corrección tras validación (ronda 1). Con colores forzados, `.museum-checkbox[aria-invalid="true"]`
+  (y su `:checked`), más específica que el bloque de colores forzados, seguía pintando el borde con
+  `--museum-field-error`, y el cuadro lleva `forced-color-adjust: none`: el token del tema se colaba
+  en la paleta forzada. Dentro de `@media (forced-colors: active)` el borde del cuadro con error pasa
+  a `CanvasText`; el error lo dice su texto, no un color. RF-13 de `field-styles.test.ts` mide ahora
+  el contraste del borde (≥3:1) contra el fondo del campo que rodea al cuadro, y el del cuadro sin
+  marcar contra su propio relleno, en `cb-md`, `cb-error`, `cb-md-checked` y `cb-error-checked`, con
+  colores forzados claros y oscuros y `data-theme` light y dark (antes solo comparaba que los colores
+  fueran distintos y no miraba el cuadro con error).
+  Antes / después, borde del cuadro con error contra su entorno (paleta forzada / `data-theme`):
+  claro/light 6.47 → 21; claro/dark 1.90 → 21; oscuro/light 3.25 → 21; oscuro/dark 11.06 → 21. Sin
+  error, sin cambios: sin marcar 21, marcado 15.13 (claro) y 14.37 (oscuro).
+  Inyección vista: el test nuevo, escrito antes del arreglo, cae con `claro/dark cb-error` y
+  `cb-error-checked` a 1.90 (y `oscuro/light` a 3.25 queda justo por encima del umbral); con el
+  arreglo, `field-styles.test.ts` 74 de 74.
+
   Va en la ola 1 junto a la T-1: no comparten archivos.
 
 - [x] **T-3 — Contrato y Checkbox en los dos frameworks, con su galería**
@@ -128,7 +144,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - la etiqueta larga se parte sin desbordar a 320 px;
   - Input y Textarea siguen con sus casos: da el número antes y después.
   Inyección: quitar `for` de la etiqueta en el ayudante de la rama pone en rojo RF-2; quitar
-  `min-height` de la etiqueta en línea pone en rojo RF-10 en `sm`.
+  `min-height` y `line-height` de la etiqueta en línea, juntos (el `line-height` solo ya da los
+  24 px), pone en rojo RF-10 en `sm`.
   Hecho (2026-10-23, rama `spec/012-checkbox-T-4`, sin commit):
   - Inyecciones vistas en rojo y restauradas por ruta (`git checkout -- <ruta>`, CRLF comprobado): sin
     `htmlFor` en `packages/react/src/field.tsx`, RF-2 cae en Checkbox (`RF-2` compartido, el de estado, `RF-12`,

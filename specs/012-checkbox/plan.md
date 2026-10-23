@@ -35,7 +35,8 @@ Lecciones que el plan aplica:
 
 - **La etiqueta no envuelve el control: va después, con `for`.** Es el mismo `<label for>` de Input,
   y no hace falta cambiar cómo se asocian. La zona de pulsación (RF-10) es la unión de las cajas del
-  control y de la etiqueta, y la etiqueta tiene `min-height: 1.5rem` (24 px).
+  control y de la etiqueta, y la etiqueta tiene `min-height` y `line-height` de 1.5rem (24 px): el
+  `line-height` solo ya da los 24 px.
 - **La marca es un `::before` del propio `<input>`** con `mask-image` (un SVG fijo de una marca) y
   `background-color: var(--museum-checkbox-mark)`. Chromium, Firefox y Safari pintan
   pseudoelementos en un `input` con `appearance: none`; aquí solo se prueba Edge.
@@ -55,7 +56,7 @@ Lecciones que el plan aplica:
 | RF-1 | `contracts/checkbox.contract.json` y los dos Checkbox (T-3); `contract.test.ts` y `packages.test.ts` ya recorren cada contrato. |
 | RF-2 a RF-6 | El ayudante en línea (T-1) usado por Checkbox (T-3); marcado en `field-markup.test.ts` (T-3) y navegador en `field-a11y.test.ts` (T-4). |
 | RF-7, RF-8, RF-9 | Tokens y reglas del cuadro y de la marca (T-2); página fija en `field-styles.test.ts` (T-2) y consumidores (T-4). |
-| RF-10 | `min-height` de la etiqueta en línea y tamaño del cuadro por `size` (T-2); medida en T-2 y T-4. |
+| RF-10 | `min-height` y `line-height` de la etiqueta en línea y tamaño del cuadro por `size` (T-2); medida en T-2 y T-4. |
 | RF-11 | Anillo de la 003 en `.museum-checkbox:focus-visible`, con el borde de error visible (T-2); con `Tab` en T-4. |
 | RF-12 | `defaultChecked` → atributo `checked` en Astro y `defaultChecked` nativo en React (T-3); marcado en T-3 y pulsación en T-4. |
 | RF-13 | Bloque `@media (forced-colors: active)` (T-2); con `forcedColors: 'active'` en T-2 y T-4. |
@@ -137,8 +138,9 @@ escribe igual a partir de `defaultChecked`.
   `--museum-surface`) y el test los ajusta.
 - **`.museum-field--inline`:** una rejilla de dos columnas (`auto 1fr`), con
   `column-gap: var(--museum-space-sm-y)` y `align-items: start`. La ayuda y el error van en la
-  segunda columna, alineados con el texto de la etiqueta. La etiqueta tiene `min-height: 1.5rem` y
-  `display: flex` con `align-items: center`.
+  segunda columna, alineados con el texto de la etiqueta. La etiqueta tiene `min-height` y
+  `line-height` de 1.5rem; cualquiera de los dos da los 24 px, así que una inyección para RF-10 tiene
+  que quitar los dos.
 - **`.museum-checkbox`:**
   - `appearance: none`, `margin: 0`, borde de `--museum-border-width` con `--museum-control-border`;
   - fondo `--museum-control-bg`, radio `calc(var(--museum-radius) / 2)`;
