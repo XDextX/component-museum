@@ -21,7 +21,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   `tests/field-markup.test.ts`: la T-3;
 - `tests/lib/consumer.ts`, `tests/field-a11y.test.ts`: la T-4.
 
-- [ ] **T-1 — El ayudante de campo, también en línea**
+- [x] **T-1 — El ayudante de campo, también en línea**
   Cubre: RF-2 a RF-6 (la lógica que hereda Checkbox)
   Archivos: `packages/react/src/field.tsx` (`inline`), `packages/astro/src/field.ts` (prefijo
   `museum-checkbox`), `tests/field-ids.test.ts`
@@ -34,6 +34,9 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - Dos commits: `refactor(packages/react)` y `refactor(packages/astro)`.
   Inyección: pintar la etiqueta después del control también sin `inline` pone en rojo
   `field-markup.test.ts` en Input y Textarea.
+  Hecho: inyección vista en rojo (control antes de la etiqueta también sin `inline`: 6 casos de Input, 6 de
+  Textarea y 2 más en `field-markup.test.ts`) y restaurada. El test de `Field` en línea (React) vive en
+  `field-ids.test.ts`, único archivo de tests de la T-1; también se vio en rojo antes del código.
 
 - [ ] **T-2 — Hoja del cuadro, la marca y la disposición en línea**
   Cubre: RF-7, RF-8, RF-9, RF-10, RF-11, RF-13 (sobre la página fija)
