@@ -35,7 +35,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   Inyección: pintar la etiqueta después del control también sin `inline` pone en rojo
   `field-markup.test.ts` en Input y Textarea.
 
-- [ ] **T-2 — Hoja del cuadro, la marca y la disposición en línea**
+- [x] **T-2 — Hoja del cuadro, la marca y la disposición en línea**
   Cubre: RF-7, RF-8, RF-9, RF-10, RF-11, RF-13 (sobre la página fija)
   Archivos: `styles/museum.css` (tokens en los tres bloques; `.museum-field--inline`;
   `.museum-checkbox*`; colores forzados), `tests/fixtures/field.html`, `tests/field-styles.test.ts`
@@ -55,6 +55,17 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - el coordinator aprueba las capturas (dos temas y colores forzados) antes del commit.
   Inyección: un `--museum-checkbox-mark` igual a `--museum-checkbox-checked-bg` pone en rojo RF-8;
   quitar el bloque de colores forzados pone en rojo RF-13.
+  Visto en rojo (2026-10-23, rama `spec/012-checkbox-T-2`, revertido): con la marca igual al cuadro
+  marcado en los tres bloques, RF-8 falla en 5 de los 5 modos (`cb-sm-checked mark: expected 1 to be
+  greater than or equal to 3`); con el bloque de colores forzados desactivado, RF-13 falla (`sm checked
+  vs unchecked fill: expected 'rgb(0, 0, 0)' not to be 'rgb(0, 0, 0)'`); y con `place-content` en vez de
+  `grid: 1fr / 1fr` (marca de 0 px) falla la medida de la marca, que las capturas destaparon.
+  Números: `field-styles.test.ts`, 38 tests antes (Input y Textarea) y 73 después, los 38 sin tocar.
+  Valores: `--museum-checkbox-checked-bg` #1d4ed8 claro, #3b82f6 oscuro; `--museum-checkbox-mark`
+  #ffffff claro, #111827 oscuro; fijos: `--museum-checkbox-target` 1.5rem, `-size-sm/md/lg` 1/1/1.125rem
+  y `-mark-image`. Contrastes: borde 4.83 (claro) y 6.99 (oscuro); borde de error 6.47 y 9.35; cuadro
+  marcado y marca 6.70 y 4.82. La etiqueta usa `line-height` de 1.5rem, así que `min-height` queda como
+  segundo seguro: quitarlo solo no pone en rojo RF-10 (la T-4 deberá inyectar otra cosa).
 
   Va en la ola 1 junto a la T-1: no comparten archivos.
 
