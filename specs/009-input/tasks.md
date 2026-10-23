@@ -165,7 +165,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   comparación con React normaliza los `id` y la serialización (`/>`, `=""`). Los dos commits los
   hace la sesión git.
 
-- [ ] **T-6 — Input en los consumidores: accesibilidad en Edge**
+- [x] **T-6 — Input en los consumidores: accesibilidad en Edge**
   Cubre: RF-2 a RF-9 (en el navegador), NFR de accesibilidad y regla 2
   Archivos: `tests/lib/consumer.ts` (instancias de Input, plan, bloque 4),
   `tests/input-a11y.test.ts`
@@ -181,6 +181,16 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - `a11y.test.ts` y los tests de consumidores siguen en verde.
   Inyección: un consumidor con `aria-describedby` vacío en el componente pone en rojo RF-3; un
   Input `disabled` sin el atributo nativo pone en rojo la comprobación del `Tab`.
+  Visto en rojo y restaurado (por ruta, con `git checkout --`): con `aria-describedby=""` en
+  `Input.astro` y en `Input.tsx`, falla RF-3 y RF-4 en cada framework y tema (2 tests por
+  framework, «expected '' to be 'Hint text'»); con `disabled={undefined}` en los dos, falla la
+  comprobación del `Tab` (2 tests por framework: alcanza `input-disabled`, 11 controles en vez de
+  10). Medido, en claro / oscuro: borde 4.83 / 7.04 (React) y 4.83 / 6.99 (Astro), 6.47 / 9.42 y
+  6.47 / 9.35 en error; texto ≥ 6.47 / 9.35; anillo 6.70 / 9.84; alturas sm 31.5, md 38, lg 48.5
+  px, las mismas que las de Button. Una página de consumidor sin fondo propio bajo el tema oscuro
+  (el starter de Astro) es el lienzo blanco del navegador: ahí el test mide contra
+  `--museum-surface` (el suelo de la hoja), como el anillo de Button; sobre el blanco real darían
+  1.05:1 la etiqueta y 2.54:1 el borde, cosa del consumidor que no pinta su página.
 
 ## Grafo de olas
 
