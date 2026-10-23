@@ -292,6 +292,29 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
     }
   });
 
+  // Forced colours light and dark, each under data-theme light and dark: the theme's tokens must not leak in.
+  it('RF-13: with forced colors, every square border is 3:1 against what surrounds it, and an unchecked one against its own fill, the error ones included', async () => {
+    const report: Record<string, number>[] = [];
+    for (const scheme of ['light', 'dark'] as const) {
+      for (const theme of ['light', 'dark']) {
+        const page = await (await browser.newContext({ colorScheme: scheme, forcedColors: 'active', viewport: { width: 1024, height: 900 } })).newPage();
+        await page.setContent(html);
+        await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme);
+        for (const id of ['cb-md', 'cb-error', 'cb-md-checked', 'cb-error-checked']) {
+          const box = await cb(page, id);
+          const around = contrastRatio(parseRgb(box.border), parseRgb(box.surface));
+          // A checked square is filled with its border's colour, so only the unchecked one has a fill to stand out from.
+          const own = id.endsWith('-checked') ? Infinity : contrastRatio(parseRgb(box.border), parseRgb(box.bg));
+          report.push({ [`${scheme}/${theme} ${id} around`]: +around.toFixed(2), [`${scheme}/${theme} ${id} own`]: +own.toFixed(2) });
+        }
+        await page.context().close();
+      }
+    }
+    console.log('RF-13 forced borders', JSON.stringify(report));
+    const low = report.flatMap((r) => Object.entries(r)).filter(([, ratio]) => ratio < 3);
+    expect(low, JSON.stringify(report)).toEqual([]);
+  });
+
   it('RF-9: Input and Button of the same size are the same height', async () => {
     const page = await open(modes[2]);
     const heights = await page.evaluate((list) => list.map((size) => ({

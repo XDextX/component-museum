@@ -416,6 +416,13 @@
       background-color: Highlight;
     }
 
+    /* The error token would outlast the forced palette here (this rule's specificity): a system colour
+       keeps the border seen, and the error text, not a colour, says what is wrong. */
+    .museum-checkbox[aria-invalid="true"],
+    .museum-checkbox[aria-invalid="true"]:checked {
+      border-color: CanvasText;
+    }
+
     .museum-checkbox:focus-visible {
       outline-color: CanvasText;
       box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) Canvas;
