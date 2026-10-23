@@ -48,7 +48,7 @@ Button son dos implementaciones de un mismo contrato (`contracts/button.contract
 - **React:** `Button` compone las clases `museum-button`, `museum-button--<variant>` y `museum-button--<size>`, y añade al final la `className` que recibas. Pinta `data-museum-button` y reenvía el resto de atributos.
 - **Astro:** el mismo marcado, con `class` en lugar de `className` y un `<slot />` para el texto.
 - **CSS:** vive en la capa `components.museum`. Cada color, tamaño y fuente sale de una variable `--museum-*`; la clase no escribe ningún valor suelto.
-- **Temas:** el claro es el de por defecto; el oscuro llega con `prefers-color-scheme` o con `data-theme="dark"` en cualquier contenedor. `data-theme="light"` lo fuerza claro.
+- **Temas:** el claro es el de por defecto; el oscuro se pide con `data-theme="dark"` en cualquier contenedor, y `data-theme="system"` sigue la preferencia del sistema. Sin atributo, el paquete no mira el sistema.
 - **Foco:** el anillo solo aparece con teclado (`:focus-visible`), con un halo de la superficie del paquete para que se lea sobre cualquier página.
 
 ## Cómo alterarlo
@@ -134,7 +134,7 @@ Button is two implementations of one contract (`contracts/button.contract.json`)
 - **React:** `Button` composes the classes `museum-button`, `museum-button--<variant>` and `museum-button--<size>`, and appends the `className` you pass last. It renders `data-museum-button` and forwards the remaining attributes.
 - **Astro:** the same markup, with `class` instead of `className` and a `<slot />` for the text.
 - **CSS:** it lives in the `components.museum` layer. Every color, size and font comes from a `--museum-*` variable; the class writes no loose values.
-- **Themes:** light is the default; dark arrives through `prefers-color-scheme` or `data-theme="dark"` on any container. `data-theme="light"` forces light.
+- **Themes:** light is the default; dark is requested with `data-theme="dark"` on any container, and `data-theme="system"` follows the system preference. Without the attribute, the package does not look at the system.
 - **Focus:** the ring shows for keyboard users only (`:focus-visible`), with a halo of the package's surface so it reads on any page.
 
 ## How to alter it

@@ -50,7 +50,7 @@ Input son dos implementaciones de un mismo contrato (`contracts/input.contract.j
 - **Ayuda y error:** dos `<p>` bajo el control, que solo existen si hay texto. `aria-describedby` los enlaza, el error primero y después la ayuda, y detrás los `id` que tú pases. Con error, el control lleva `aria-invalid="true"`; sin error, no lleva ni ese atributo ni el nodo.
 - **`id`:** en React, `useId()`; en Astro, un contador, sin `Math.random()`, así que dos campos con la misma etiqueta no chocan y el marcado se repite build a build.
 - **CSS:** vive en la capa `components.museum`. Cada color, tamaño y fuente sale de una variable `--museum-*`. A igual `size`, Input y Button miden lo mismo de alto.
-- **Temas:** el claro es el de por defecto; el oscuro llega con `prefers-color-scheme` o con `data-theme="dark"`. El error no depende solo del color: su texto siempre está.
+- **Temas:** el claro es el de por defecto; el oscuro se pide con `data-theme="dark"` en cualquier contenedor, y `data-theme="system"` sigue la preferencia del sistema. Sin atributo, el paquete no mira el sistema. El error no depende solo del color: su texto siempre está.
 
 ## Cómo alterarlo
 
@@ -135,7 +135,7 @@ Input is two implementations of one contract (`contracts/input.contract.json`) s
 - **Hint and error:** two `<p>` below the control, which exist only when there is text. `aria-describedby` links them, error first and then hint, followed by any `id` you pass. With an error the control carries `aria-invalid="true"`; without one, neither that attribute nor the node exists.
 - **`id`:** in React, `useId()`; in Astro, a counter, never `Math.random()`, so two fields with the same label never clash and the markup repeats build to build.
 - **CSS:** it lives in the `components.museum` layer. Every color, size and font comes from a `--museum-*` variable. At the same `size`, Input and Button are equally tall.
-- **Themes:** light is the default; dark arrives through `prefers-color-scheme` or `data-theme="dark"`. The error does not rely on color alone: its text is always there.
+- **Themes:** light is the default; dark is requested with `data-theme="dark"` on any container, and `data-theme="system"` follows the system preference. Without the attribute, the package does not look at the system. The error does not rely on color alone: its text is always there.
 
 ## How to alter it
 
