@@ -24,7 +24,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 - `tests/lib/consumer.ts`: la T-6;
 - `tests/input-markup.test.ts` lo crea la T-4 y lo amplía la T-5, en una ola posterior.
 
-- [ ] **T-1 — Contrato con props de texto**
+- [x] **T-1 — Contrato con props de texto**
   Cubre: RF-1 (formato)
   Archivos: `tests/lib/contract.ts`, `tests/lib/api.ts`, `tests/contract.test.ts`,
   `gallery/lib/contract-args.ts`, `tests/contract-args.test.ts`
@@ -41,6 +41,9 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - Ningún test de Button se quita ni se afloja: dilo con el número antes y después.
   Inyección: declarar `label?: string` en una copia en memoria pone en rojo la comprobación de la
   obligatoria; quitar la rama `string` de `astroCases` pone en rojo los 13 casos.
+  Hecho: inyecciones vistas en rojo y restauradas. Tests de Button: 24 antes, 33 después
+  (ninguno quitado ni aflojado). Tocó `tests/gallery-browser.test.ts` para que el `tsc` de gallery
+  tipara, con permiso del coordinator.
 
 - [ ] **T-2 — Hoja del campo y sus tokens**
   Cubre: RF-7, RF-8, RF-9 (sobre la página fija)

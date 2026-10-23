@@ -4,7 +4,9 @@ import type { Framework } from './paths.ts';
 
 export type PropSpec =
   | { type: 'enum'; values: string[]; default: string }
-  | { type: 'boolean'; default: boolean };
+  | { type: 'boolean'; default: boolean }
+  | { type: 'string'; default: string }
+  | { type: 'string'; required: true };
 
 export type Contract = {
   name: string;
@@ -14,8 +16,8 @@ export type Contract = {
   classProp: boolean;
 };
 
-/** What an implementation must declare per prop: its literal values, 'boolean', or 'any'. */
-export type Api = Record<string, string[] | 'boolean' | 'any'>;
+/** What an implementation must declare per prop: its literal values, 'boolean', 'string' ('string!' when required), or 'any'. */
+export type Api = Record<string, string[] | 'boolean' | 'string' | 'string!' | 'any'>;
 
 /** `museum:<component>:<event>` (DOM event) in Astro, `on<Event>` in React. */
 export function eventName(framework: Framework, component: string, event: string): string {
@@ -38,7 +40,8 @@ export function contentProp(framework: Framework): string | null {
 export function expectedApi(contract: Contract, framework: Framework): Api {
   const api: Api = {};
   for (const [name, spec] of Object.entries(contract.props)) {
-    api[name] = spec.type === 'enum' ? spec.values : 'boolean';
+    api[name] =
+      spec.type === 'enum' ? spec.values : spec.type === 'boolean' ? 'boolean' : 'required' in spec ? 'string!' : 'string';
   }
   if (contract.classProp) api[classProp(framework)] = 'any';
   const content = contentProp(framework);

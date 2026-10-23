@@ -1,10 +1,26 @@
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { argTypesFromContract, astroCases, defaultSummary, usageSnippet } from '../gallery/lib/contract-args.ts';
-import { loadContract } from './lib/contract.ts';
+import { argTypesFromContract, astroCases, defaultSummary, exampleText, usageSnippet } from '../gallery/lib/contract-args.ts';
+import { loadContract, type Contract } from './lib/contract.ts';
 
 const button = loadContract(resolve(import.meta.dirname, '..', 'contracts/button.contract.json'));
 const example = { 'my-button': '.my-button { color: red; }' };
+// In memory on purpose: the Input contract file belongs to another task.
+const input: Contract = {
+  name: 'Input',
+  props: {
+    label: { type: 'string', required: true },
+    hint: { type: 'string', default: '' },
+    error: { type: 'string', default: '' },
+    type: { type: 'enum', values: ['text', 'email', 'password', 'search', 'tel', 'url', 'number'], default: 'text' },
+    size: { type: 'enum', values: ['sm', 'md', 'lg'], default: 'md' },
+    disabled: { type: 'boolean', default: false },
+    required: { type: 'boolean', default: false },
+  },
+  events: [],
+  content: false,
+  classProp: true,
+};
 
 describe('argTypesFromContract (RF-3)', () => {
   const types = argTypesFromContract(button, example);
@@ -80,5 +96,46 @@ describe('defaultSummary and table.defaultValue (spec 007, RF-1)', () => {
     for (const [name, spec] of Object.entries(button.props)) {
       expect(types[name].table?.defaultValue?.summary).toBe(defaultSummary(spec));
     }
+  });
+});
+
+describe('text props (spec 009, RF-1)', () => {
+  const types = argTypesFromContract(input, {});
+
+  it('gives a text control to every string, and a default only to the optional ones', () => {
+    for (const name of ['label', 'hint', 'error']) expect(types[name].control).toEqual({ type: 'text' });
+    expect(types.label.table).toBeUndefined();
+    expect(types.hint.table?.defaultValue.summary).toBe('""');
+  });
+
+  it('writes an empty default as "" and nothing for a required text', () => {
+    expect(defaultSummary(input.props.hint)).toBe('""');
+    expect(defaultSummary(input.props.error)).toBe('""');
+    expect(defaultSummary(input.props.label)).toBeUndefined();
+  });
+
+  it('writes label="…" in the usage, the required text always and the optional ones off default', () => {
+    const s = usageSnippet('react', { label: 'Name', hint: '', type: 'email', size: 'md' }, input);
+    expect(s).toContain('<Input label="Name" type="email" />');
+    expect(usageSnippet('astro', { label: 'Name', hint: 'Help' }, input)).toContain('<Input label="Name" hint="Help" />');
+  });
+
+  it('capitalises the prop name as the example text', () => {
+    expect(exampleText('label')).toBe('Label');
+    expect(exampleText('hint')).toBe('Hint');
+    expect(exampleText('error')).toBe('Error');
+  });
+
+  it('gives the 13 Astro cases of a contract without variant', () => {
+    const cases = astroCases(input);
+    expect(cases.map((c) => c.id)).toEqual([
+      'default', 'hint', 'error',
+      'type-email', 'type-password', 'type-search', 'type-tel', 'type-url', 'type-number',
+      'size-sm', 'size-lg', 'disabled', 'required',
+    ]);
+    expect(cases[0].props).toEqual({ label: 'Label' });
+    expect(cases[1].props).toEqual({ label: 'Label', hint: 'Hint' });
+    expect(cases[3].props).toEqual({ label: 'Label', type: 'email' });
+    expect(cases[11].props).toEqual({ label: 'Label', disabled: true });
   });
 });
