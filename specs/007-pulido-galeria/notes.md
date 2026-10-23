@@ -59,3 +59,5 @@ espera, porque se corta de `main` (`AGENTS.md`).
 - RF-7: buscar qué elemento desborda con una barra clásica; si es de Storybook, corregirlo con CSS
   de la galería.
 - Ninguna dependencia nueva prevista.
+
+- T-5, cambio de plan (coordinator): `SyntaxHighlighter` no se pinta en el iframe de una historia sin tema de Storybook, así que la historia lo envuelve en `ThemeProvider` con `convert(themes.light|dark)` según el global `theme`; y `language="html"` en lugar de `astro`, que no es un lenguaje registrado.

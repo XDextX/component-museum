@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { SyntaxHighlighter } from 'storybook/internal/components';
+import { ThemeProvider, convert, getPreferredColorScheme, themes } from 'storybook/theming';
 import '@component-museum/astro/styles.css';
 // Written by gallery/scripts/extract-astro.mjs from the real Astro build (spec 004, RF-5 and RF-6).
 import cases from '../generated/astro-button.json';
@@ -17,18 +19,26 @@ const meta = {
 export default meta;
 
 export const Variants: StoryObj = {
-  render: () => (
-    <div style={{ display: 'grid', gap: '1.5rem' }}>
-      {(cases as AstroCase[]).map(({ id, html, usage }) => (
-        <section key={id} id={`astro-${id}`} aria-label={id}>
-          <h3 style={{ margin: '0 0 0.5rem', fontFamily: 'system-ui', fontSize: '0.875rem' }}>{id}</h3>
-          {/* The HTML Astro rendered, as is: Storybook only shows it. */}
-          <div dangerouslySetInnerHTML={{ __html: html }} />
-          <pre style={{ margin: '0.5rem 0 0' }}>
-            <code>{usage}</code>
-          </pre>
-        </section>
-      ))}
-    </div>
-  ),
+  render: (_args, { globals }) => {
+    // The gallery `theme` global; "system" (or unset) follows prefers-color-scheme.
+    const dark = globals.theme === 'dark' || (globals.theme !== 'light' && getPreferredColorScheme() === 'dark');
+    return (
+      // SyntaxHighlighter reads Storybook's theme, which a story iframe does not provide.
+      <ThemeProvider theme={convert(dark ? themes.dark : themes.light)}>
+        <div style={{ display: 'grid', gap: '1.5rem' }}>
+          {(cases as AstroCase[]).map(({ id, html, usage }) => (
+            <section key={id} id={`astro-${id}`} aria-label={id}>
+              <h3 style={{ margin: '0 0 0.5rem', fontFamily: 'system-ui', fontSize: '0.875rem' }}>{id}</h3>
+              {/* The HTML Astro rendered, as is: Storybook only shows it. */}
+              <div dangerouslySetInnerHTML={{ __html: html }} />
+              {/* "astro" is not a registered language; Astro files are HTML plus a frontmatter fence. */}
+              <SyntaxHighlighter language="html" copyable>
+                {usage}
+              </SyntaxHighlighter>
+            </section>
+          ))}
+        </div>
+      </ThemeProvider>
+    );
+  },
 };
