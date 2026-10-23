@@ -41,8 +41,8 @@ Ningún archivo es compartido:
 
 - [ ] **T-2 — Casos Astro separados y con el código partido**
   Cubre: RF-3, RF-4
-  Archivos: `gallery/stories/Button.astro.stories.tsx` (rejilla con `gap` de 8 px,
-  `wrapLongLines`, `overflowWrap`), `tests/gallery-astro-layout.test.ts`
+  Archivos: `gallery/stories/Button.astro.stories.tsx` (margen de 8 px bajo el Button, sección en
+  bloque; `wrapLongLines`, `overflowWrap`), `tests/gallery-astro-layout.test.ts`
   Hecho cuando:
   - Lo primero: comprobar que, con `wrapLongLines`, la `ScrollArea` de Storybook no ensancha su
     contenido al del texto. Si lo ensancha, parar y volver al plan.
@@ -53,7 +53,7 @@ Ningún archivo es compartido:
   - El dueño ve la historia en los dos temas y a 320 px y la aprueba antes del commit (trabajo
     visual).
   - `npm test` termina en 0.
-  Inyección: quitar el `gap` de la rejilla deja el bloque pegado al Button y pone en rojo RF-3;
+  Inyección: quitar el margen bajo el Button deja el bloque pegado y pone en rojo RF-3;
   quitar `wrapLongLines` pone en rojo RF-4 a 320 px.
 
 ## Grafo de olas

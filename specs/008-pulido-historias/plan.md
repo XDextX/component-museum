@@ -29,7 +29,7 @@ Comprobado en el Storybook en marcha y en el instalado (10.6.3):
 |---|---|
 | RF-1 | CSS de la vista de historia en `preview-head.html`: `body` sin `padding` y el `div` del decorador con alto mínimo de viewport; test de fondo en esquinas y centro. |
 | RF-2 | `color-scheme` de la raíz del iframe según el tema, en `preview-head.html`; el contenedor de documentación marca su esquema; test de cada elemento con desplazamiento. |
-| RF-3 | Cada caso Astro como rejilla con hueco de 8 px; test de la distancia Button–bloque. |
+| RF-3 | Un margen de 8 px bajo el Button de cada caso Astro; test de la distancia Button–bloque. |
 | RF-4 | `wrapLongLines` en el `SyntaxHighlighter` y `overflow-wrap: anywhere` en el caso; test de `scrollWidth` del bloque a 320 y 542 px. |
 | Regla 7 | Test de contraste de todo texto visible en las dos vistas de historia, en los dos temas. |
 
@@ -91,8 +91,9 @@ se cambia el global desde la barra del gestor.
 movida tal cual: recorre los nodos de texto, descarta los invisibles y compone las capas de fondo.
 El test exige ≥ 4.5:1 en cada texto de las dos vistas, con `theme:dark` y `theme:light`.
 
-**Separación (RF-3).** Cada `section` del caso pasa a `display: grid; gap: 0.5rem` (8 px), y el
-`h3` pierde su `margin` inferior. El test toma, por caso, el `div` del HTML de Astro y el bloque
+**Separación (RF-3).** La `section` sigue en bloque y el `div` del Button lleva `margin-bottom:
+0.5rem` (8 px); el `h3` conserva `margin: 0 0 0.5rem`. Una rejilla con `gap` estiraba la
+`ScrollArea` y recortaba el botón Copy de la 007 a 320 y 542 px (lo vio la T-2). El test toma, por caso, el `div` del HTML de Astro y el bloque
 de código, y exige `bloque.top − div.bottom ≥ 8`.
 
 **Líneas partidas (RF-4).** `<SyntaxHighlighter language="html" copyable wrapLongLines>` y
