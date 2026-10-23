@@ -132,3 +132,38 @@ galería en caché y la hoja.
 - La primera tarea del plan cuenta los `msedge` antes y después de una ejecución normal y de una
   cortada a mano, y el plan decide si la limpieza entra aquí (por ejemplo, cerrar los Edge que la
   ejecución lanzó, por PID, en el teardown).
+
+## Cambio de spec: RF-10, limpieza (aprobado por el coordinator en modo autónomo, 2026-10-23)
+
+La spec aprobada no cubre la limpieza que pidió el coordinator: las carpetas `cm-*` y
+`playwright_chromiumdev_profile-*` que dejan en `%TEMP%` las ejecuciones cortadas (llenaron el
+disco el 2026-10-23), y los `msedge` sin cerrar. Lo que no está en la spec no se implementa, así
+que la T-7 espera a este cambio. Texto propuesto:
+
+- RF-10: CUANDO una ejecución empieza, EL SISTEMA borra de `%TEMP%` las carpetas `cm-*` y los
+  perfiles `playwright_chromiumdev_profile-*` de ejecuciones que ya no viven. — **Check:** con una
+  carpeta de un `runId` muerto y otra de uno vivo, solo desaparece la del muerto.
+
+Cómo saber qué ejecución vive sin borrar la de otro checkout:
+- cada carpeta `cm-<runId>` se asocia a su ejecución por el `owner.json` del lock, que lleva el
+  `pid`;
+- las de un `pid` muerto se borran; ante la duda, no se borran;
+- los Edge huérfanos se cierran por el `pid` que su ejecución apuntó al lanzarlos, nunca por
+  nombre de proceso.
+
+## Clarify del plan (2026-10-23, menores decididos por el planner)
+
+- La limpieza va por cambio de spec (RF-10), no en el plan: borrar en `%TEMP%` sin un RF y sin
+  check puede tocar la ejecución viva de otro worktree.
+- Hay poco paralelismo, a propósito: solo la T-3 y la T-6 van juntas, porque `global-setup.ts` y
+  `consumer.ts` los tocan las demás en olas sucesivas.
+- `astro-render` lo construye solo el script `test` (`gallery:astro`), porque `tsc --noEmit -p
+  gallery` necesita su JSON antes de Vitest. El `globalSetup` deja de construirlo.
+- La clave es de contenido, no de fechas, y se calcula después del `prepack`.
+- Los consumidores guardados se copian a `%TEMP%` y los tarballs se instalan con `--offline`: la
+  caché nunca se modifica durante una ejecución.
+- La T-1 y la T-8 miden sin otra carga: el coordinator no lanza otras tareas mientras corren.
+- RF-10 en la spec, con su línea `Changed:`. El Edge huérfano se reconoce sin apuntar `pid`: su
+  `--user-data-dir` es un perfil `playwright_chromiumdev_profile-*` de `%TEMP%` y su proceso padre
+  ya no vive. Así nunca se toca el Edge del usuario, que no usa un perfil de Playwright, ni los de
+  otra ejecución viva.
