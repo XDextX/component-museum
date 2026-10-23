@@ -1,6 +1,7 @@
 # Spec 012 — checkbox
 
-**Status:** approved · **Approved:** 2026-10-23 · el coordinator en modo autónomo: control dibujado (appearance: none) y prop defaultChecked
+**Status:** implemented · **Approved:** 2026-10-23 · el coordinator en modo autónomo: control dibujado (appearance: none) y prop defaultChecked
+**Implemented:** 2026-10-23 · 4 tareas en 3 olas con worktrees, más 1 corrección (borde de error en colores forzados); validada por el reviewer en 2 vueltas; `npm test` 812/812 (+1 omitido)
 **Size:** L (13 RF) · **Entrega:** 4 (009–014) · **Depende de:** 011
 
 ## Contexto y objetivo
