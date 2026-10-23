@@ -53,7 +53,7 @@ Ningún archivo es compartido:
   `theme:dark` esos `Source` explícitos siguen claros; en `theme:light` el panel de código del
   canvas sigue oscuro.
 
-- [ ] **T-2 — Casos Astro separados y con el código partido**
+- [x] **T-2 — Casos Astro separados y con el código partido**
   Cubre: RF-3, RF-4
   Archivos: `gallery/stories/Button.astro.stories.tsx` (margen de 8 px bajo el Button, sección en
   bloque; `wrapLongLines`, `overflowWrap`), `tests/gallery-astro-layout.test.ts`
@@ -69,6 +69,13 @@ Ningún archivo es compartido:
   - `npm test` termina en 0.
   Inyección: quitar el margen bajo el Button deja el bloque pegado y pone en rojo RF-3;
   quitar `wrapLongLines` pone en rojo RF-4 a 320 px.
+  Hecho: con `wrapLongLines` la `ScrollArea` no se ensancha (320 px: scrollWidth 241 = clientWidth 241; ancho normal 912/912).
+  Hueco Button-bloque: 8 px en los 6 casos, en claro, oscuro y 320 px (el `div` del Button lleva `margin-bottom` de 8 px).
+  Hallazgo: con la seccion como rejilla (`gap` del plan) el boton Copy de la 007 quedaba recortado bajo el bloque a 320 y 542 px
+  (la ScrollArea se estira a la altura del wrapper y empuja la ActionBar fuera). Por eso la seccion es `display: block` con margenes,
+  no rejilla; el test pasa a cubrir el boton Copy visible y dentro del viewport a 320 y 542 px.
+  Inyecciones vistas en rojo y restauradas: seccion como rejilla, RF-6 rojo a 320 y 542 px (el elemento en el centro del boton no es el boton);
+  sin el `margin-bottom` del Button, RF-3 rojo; sin `wrapLongLines`, los 4 RF-4 rojos (scrollWidth 482 > clientWidth 241/463).
 
 ## Grafo de olas
 
