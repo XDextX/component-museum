@@ -88,3 +88,14 @@ Entrega 4 (009–014). La rama `spec/012-checkbox` sale de `spec/011-tema-opcion
   y aquí se evita desde el principio.
 - RF-1 no nombra `defaultChecked`: si se decide la recomendación 2, el RF-1 lo añade a la lista de
   props.
+
+## Clarify del plan (2026-10-23, menores decididos por el planner)
+
+- La etiqueta va después del control, con `for`, y no lo envuelve: el ayudante conserva su forma de
+  asociar, y la ayuda y el error no entran en el nombre accesible.
+- La marca es un `::before` del input con `mask-image` y un token; en colores forzados, el control
+  usa `forced-color-adjust: none` con `CanvasText`, `Highlight` y `HighlightText`.
+- En React, `defaultChecked` solo se envía si el consumidor no pasa `checked`.
+- La historia React se monta de nuevo al cambiar `defaultChecked` (`key`), porque el atributo no
+  cambia un control ya montado.
+- La inyección de RF-1 en la T-3 se hace sobre el tipo de React, no sobre `astroCases`.
