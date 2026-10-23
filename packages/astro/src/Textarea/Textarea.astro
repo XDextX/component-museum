@@ -1,0 +1,55 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { fieldIds } from '../field.js';
+
+/** Textarea's own API, from contracts/textarea.contract.json translated to Astro. */
+interface OwnProps {
+  label: string;
+  hint?: string;
+  error?: string;
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  required?: boolean;
+  /** Added to the component's own classes, never replacing them. */
+  class?: string;
+}
+
+/** Any other HTML attribute reaches the `<textarea>`; the Omit keeps the own props single. */
+export interface Props extends OwnProps, Omit<HTMLAttributes<'textarea'>, keyof OwnProps> {}
+
+// The hook is the component's own: a consumer's data-museum-textarea is dropped, not rendered twice.
+const {
+  label,
+  hint = '',
+  error = '',
+  size = 'md',
+  disabled = false,
+  required = false,
+  class: className,
+  id,
+  'aria-describedby': describedBy,
+  'data-museum-textarea': _hook,
+  value,
+  ...attributes
+} = Astro.props;
+const { controlId, hintId, errorId, describedBy: description } = fieldIds('museum-textarea', id, hint, error, describedBy);
+// The text is the content, which Astro escapes. The HTML parser drops a first line break, so one more
+// keeps a value that starts with one (React does the same).
+const text = value == null ? '' : String(value);
+const content = text.startsWith('\n') ? `\n${text}` : text;
+---
+
+<div class="museum-field">
+  <label class="museum-field__label" for={controlId}>{label}{required && <span class="museum-field__required" aria-hidden="true">*</span>}</label>
+  <textarea
+    {...attributes}
+    id={controlId}
+    class:list={['museum-textarea', `museum-textarea--${size}`, className]}
+    disabled={disabled}
+    required={required}
+    aria-describedby={description}
+    aria-invalid={error ? 'true' : undefined}
+    data-museum-textarea>{content}</textarea>
+  {hint && <p id={hintId} class="museum-field__hint">{hint}</p>}
+  {error && <p id={errorId} class="museum-field__error">{error}</p>}
+</div>
