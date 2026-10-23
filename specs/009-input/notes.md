@@ -90,3 +90,12 @@ Propuesta: la 009 abre la **entrega 4**, que reúne las cinco specs (009–013).
 - **Altura.** Input y Button del mismo `size` miden lo mismo, para que vayan juntos en una fila.
 - **Tokens.** Borde del control, error y marcador de obligatorio, como `--museum-*`, en los dos
   temas.
+
+## Clarify del plan (2026-10-22, menores decididos por el planner con la opción conservadora)
+
+- Clase y atributos HTML al `<input>`, como Button al `<button>`; el envoltorio no se personaliza.
+- Sin `aria-live` en el error; `events: []`, con los eventos nativos.
+- `astroCases` sin `variant`: un caso por cada valor que no sea el default (13 para Input).
+- El contrato va en la T-4 y Astro en otra ola (T-5): no hay dos ramas que añadan el mismo archivo.
+- `disabled` atenúa solo el control: el error de un campo `disabled` mantiene los 4.5:1.
+- `npm test` tras cada merge de ola; un rojo vuelve a la tarea dueña del archivo.
