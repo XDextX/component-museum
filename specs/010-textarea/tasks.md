@@ -20,7 +20,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   `field-markup.test.ts`: la T-3;
 - `tests/lib/consumer.ts` y `field-a11y.test.ts`: la T-4.
 
-- [ ] **T-1 — Ayudante de campo compartido, con Input usándolo**
+- [x] **T-1 — Ayudante de campo compartido, con Input usándolo**
   Cubre: RF-2 a RF-6 (la lógica que hereda Textarea)
   Archivos: `packages/react/src/field.tsx`, `packages/react/src/Input/Input.tsx`,
   `packages/astro/src/field.ts`, `packages/astro/src/Input/Input.astro`
@@ -35,6 +35,10 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - Hay dos commits, `refactor(packages/react)` y `refactor(packages/astro)`.
   Inyección: poner la ayuda antes del error en el ayudante de cada paquete pone en rojo el caso
   «with both» de `input-markup.test.ts`, en React y en la comparación Astro.
+  Visto en rojo (2026-10-23): en React, `input-markup.test.ts` caso «with both» (1 rojo de 14), restaurado.
+  En Astro la comparación NO se pone en rojo: ninguno de sus 13 casos junta ayuda y error, así que la
+  inyección solo la ve `tests/field-ids.test.ts` («describes by error, then hint…»), restaurado. Hallazgo:
+  la línea de inyección de la tarea no se cumple tal cual en la comparación Astro.
 
 - [ ] **T-2 — Hoja de Textarea sobre las reglas del campo**
   Cubre: RF-7, RF-8, RF-9, RF-10 (sobre la página fija)
