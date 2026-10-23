@@ -70,6 +70,9 @@ comentarios, JSDoc incluido, están en inglés. El idioma de `Memory.md` lo deci
 - **Todo commit que toque un paquete lleva el scope `packages/react` o `packages/astro`, y hay un
   commit por paquete**: `@s-ui/mono` asigna cada commit a un paquete por su scope, y sin él no ve
   el cambio ni lo publica.
+- **Un cambio en `styles/` va seguido de un commit vacío con scope por cada paquete que copia la
+  hoja** (`git commit --allow-empty -m "fix(packages/react): …"`): la hoja vive fuera de
+  `packages/`, y sin ese commit `@s-ui/mono` no sube la versión de ninguno.
 - **Una spec nueva se redacta desde `main`, y tiene su propia rama una vez aprobada**:
   `spec/NNN-<nombre>`. Dentro de una entrega, la primera spec sale de `main` y cada siguiente de
   la rama de la anterior, que aún no está en `main`; al cerrar la entrega se mergea a `main` la
