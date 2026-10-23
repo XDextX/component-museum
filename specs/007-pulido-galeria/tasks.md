@@ -69,6 +69,22 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   `theme:system` con sistema oscuro, y el cambio desde la barra); restaurado, 11 de 11 en verde. Contrastes del
   párrafo: claro 12.75:1 (rgb 46,51,56 sobre blanco), oscuro 9.75:1 (rgb 201,204,207 sobre rgb 34,35,37).
   El global se lee de `globals=` en la URL del iframe, no del contexto (ver notes.md). Capturas pendientes de aprobación del dueño.
+  Corrección: texto de las páginas en oscuro. El `<caption>` de Matrix se pintaba negro sobre el
+  fondo oscuro (1,34:1). Causa: `DocsContainer` pinta el fondo del tema en `.sbdocs-wrapper` pero no
+  le da `color`; solo colorea los elementos que estiliza (`p`, `h*`, `th`, `td`…), y el resto hereda
+  el negro del `body`. Arreglo en un solo sitio, `ThemedDocsContainer` de `preview.ts`: lo envuelve en
+  un `div` con `color: theme.textColor`, el texto del tema de Storybook elegido, sin colores fijos.
+  El test mide ahora todo nodo con texto visible de Button/Documentation y Matrix (lo oculto a la
+  vista, como `sb-sr-only`, no cuenta) contra su fondo compuesto capa a capa, en los 6 casos de tema y
+  sistema, y exige ≥4,5:1 a cada uno. Mínimos medidos: Button/Documentation 4,63:1 en claro y en
+  oscuro (231 textos); Matrix 12,75:1 en claro y 9,75:1 en oscuro (9 textos). Ningún otro texto
+  bajaba de 4,5:1.
+  Inyección vista: el test nuevo, escrito antes del arreglo, cae solo en el `caption` de Matrix, en
+  los 3 casos oscuros (`theme:dark` con sistema claro y oscuro, `theme:system` con sistema oscuro),
+  con 1,34:1; con el arreglo, 17 de 17 en verde.
+  Aparte: `npm test` caía en `ee0b018` en `tsc --noEmit` de la raíz (`gallery/lib/Lang.tsx(64,28)`,
+  `color` no existe en `Theme`): la raíz resuelve con `NodeNext` y no aplica la ampliación de `Theme`
+  de Storybook. `Lang.tsx` convierte `useTheme()` a `StorybookTheme`; los dos `tsc` en verde.
 
 - [x] **T-5 — Código de Astro con resaltado y botón de copiar**
   Cubre: RF-6

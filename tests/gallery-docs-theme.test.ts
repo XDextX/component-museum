@@ -57,29 +57,61 @@ describe('documentation page theme (RF-5)', { timeout: 180_000 }, () => {
     await closeBrowserAndServers(browser, [served]);
   });
 
-  for (const { globals, system, expected } of cases) {
-    it(`theme:${globals} under a ${system} system paints the page ${expected}, text at 4.5:1`, async () => {
-      const context = await browser.newContext({ colorScheme: system });
-      const page = await context.newPage();
-      try {
-        await page.goto(`${served.url}iframe.html?id=button-documentation--docs&viewMode=docs&globals=theme:${globals}`);
-        const wrapper = page.locator('.sbdocs-wrapper');
-        await wrapper.waitFor();
-        const text = page.locator('.sbdocs-wrapper p:visible').first();
-        await text.waitFor();
-        const bg = parseRgb(await wrapper.evaluate((el) => getComputedStyle(el).backgroundColor));
-        const fg = parseRgb(await text.evaluate((el) => getComputedStyle(el).color));
-        const black = { r: 0, g: 0, b: 0, a: 1 };
-        const white = { r: 255, g: 255, b: 255, a: 1 };
-        const seen = contrastRatio(bg, black) < contrastRatio(bg, white) ? 'dark' : 'light';
-        const ratio = contrastRatio(fg, bg);
-        console.log(`[docs-theme] theme:${globals} / ${system}: bg ${JSON.stringify(bg)} text ${JSON.stringify(fg)} ratio ${ratio.toFixed(2)}`);
-        expect(seen).toBe(expected);
-        expect(ratio).toBeGreaterThanOrEqual(4.5);
-      } finally {
-        await context.close();
-      }
-    });
+  for (const id of ['button-documentation--docs', 'matrix--docs']) {
+    for (const { globals, system, expected } of cases) {
+      it(`${id}, theme:${globals} under a ${system} system paints the page ${expected}, all its visible text at 4.5:1`, async () => {
+        const context = await browser.newContext({ colorScheme: system });
+        const page = await context.newPage();
+        try {
+          await page.goto(`${served.url}iframe.html?id=${id}&viewMode=docs&globals=theme:${globals}`);
+          const wrapper = page.locator('.sbdocs-wrapper');
+          await wrapper.waitFor();
+          await page.locator('.sbdocs-wrapper p:visible').first().waitFor();
+          await page.waitForLoadState('networkidle');
+          const bg = parseRgb(await wrapper.evaluate((el) => getComputedStyle(el).backgroundColor));
+          const black = { r: 0, g: 0, b: 0, a: 1 };
+          const white = { r: 255, g: 255, b: 255, a: 1 };
+          expect(contrastRatio(bg, black) < contrastRatio(bg, white) ? 'dark' : 'light').toBe(expected);
+          // Every element holding visible text, its colour and the background composed under it, layer by layer.
+          const texts = await page.evaluate(() => {
+            type C = [number, number, number, number];
+            const parse = (c: string): C => {
+              const m = /rgba?\(([\d.]+)[ ,]+([\d.]+)[ ,]+([\d.]+)(?:[ ,/]+([\d.]+))?/.exec(c);
+              return m ? [+m[1], +m[2], +m[3], m[4] === undefined ? 1 : +m[4]] : [0, 0, 0, 0];
+            };
+            const over = (top: C, under: C): C => [0, 1, 2].map((i) => top[i] * top[3] + under[i] * (1 - top[3])).concat(1) as C;
+            const rgb = (c: C) => `rgb(${c.slice(0, 3).map(Math.round).join(', ')})`;
+            const out: { tag: string; text: string; fg: string; bg: string }[] = [];
+            const seen = new Set<Element>();
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            for (let t = walker.nextNode(); t; t = walker.nextNode()) {
+              const el = t.parentElement!;
+              if (!t.textContent!.trim() || seen.has(el)) continue;
+              seen.add(el);
+              const box = el.getBoundingClientRect();
+              // Visually hidden text (sb-sr-only: 1px, clipped) is read, not seen.
+              if (!el.checkVisibility({ visibilityProperty: true, opacityProperty: true }) || box.width <= 1 || box.height <= 1) continue;
+              const layers: C[] = [];
+              for (let n: Element | null = el; n; n = n.parentElement) {
+                const c = parse(getComputedStyle(n).backgroundColor);
+                if (c[3] === 0) continue;
+                layers.push(c);
+                if (c[3] === 1) break;
+              }
+              const ground = layers.reduceRight<C>((under, top) => over(top, under), [255, 255, 255, 1]);
+              out.push({ tag: el.tagName.toLowerCase(), text: t.textContent!.trim().slice(0, 40), fg: rgb(over(parse(getComputedStyle(el).color), ground)), bg: rgb(ground) });
+            }
+            return out;
+          });
+          const rated = texts.map((t) => ({ ...t, ratio: Number(contrastRatio(parseRgb(t.fg), parseRgb(t.bg)).toFixed(2)) }));
+          console.log(`[docs-theme] ${id} theme:${globals} / ${system}: ${rated.length} texts, lowest ${Math.min(...rated.map((t) => t.ratio))}`);
+          expect(rated.length).toBeGreaterThan(5);
+          expect(rated.filter((t) => t.ratio < 4.5)).toEqual([]);
+        } finally {
+          await context.close();
+        }
+      });
+    }
   }
 
   it('changes with the page open when the toolbar changes the theme', async () => {

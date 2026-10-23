@@ -58,7 +58,13 @@ function ThemedDocsContainer(props: ComponentProps<typeof DocsContainer>) {
     };
   }, [context]);
   const theme = docsScheme(global, prefersDark) === 'dark' ? themes.dark : themes.light;
-  return createElement(Suspense, { fallback: null }, createElement(DocsContainer, { ...props, theme }));
+  // The container paints the theme's background but colours only the elements it styles (p, th…);
+  // the rest, a table caption among them, would inherit the body's black: give them the theme's text.
+  return createElement(
+    'div',
+    { style: { color: theme.textColor } },
+    createElement(Suspense, { fallback: null }, createElement(DocsContainer, { ...props, theme })),
+  );
 }
 
 const preview: Preview = {
