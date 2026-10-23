@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { argTypesFromContract, astroCases, usageSnippet } from '../gallery/lib/contract-args.ts';
+import { argTypesFromContract, astroCases, defaultSummary, usageSnippet } from '../gallery/lib/contract-args.ts';
 import { loadContract } from './lib/contract.ts';
 
 const button = loadContract(resolve(import.meta.dirname, '..', 'contracts/button.contract.json'));
@@ -66,5 +66,19 @@ describe('astroCases', () => {
     ]);
     expect(cases[1].props).toMatchObject({ variant: 'primary', disabled: true });
     expect(cases[0].props).toMatchObject({ variant: 'primary', disabled: false });
+  });
+});
+
+describe('defaultSummary and table.defaultValue (spec 007, RF-1)', () => {
+  it('writes each contract default the way the props table shows it', () => {
+    const summaries = Object.fromEntries(Object.entries(button.props).map(([n, s]) => [n, defaultSummary(s)]));
+    expect(summaries).toEqual({ variant: 'primary', size: 'md', type: 'button', disabled: 'false' });
+  });
+
+  it('puts that default on the control of every contract prop', () => {
+    const types = argTypesFromContract(button, example);
+    for (const [name, spec] of Object.entries(button.props)) {
+      expect(types[name].table?.defaultValue?.summary).toBe(defaultSummary(spec));
+    }
   });
 });

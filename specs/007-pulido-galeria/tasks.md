@@ -12,7 +12,7 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
 - `gallery/.storybook/main.ts`: la T-3;
 - `gallery/lib/Lang.tsx`: la T-2.
 
-- [ ] **T-1 — Defaults de las props desde el contrato**
+- [x] **T-1 — Defaults de las props desde el contrato**
   Cubre: RF-1
   Archivos: `gallery/lib/contract-args.ts` (`defaultSummary`, `table.defaultValue`),
   `tests/contract-args.test.ts`, `tests/gallery-props.test.ts`
@@ -21,6 +21,11 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   `size`, `type` y `disabled`; ningún default está escrito en la historia.
   Inyección: cambiar el default de `size` a `lg` en una copia del contrato, leída por el test de
   dato, pone en rojo el caso de `size`.
+  Hecho: visto en rojo antes de implementar (`defaultSummary` no existía: 2 tests rojos en
+  `contract-args.test.ts`). Inyección vista en rojo: `size` → `lg` en `contracts/button.contract.json`
+  del worktree (sha256 original `bc32ec02…3dbf`, restaurado y comprobado) pone en rojo 3 tests: el
+  de `defaultSummary` (`md` esperado), el de `usageSnippet` (omite el default) y el de la tabla en
+  Edge (`size` ≠ `md`). Sin inyección: 10/10 verdes.
 
 - [ ] **T-2 — Selector de idioma con el estilo de la página**
   Cubre: RF-2, RF-3
