@@ -1,6 +1,7 @@
 # Spec 009 — input
 
-**Status:** approved · **Approved:** 2026-10-23 · el coordinator en modo autónomo («entra en modo autonomo»), tras 2 rondas de clarify
+**Status:** implemented · **Approved:** 2026-10-23 · el coordinator en modo autónomo («entra en modo autonomo»), tras 2 rondas de clarify
+**Implemented:** 2026-10-23 · 6 tareas en 4 olas con worktrees, más 2 correcciones (clases de ejemplo por componente; el campo pinta su superficie, regla 7); validada por el reviewer en 2 vueltas; `npm test` 460/460 (+1 omitido)
 **Size:** L (10 RF) · **Entrega:** 4 (009–013, los indispensables de un formulario; abre con esta) ·
 **Depende de:** 008
 
