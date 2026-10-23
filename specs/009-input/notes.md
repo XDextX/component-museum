@@ -2,8 +2,8 @@
 
 ## Decisiones (2026-10-22, decididas por el coordinator en modo autónomo)
 
-- Entrega 4 = las cinco specs de componentes, publicadas juntas; desde el 2026-10-23 son 009–014,
-  con la 011-tema-opcional en medio (decisión del dueño sobre el tema, ver abajo).
+- Entrega 4 = las cinco specs de componentes, publicadas juntas. Desde el 2026-10-23 son 009–014
+  y la 017, con la 011-tema-opcional y la 017-tests-rapidos en medio (decisiones del dueño, abajo).
 - Etiqueta, ayuda y error dentro de cada control, sin `Field` (Astro y regla 4).
 - `label` siempre visible y obligatoria; la etiqueta oculta queda fuera de alcance.
 - `type`: `text`, `email`, `password`, `search`, `tel`, `url`, `number`; `size`: `sm`, `md`, `lg`
@@ -20,8 +20,12 @@
 | 5 | 014 | **Select** (nativo) | Para elegir una opción entre muchas. | Es el último porque el nativo es el más simple de estilar y el que menos aporta sobre el HTML. |
 
 Renumeración (2026-10-23): la **011-tema-opcional** entra en la entrega 4 antes de Checkbox, por
-una decisión del dueño (el paquete va claro salvo que la página pida el oscuro); Checkbox, RadioGroup
-y Select pasan a 012, 013 y 014.
+una decisión del dueño (el paquete va claro salvo que la página pida el oscuro). Checkbox,
+RadioGroup y Select pasan a 012, 013 y 014.
+
+Renumeración (2026-10-23, decidida por el dueño): la **017-tests-rapidos** entra en la entrega 4
+entre la 012 (Checkbox) y la 013 (RadioGroup), para que lo que queda se pruebe más rápido. La 013 y
+la 014 conservan su número. Orden de la entrega 4: 009, 010, 011, 012, 017, 013, 014.
 
 Comparada con la lista del coordinator: es la misma, con dos ajustes.
 - «Radio (grupo)» pasa a **RadioGroup**. Un radio suelto no sirve de nada: el contrato es el
@@ -78,8 +82,8 @@ Propuesta: la 009 abre la **entrega 4**, que reúne las cinco specs (009–013).
 - Lo que el dueño pidió son los indispensables de **un formulario**. Con Input solo no se arma
   ninguno, así que se publican juntos cuando el kit entero cumpla la constitución.
 - Coste: una cadena de cinco ramas antes de `main` y de npm.
-- Alternativa descartada (ver Decisiones): entrega 4 = Input y Textarea (los campos de texto), y entrega 5 =
-  Checkbox, RadioGroup y Select. Publica antes, con dos cadenas más cortas.
+- Alternativa descartada (ver Decisiones): entrega 4 = Input y Textarea (los campos de texto), y
+  entrega 5 = Checkbox, RadioGroup y Select. Publica antes, con dos cadenas más cortas.
 
 ## Para el plan
 
