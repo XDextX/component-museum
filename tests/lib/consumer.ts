@@ -132,12 +132,33 @@ function buttonInstances(framework: Framework, tailwind = false): string {
     .join(framework === 'react' ? '\n      ' : '\n\t\t');
 }
 
-/** Makes the consumer's entry import Button and the stylesheet once, and render every instance. */
+/**
+ * Spec 009 T-6: the Input instances `input-a11y.test.ts` measures. Ids are the control's own (RF-2:
+ * a consumer id is respected); the twins share a label and tell apart by `name`.
+ */
+function inputInstances(framework: Framework): string {
+  // React needs defaultValue: a `value` without onChange is read-only and warns.
+  const value = framework === 'react' ? 'defaultValue' : 'value';
+  return [
+    ...['sm', 'md', 'lg'].map((s) => `<Input id="input-${s}" label="Size ${s}" size="${s}" ${value}="Value" placeholder="Placeholder" />`),
+    '<Input id="input-hint" label="With hint" hint="Hint text" />',
+    '<Input id="input-error" label="With error" error="Error text" />',
+    '<Input id="input-both" label="With both" hint="Hint text" error="Error text" />',
+    '<Input id="input-required" label="Required field" required />',
+    '<Input id="input-disabled" label="Disabled field" error="Disabled error" disabled />',
+    '<Input name="twins-a" label="Twin" />',
+    '<Input name="twins-b" label="Twin" />',
+    '<p id="own-note">Own note</p>',
+    '<Input id="input-own" label="Own wiring" hint="Own hint" aria-describedby="own-note" />',
+  ].join(framework === 'react' ? '\n      ' : '\n\t\t');
+}
+
+/** Makes the consumer's entry import Button, Input and the stylesheet once, and render every instance. */
 function useButtons(framework: Framework, dir: string, name: string): void {
   if (framework === 'react') {
     writeFileSync(
       join(dir, 'src', 'MuseumButtons.tsx'),
-      `import { Button } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n    </>\n  )\n}\n`,
+      `import { Button, Input } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n      ${inputInstances(framework)}\n    </>\n  )\n}\n`,
     );
     patch(join(dir, entries.react), (source) =>
       `import MuseumButtons from './MuseumButtons.tsx'\n${source.replace('<App />', '<App />\n    <MuseumButtons />')}`,
@@ -145,8 +166,8 @@ function useButtons(framework: Framework, dir: string, name: string): void {
   } else {
     patch(join(dir, entries.astro), (source) =>
       source
-        .replace(/^---\r?\n/, `---\nimport { Button } from '${name}';\nimport '${name}/styles.css';\n`)
-        .replace('</body>', `\t${buttonInstances(framework)}\n\t</body>`),
+        .replace(/^---\r?\n/, `---\nimport { Button, Input } from '${name}';\nimport '${name}/styles.css';\n`)
+        .replace('</body>', `\t${buttonInstances(framework)}\n\t\t${inputInstances(framework)}\n\t</body>`),
     );
   }
 }
