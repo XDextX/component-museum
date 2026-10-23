@@ -1,6 +1,7 @@
 # Spec 011 — tema-opcional
 
-**Status:** approved · **Approved:** 2026-10-23 · el dueño, con data-theme="system" y el campo con superficie propia
+**Status:** implemented · **Approved:** 2026-10-23 · el dueño, con data-theme="system" y el campo con superficie propia
+**Implemented:** 2026-10-23 · 2 tareas en 1 ola con worktrees; tests de tema 171 → 251; validada por el reviewer en 1 vuelta; `npm test` 641/641 (+1 omitido)
 **Size:** M (7 RF) · **Entrega:** 4 (009–014) · **Depende de:** 010
 
 ## Contexto y objetivo
