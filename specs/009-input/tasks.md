@@ -192,6 +192,22 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   `--museum-surface` (el suelo de la hoja), como el anillo de Button; sobre el blanco real darían
   1.05:1 la etiqueta y 2.54:1 el borde, cosa del consumidor que no pinta su página.
 
+  Corrección tras validación (ronda 1). La validación la dio por bloqueante (regla 7): el contraste
+  no puede depender de que el consumidor pinte su página. En el consumidor Astro en oscuro, sobre su
+  lienzo blanco real, había etiqueta 1.05:1, ayuda 1.47:1, error y marca 1.90:1, borde 2.54:1 en
+  reposo y 1.90:1 en error. `.museum-field` pinta ahora `background-color: var(--museum-surface)`,
+  como Button `outline` (principio de la 003), con un `padding` igual al alcance del anillo y su
+  halo (`offset + width + halo`, 6px), para que los dos queden sobre esa superficie. El test ya no
+  sustituye el fondo: RF-7 y RF-8 miden contra lo compuesto detrás de cada borde y texto, con el
+  lienzo blanco si nada pinta. `input-styles.test.ts` comprueba que el control llena la caja de
+  contenido del campo de 320px, que ya no son 320px sino 308px por el `padding`.
+  Medido sobre el fondo real, después (claro / oscuro, React y Astro iguales): etiqueta 17.74 /
+  16.98, ayuda 7.56 / 12.04, error y marca 6.47 / 9.35; borde mínimo 4.83 / 6.99, en error
+  6.47 / 9.35.
+  Inyección vista: sin la línea del fondo (con el `padding`), `input-a11y.test.ts` cae en Astro
+  oscuro, en RF-7 (borde 2.54:1) y en RF-8 (etiqueta 1.05:1); restaurada la hoja con el mismo
+  sha256 (`b39ada59…25e4`), 32 de 32 en verde.
+
 ## Grafo de olas
 
 | Ola | Tareas en paralelo | Por qué esperan |

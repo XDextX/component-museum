@@ -139,10 +139,13 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
     const page = await open(modes[2], 800);
     const box = await page.evaluate(() => {
       const field = document.getElementById('long-field')!;
-      return { field: field.getBoundingClientRect().width, input: document.getElementById('in-long')!.getBoundingClientRect().width, scroll: field.scrollWidth };
+      const s = getComputedStyle(field);
+      // The field paints a padded surface (009, validation round 1): the control fills its content box.
+      const content = field.getBoundingClientRect().width - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight);
+      return { field: field.getBoundingClientRect().width, content, input: document.getElementById('in-long')!.getBoundingClientRect().width, scroll: field.scrollWidth };
     });
     expect(box.field).toBe(320);
-    expect(box.input).toBe(320);
+    expect(box.input).toBe(box.content);
     expect(box.scroll).toBeLessThanOrEqual(320);
     await page.context().close();
   });

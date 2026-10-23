@@ -44,28 +44,12 @@ describe.each(frameworks)('Input in the %s consumer, built (constitution 7)', (f
     let context: BrowserContext;
     let page: Page;
     let cdp: CDPSession;
-    /** The sheet's own ground (--museum-surface) and whether the consumer's page paints any background of its own. */
-    let ground: { surface: string; painted: boolean };
     beforeAll(async () => {
       context = await browser.newContext({ colorScheme: theme, viewport: { width: 1024, height: 900 } });
       page = await context.newPage();
       cdp = await context.newCDPSession(page);
       await page.goto(server.url);
       await page.waitForSelector('#input-md');
-      // An unpainted page under a dark theme is the browser's white canvas, a page the consumer never styled
-      // (the Astro minimal starter): the field is then measured on the sheet's own ground, as Button's ring is.
-      ground = await page.evaluate(() => {
-        const probe = document.createElement('div');
-        probe.style.backgroundColor = 'var(--museum-surface)';
-        document.body.append(probe);
-        const surface = getComputedStyle(probe).backgroundColor;
-        probe.remove();
-        let painted = false;
-        for (let n: Element | null = document.getElementById('input-md')!.parentElement; n; n = n.parentElement) {
-          if (!['rgba(0, 0, 0, 0)', 'transparent'].includes(getComputedStyle(n).backgroundColor)) painted = true;
-        }
-        return { surface, painted };
-      });
     }, 60_000);
     afterAll(() => context.close());
 
@@ -142,7 +126,7 @@ describe.each(frameworks)('Input in the %s consumer, built (constitution 7)', (f
     });
 
     it('RF-7: the control border is 3:1 against the page and its own background, at rest and in error', async () => {
-      const rows = await page.evaluate(({ keys, surface, painted }) => {
+      const rows = await page.evaluate((keys) => {
         type C = [number, number, number, number];
         const parse = (c: string): C => {
           const m = /rgba?\(([\d.]+)[ ,]+([\d.]+)[ ,]+([\d.]+)(?:[ ,/]+([\d.]+))?/.exec(c)!;
@@ -150,7 +134,8 @@ describe.each(frameworks)('Input in the %s consumer, built (constitution 7)', (f
         };
         const over = (top: C, under: C): C => [0, 1, 2].map((i) => top[i] * top[3] + under[i] * (1 - top[3])).concat(1) as C;
         const rgb = (c: C) => `rgb(${c.slice(0, 3).map(Math.round).join(', ')})`;
-        // What really lies under `node`: the first opaque background up the tree, else the canvas.
+        // What really lies under `node`: the first opaque background up the tree, else the browser's white
+        // canvas (a page the consumer never painted, as in the Astro starter, stays white even in dark).
         const ground = (node: Element | null): C => {
           const layers: C[] = [];
           for (; node; node = node.parentElement) {
@@ -159,7 +144,7 @@ describe.each(frameworks)('Input in the %s consumer, built (constitution 7)', (f
             layers.push(c);
             if (c[3] === 1) break;
           }
-          return layers.reduceRight<C>((under, top) => over(top, under), painted ? [255, 255, 255, 1] : parse(surface));
+          return layers.reduceRight<C>((under, top) => over(top, under), [255, 255, 255, 1]);
         };
         return keys.map((key) => {
           const el = document.querySelector<HTMLElement>(key.startsWith('twins-') ? `input[name="${key}"]` : `#${key}`)!;
@@ -167,7 +152,7 @@ describe.each(frameworks)('Input in the %s consumer, built (constitution 7)', (f
           const page = ground(el.parentElement);
           return { key, border: s.borderTopColor, page: rgb(page), own: rgb(over(parse(s.backgroundColor), page)), width: parseFloat(s.borderTopWidth) };
         });
-      }, { keys: [...enabled, 'input-disabled'], ...ground });
+      }, [...enabled, 'input-disabled']);
       const report = rows.map((r) => ({
         key: r.key, page: Number(contrastRatio(parseRgb(r.border), parseRgb(r.page)).toFixed(2)), own: Number(contrastRatio(parseRgb(r.border), parseRgb(r.own)).toFixed(2)), width: r.width,
       }));
@@ -180,8 +165,8 @@ describe.each(frameworks)('Input in the %s consumer, built (constitution 7)', (f
     });
 
     it('RF-8: label, hint, error, marker, value and placeholder are 4.5:1, the disabled error included', async () => {
-      // visibleTexts composes over white when nothing is painted: swap in the sheet's ground then.
-      const texts = (await visibleTexts(page)).filter((t) => fieldTexts.has(t.text)).map((t) => (ground.painted ? t : { ...t, bg: ground.surface }));
+      // Against the background really composed behind each text, never a stand-in for it.
+      const texts = (await visibleTexts(page)).filter((t) => fieldTexts.has(t.text));
       const rated = texts.map((t) => ({ text: t.text, ratio: Number(contrastRatio(parseRgb(t.fg), parseRgb(t.bg)).toFixed(2)) }));
       console.log(`${framework} ${theme} RF-8 texts`, JSON.stringify(rated));
       expect(new Set(texts.map((t) => t.text)), 'every field text was found').toEqual(fieldTexts);

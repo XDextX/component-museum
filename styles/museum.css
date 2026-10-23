@@ -178,11 +178,15 @@
     cursor: not-allowed;
   }
 
-  /* Field: the label, the control, the hint and the error, laid out in a column. */
+  /* Field: the label, the control, the hint and the error, laid out in a column. It paints its own
+     surface, as the outline Button does, so its texts keep their contrast on a page that paints none;
+     the padding keeps the focus ring and its halo on that surface. */
   .museum-field {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--museum-space-sm-y);
+    padding: calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo));
+    background-color: var(--museum-surface);
     font-family: var(--museum-font-family);
     line-height: var(--museum-line-height);
   }
