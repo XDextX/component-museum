@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from 'astro/types';
+import { fieldIds } from '../field.js';
 
 /** Input's own API, from contracts/input.contract.json translated to Astro. */
 interface OwnProps {
@@ -32,12 +33,7 @@ const {
   'data-museum-input': _hook,
   ...attributes
 } = Astro.props;
-// A counter, never Math.random(): the id is the same build after build, and unique within a page.
-// Astro has no module scope in a component, so the count lives on globalThis.
-const counter = globalThis as { __museumInputCount?: number };
-const controlId = id ?? `museum-input-${(counter.__museumInputCount = (counter.__museumInputCount ?? 0) + 1)}`;
-// The error first, then the hint, then the consumer's own ids.
-const description = [error && `${controlId}-error`, hint && `${controlId}-hint`, describedBy].filter(Boolean).join(' ');
+const { controlId, hintId, errorId, describedBy: description } = fieldIds('museum-input', id, hint, error, describedBy);
 ---
 
 <div class="museum-field">
@@ -49,10 +45,10 @@ const description = [error && `${controlId}-error`, hint && `${controlId}-hint`,
     type={type}
     disabled={disabled}
     required={required}
-    aria-describedby={description || undefined}
+    aria-describedby={description}
     aria-invalid={error ? 'true' : undefined}
     data-museum-input
   />
-  {hint && <p id={`${controlId}-hint`} class="museum-field__hint">{hint}</p>}
-  {error && <p id={`${controlId}-error`} class="museum-field__error">{error}</p>}
+  {hint && <p id={hintId} class="museum-field__hint">{hint}</p>}
+  {error && <p id={errorId} class="museum-field__error">{error}</p>}
 </div>
