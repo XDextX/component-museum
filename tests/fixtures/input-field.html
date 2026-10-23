@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Input field fixture</title>
+    <!-- museum.css -->
+    <style>
+      body { margin: 0; padding: 1rem; background: var(--museum-surface); font-family: var(--museum-font-family); }
+      .row { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+      .row > .museum-field { flex: 1; }
+      #narrow { width: 320px; }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="in-sm">Small</label>
+        <input id="in-sm" class="museum-input museum-input--sm" type="text" value="Value" data-museum-input />
+      </div>
+      <button id="btn-sm" class="museum-button museum-button--primary museum-button--sm" data-museum-button>Button</button>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="in-md">Medium</label>
+        <input id="in-md" class="museum-input museum-input--md" type="text" value="Value" data-museum-input />
+      </div>
+      <button id="btn-md" class="museum-button museum-button--primary museum-button--md" data-museum-button>Button</button>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="in-lg">Large</label>
+        <input id="in-lg" class="museum-input museum-input--lg" type="text" value="Value" data-museum-input />
+      </div>
+      <button id="btn-lg" class="museum-button museum-button--primary museum-button--lg" data-museum-button>Button</button>
+    </div>
+
+    <div class="museum-field">
+      <label class="museum-field__label" for="in-placeholder">Placeholder</label>
+      <input id="in-placeholder" class="museum-input museum-input--md" type="text" placeholder="Type here" aria-describedby="in-placeholder-hint" data-museum-input />
+      <p id="in-placeholder-hint" class="museum-field__hint">Hint</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="in-error">Error<span class="museum-field__required" aria-hidden="true">*</span></label>
+      <input id="in-error" class="museum-input museum-input--md" type="text" value="Value" aria-describedby="in-error-error in-error-hint" aria-invalid="true" required data-museum-input />
+      <p id="in-error-hint" class="museum-field__hint">Hint</p>
+      <p id="in-error-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="in-disabled">Disabled</label>
+      <input id="in-disabled" class="museum-input museum-input--md" type="text" value="Value" aria-describedby="in-disabled-error" aria-invalid="true" disabled data-museum-input />
+      <p id="in-disabled-error" class="museum-field__error">Error</p>
+    </div>
+    <div id="narrow">
+      <div class="museum-field" id="long-field">
+        <label class="museum-field__label" for="in-long">Long</label>
+        <input id="in-long" class="museum-input museum-input--md" type="text" aria-describedby="in-long-error" aria-invalid="true" data-museum-input />
+        <p id="in-long-error" class="museum-field__error">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+      </div>
+    </div>
+  </body>
+</html>

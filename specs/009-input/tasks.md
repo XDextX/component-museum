@@ -45,7 +45,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   (ninguno quitado ni aflojado). Tocó `tests/gallery-browser.test.ts` para que el `tsc` de gallery
   tipara, con permiso del coordinator.
 
-- [ ] **T-2 — Hoja del campo y sus tokens**
+- [x] **T-2 — Hoja del campo y sus tokens**
   Cubre: RF-7, RF-8, RF-9 (sobre la página fija)
   Archivos: `styles/museum.css` (tokens en los tres bloques de tema, `.museum-field*`,
   `.museum-input*`), `tests/fixtures/input-field.html`, `tests/input-styles.test.ts`
@@ -64,6 +64,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
     (trabajo visual).
   Inyección: un `--museum-control-border` de `#e5e7eb` en claro pone en rojo RF-7; quitar el
   `padding` vertical de `.museum-input--md` pone en rojo RF-9.
+  Visto en rojo y restaurado: con el borde en `#e5e7eb`, RF-7 falla en los dos modos claros (2
+  tests); con `padding: 0 var(--museum-space-md-x)` en `.museum-input--md`, RF-9 falla (1 test).
 
   Va en la ola 1 junto a la T-1: no comparten archivos, y la página fija no espera a los paquetes.
 
