@@ -82,5 +82,53 @@ describe('gallery Astro code (spec 007, RF-6)', { timeout: 180_000 }, () => {
         await context.close();
       }
     });
+
+    // Spec 007 NFR: the copy button is a gallery control, so it gets the museum's bar without being a museum Button.
+    it(`theme:${theme}: the copy button has 4.5:1 text and, on Tab, a 2px focus indicator 3:1 against its background`, async () => {
+      const context = await browser.newContext({ colorScheme: theme === 'dark' ? 'light' : 'dark' });
+      try {
+        const themed = await context.newPage();
+        await themed.goto(`${served.url}iframe.html?id=button-astro--variants&viewMode=story&globals=theme:${theme}`);
+        const copy = themed.locator('#astro-primary button:not([data-museum-button])');
+        await copy.waitFor();
+        const look = () =>
+          copy.evaluate((el) => {
+            const s = getComputedStyle(el);
+            let bg = 'rgb(255, 255, 255)';
+            for (let node: Element | null = el; node; node = node.parentElement) {
+              const c = getComputedStyle(node).backgroundColor;
+              if (c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') {
+                bg = c;
+                break;
+              }
+            }
+            return { focused: el === document.activeElement, fg: s.color, bg, outline: [s.outlineStyle, parseFloat(s.outlineWidth), s.outlineColor] as const, shadow: s.boxShadow };
+          });
+        const rest = await look();
+        let seen = rest;
+        for (let i = 0; i < 40 && !seen.focused; i++) {
+          await themed.keyboard.press('Tab');
+          seen = await look();
+        }
+        expect(seen.focused, 'Tab never reaches the copy button').toBe(true);
+        // The indicator is the outline, or else a box-shadow that only focus adds; its width is its largest length.
+        const [style, width, ring] = seen.outline;
+        const shadow = seen.shadow !== rest.shadow && seen.shadow !== 'none' ? seen.shadow : '';
+        const indicator =
+          style !== 'none' && width >= 2
+            ? { color: ring, width }
+            : { color: /rgba?\([^)]*\)/.exec(shadow)?.[0] ?? '', width: Math.max(0, ...[...shadow.matchAll(/(-?[\d.]+)px/g)].map((m) => Math.abs(Number(m[1])))) };
+        const report = {
+          text: Number(contrastRatio(parseRgb(seen.fg), parseRgb(seen.bg)).toFixed(2)),
+          width: indicator.width,
+          indicator: indicator.color ? Number(contrastRatio(parseRgb(indicator.color), parseRgb(seen.bg)).toFixed(2)) : 0,
+        };
+        expect(report.text, JSON.stringify(report)).toBeGreaterThanOrEqual(4.5);
+        expect(report.width, JSON.stringify(report)).toBeGreaterThanOrEqual(2);
+        expect(report.indicator, JSON.stringify(report)).toBeGreaterThanOrEqual(3);
+      } finally {
+        await context.close();
+      }
+    });
   }
 });

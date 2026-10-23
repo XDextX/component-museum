@@ -76,6 +76,20 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   Inyección: quitar `copyable` en la rama del worktree deja los casos sin botón y pone el test en
   rojo.
   Inyección vista en rojo (2026-10-22): quitar `copyable` de `SyntaxHighlighter` dejó los 6 casos sin botón y puso el test en rojo (7 de 10 fallan: los 6 de copiar y el de `Tab`); restaurado, 10 de 10 en verde.
+  Corrección tras merge de la ola 1: `gallery-theme.test.ts` (005) recorría con `Tab` todo lo
+  enfocable de la historia y medía cada cosa como un Button del museo. El «bloque de código a
+  1,65:1» no es un fallo del resaltado: es el `div` de desplazamiento del `SyntaxHighlighter`
+  (`tabindex="0"`), cuyo fondo transparente leía como negro (texto `#2e3338` sobre negro = 1,65:1;
+  sobre su blanco real, 12,75:1). «Copy» fallaba por no llevar halo ni `outline`: su foco es una
+  sombra interior de 3px. El test de la 005 solo mide ahora `[data-museum-button]`, con lo mismo que
+  exigía, y además exige alcanzar con `Tab` cada uno. `gallery-astro-code.test.ts` añade, en los dos
+  temas, el botón de copiar: texto ≥4,5:1 sobre su fondo y, con `Tab`, un indicador de ≥2px
+  (`outline`, o la sombra que el foco añade) a ≥3:1 frente a su fondo. Medido sin tocar la historia:
+  claro, texto 12,75:1, sombra de 3px a 4,79:1; oscuro, texto 9,75:1, sombra de 3px a 5,64:1.
+  Inyección vista (historia con un `<style>` añadido, restaurada desde la copia con el mismo sha256
+  `2a7663a0…6910`): texto `#aaa` en claro → 2,32:1, rojo; sombra `#333` en oscuro → 1,24:1, rojo;
+  sin sombra ni `outline` en el foco → anchura 0 en los dos temas, rojo; sin `outline` en los Button
+  del museo en claro → la prueba de la 005 en rojo («Button: no visible ring», 4 problemas).
 
 - [x] **T-6 — Sin desborde horizontal desde 320 px**
   Cubre: RF-7

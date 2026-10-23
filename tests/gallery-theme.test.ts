@@ -77,16 +77,21 @@ describe('gallery theme and keyboard access (spec 005, RF-3 and accessibility)',
       it(`${id}, ${theme}: every enabled Button has 4.5:1 text and, on Tab, a 2px ring 3:1 against its halo (rule 7)`, async () => {
         const page = await story(id, theme);
         try {
-          const enabled = await page.locator('#storybook-root button:not(:disabled)').count();
+          // Rule 7 is per museum component; the gallery's copy buttons are checked in gallery-astro-code.test.ts.
+          const enabled = await page.locator('#storybook-root [data-museum-button]:not(:disabled)').count();
           const problems: string[] = [];
-          for (let i = 0; i < enabled; i++) {
+          let reached = 0;
+          for (let i = 0; i < enabled * 5 && reached < enabled; i++) {
             await page.keyboard.press('Tab');
             const b = await page.evaluate(() => {
               const el = document.activeElement as HTMLElement;
+              if (!el.matches('[data-museum-button]')) return null;
               const s = getComputedStyle(el);
               const halo = /^(rgba?\([^)]*\))/.exec(s.boxShadow)?.[1] ?? '';
               return { name: el.textContent ?? '', fg: s.color, bg: s.backgroundColor, ring: s.outlineColor, width: parseFloat(s.outlineWidth), style: s.outlineStyle, halo };
             });
+            if (!b) continue;
+            reached++;
             const text = contrastRatio(parseRgb(b.fg), parseRgb(b.bg));
             if (text < 4.5) problems.push(`${b.name}: text ${text.toFixed(2)}`);
             if (b.style === 'none' || b.width < 2) problems.push(`${b.name}: no visible ring`);
@@ -94,6 +99,7 @@ describe('gallery theme and keyboard access (spec 005, RF-3 and accessibility)',
             else if (contrastRatio(parseRgb(b.ring), parseRgb(b.halo)) < 3) problems.push(`${b.name}: ring against halo below 3:1`);
           }
           expect(enabled).toBeGreaterThan(0);
+          expect(reached, 'every enabled Button is reached with Tab').toBe(enabled);
           expect(problems).toEqual([]);
         } finally {
           await page.context().close();
