@@ -1,6 +1,7 @@
 # Spec 008 — pulido-historias
 
-**Status:** approved · **Approved:** 2026-10-22 · el dueño, con 8 px de hueco (RF-3) y líneas partidas (RF-4)
+**Status:** implemented · **Approved:** 2026-10-22 · el dueño, con 8 px de hueco (RF-3) y líneas partidas (RF-4)
+**Implemented:** 2026-10-22 · 2 tareas en 1 ola con worktrees; la rejilla de la T-2 se cambió por un margen (recortaba el Copy de la 007); validada por el reviewer en 1 vuelta; `npm test` 347/347 (+1 omitido)
 **Size:** M (4 RF) · **Entrega:** 3 · **Depende de:** 007
 
 ## Contexto y objetivo
