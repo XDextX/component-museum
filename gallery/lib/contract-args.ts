@@ -17,10 +17,16 @@ export type ArgType = {
   control: { type: 'select' | 'boolean' | 'text'; labels?: Record<string, string> };
   options?: string[];
   description?: string;
+  table?: { defaultValue: { summary: string } };
 };
 export type ArgTypes = Record<string, ArgType>;
 
 type Framework = 'react' | 'astro';
+
+/** A prop's contract default as the props table writes it: `primary`, `md`, `button`, `false`. */
+export function defaultSummary(spec: PropSpec): string {
+  return String(spec.default);
+}
 
 /**
  * One control per contract prop that is not an event: closed list for enums, switch for booleans,
@@ -31,10 +37,11 @@ type Framework = 'react' | 'astro';
 export function argTypesFromContract(contract: Contract, exampleClasses: Record<string, string>): ArgTypes {
   const types: ArgTypes = {};
   for (const [name, spec] of Object.entries(contract.props)) {
+    const table = { defaultValue: { summary: defaultSummary(spec) } };
     types[name] =
       spec.type === 'enum'
-        ? { control: { type: 'select' }, options: spec.values }
-        : { control: { type: 'boolean' } };
+        ? { control: { type: 'select' }, options: spec.values, table }
+        : { control: { type: 'boolean' }, table };
   }
   if (contract.content) types.children = { control: { type: 'text' } };
   if (contract.classProp) {
