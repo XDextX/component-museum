@@ -2,7 +2,8 @@
 
 ## Decisiones (2026-10-22, decididas por el coordinator en modo autónomo)
 
-- Entrega 4 = las cinco specs 009–013, publicadas juntas.
+- Entrega 4 = las cinco specs de componentes, publicadas juntas; desde el 2026-10-23 son 009–014,
+  con la 011-tema-opcional en medio (decisión del dueño sobre el tema, ver abajo).
 - Etiqueta, ayuda y error dentro de cada control, sin `Field` (Astro y regla 4).
 - `label` siempre visible y obligatoria; la etiqueta oculta queda fuera de alcance.
 - `type`: `text`, `email`, `password`, `search`, `tel`, `url`, `number`; `size`: `sm`, `md`, `lg`
@@ -14,9 +15,13 @@
 |---|---|---|---|---|
 | 1 | 009 | **Input** (`text`, `email`, `password`, `search`, `tel`, `url`, `number`) | Casi todo formulario pide un dato de una línea. | Fija el patrón de campo (etiqueta, ayuda, error) y los tokens del control que heredan todos los demás. |
 | 2 | 010 | **Textarea** | Hay textos que no caben en una línea: mensajes y comentarios. | Reusa casi todo el patrón de la 009; sale barata justo detrás. |
-| 3 | 011 | **Checkbox** | Para el sí/no, aceptar términos o suscribirse. | Otro maquetado: la etiqueta va a la derecha y el control es propio. |
-| 4 | 012 | **RadioGroup** | Para elegir una sola opción entre pocas, a la vista. | Es la primera agrupación (`fieldset`/`legend`), y se apoya en el control de la 011. |
-| 5 | 013 | **Select** (nativo) | Para elegir una opción entre muchas. | Es el último porque el nativo es el más simple de estilar y el que menos aporta sobre el HTML. |
+| 3 | 012 | **Checkbox** | Para el sí/no, aceptar términos o suscribirse. | Otro maquetado: la etiqueta va a la derecha y el control es propio. |
+| 4 | 013 | **RadioGroup** | Para elegir una sola opción entre pocas, a la vista. | Es la primera agrupación (`fieldset`/`legend`), y se apoya en el control de la 012. |
+| 5 | 014 | **Select** (nativo) | Para elegir una opción entre muchas. | Es el último porque el nativo es el más simple de estilar y el que menos aporta sobre el HTML. |
+
+Renumeración (2026-10-23): la **011-tema-opcional** entra en la entrega 4 antes de Checkbox, por
+una decisión del dueño (el paquete va claro salvo que la página pida el oscuro); Checkbox, RadioGroup
+y Select pasan a 012, 013 y 014.
 
 Comparada con la lista del coordinator: es la misma, con dos ajustes.
 - «Radio (grupo)» pasa a **RadioGroup**. Un radio suelto no sirve de nada: el contrato es el
