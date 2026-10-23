@@ -114,5 +114,10 @@ export function astroCases(contract: Contract): { id: string; props: Record<stri
     } else if (spec.type === 'boolean') cases.push({ id: name, props: { ...base, [name]: true } });
     else if ('default' in spec) cases.push({ id: name, props: { ...base, [name]: exampleText(name) } });
   }
+  // A field with both texts gets one case that has them together, so the error-hint order is compared (spec 010).
+  const { hint, error } = contract.props;
+  if (hint?.type === 'string' && error?.type === 'string') {
+    cases.push({ id: 'hint-error', props: { ...base, hint: exampleText('hint'), error: exampleText('error') } });
+  }
   return cases;
 }

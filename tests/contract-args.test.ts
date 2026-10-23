@@ -126,16 +126,17 @@ describe('text props (spec 009, RF-1)', () => {
     expect(exampleText('error')).toBe('Error');
   });
 
-  it('gives the 13 Astro cases of a contract without variant', () => {
+  it('gives the 14 Astro cases of a contract without variant, the hint and error together last (spec 010)', () => {
     const cases = astroCases(input);
     expect(cases.map((c) => c.id)).toEqual([
       'default', 'hint', 'error',
       'type-email', 'type-password', 'type-search', 'type-tel', 'type-url', 'type-number',
-      'size-sm', 'size-lg', 'disabled', 'required',
+      'size-sm', 'size-lg', 'disabled', 'required', 'hint-error',
     ]);
     expect(cases[0].props).toEqual({ label: 'Label' });
     expect(cases[1].props).toEqual({ label: 'Label', hint: 'Hint' });
     expect(cases[3].props).toEqual({ label: 'Label', type: 'email' });
     expect(cases[11].props).toEqual({ label: 'Label', disabled: true });
+    expect(cases[13].props).toEqual({ label: 'Label', hint: 'Hint', error: 'Error' });
   });
 });

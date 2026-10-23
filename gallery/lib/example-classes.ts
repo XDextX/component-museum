@@ -10,4 +10,7 @@ export const exampleClasses: Record<string, Record<string, string>> = {
   Input: {
     'my-input': '.my-input {\n  border-radius: 999px;\n  letter-spacing: 0.05em;\n}',
   },
+  Textarea: {
+    'my-textarea': '.my-textarea {\n  border-radius: 0.25rem;\n  letter-spacing: 0.05em;\n}',
+  },
 };
