@@ -18,6 +18,7 @@ export function Field({
   required,
   id,
   describedBy,
+  inline = false,
   children,
 }: {
   label: string;
@@ -26,23 +27,29 @@ export function Field({
   required: boolean;
   id: string | undefined;
   describedBy: string | undefined;
+  /** Checkbox layout: the control comes before the label. */
+  inline?: boolean;
   children: (control: FieldControlProps) => ReactNode;
 }) {
   const generated = useId();
   const controlId = id ?? generated;
   // The error first, then the hint, then the consumer's own ids.
   const description = [error && `${controlId}-error`, hint && `${controlId}-hint`, describedBy].filter(Boolean).join(' ');
+  const labelNode = (
+    <label className="museum-field__label" htmlFor={controlId}>
+      {label}
+      {required && (
+        <span className="museum-field__required" aria-hidden="true">
+          *
+        </span>
+      )}
+    </label>
+  );
+  const control = children({ id: controlId, 'aria-describedby': description || undefined, 'aria-invalid': error ? true : undefined });
   return (
-    <div className="museum-field">
-      <label className="museum-field__label" htmlFor={controlId}>
-        {label}
-        {required && (
-          <span className="museum-field__required" aria-hidden="true">
-            *
-          </span>
-        )}
-      </label>
-      {children({ id: controlId, 'aria-describedby': description || undefined, 'aria-invalid': error ? true : undefined })}
+    <div className={inline ? 'museum-field museum-field--inline' : 'museum-field'}>
+      {inline ? control : labelNode}
+      {inline ? labelNode : control}
       {hint && (
         <p id={`${controlId}-hint`} className="museum-field__hint">
           {hint}
