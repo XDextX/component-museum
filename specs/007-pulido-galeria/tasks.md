@@ -27,7 +27,7 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   de `defaultSummary` (`md` esperado), el de `usageSnippet` (omite el default) y el de la tabla en
   Edge (`size` ≠ `md`). Sin inyección: 10/10 verdes.
 
-- [ ] **T-2 — Selector de idioma con el estilo de la página**
+- [x] **T-2 — Selector de idioma con el estilo de la página**
   Cubre: RF-2, RF-3
   Archivos: `gallery/lib/Lang.tsx`, `tests/gallery-lang.test.ts`
   Hecho cuando: en Edge, en los dos temas de la página de documentación, los botones usan la fuente
@@ -36,6 +36,11 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   accesible y foco visible. El dueño ve el selector en los dos temas y lo aprueba antes del commit
   (trabajo visual).
   Inyección: quitar `font: inherit` en la rama del worktree devuelve Arial y pone en rojo RF-2.
+  Hecho: test visto en rojo antes de implementar (4 de 6: fuente Arial). Color del texto tomado de `useTheme().color.defaultText`
+  (el cuerpo del iframe no fija color: con `inherit` daba 1.85:1 en oscuro). Contrastes medidos: claro, activo 9.59:1 e inactivo
+  12.75:1; oscuro, activo 7.03:1 e inactivo 9.75:1 (igual con `en` activo). Fondo activo `rgba(128,128,128,.25)`; inactivo transparente.
+  Inyección vista en rojo: quitar `font: 'inherit'` pone en rojo los 4 casos de estilo (Arial); restaurado, 6 de 6 en verde.
+  Capturas pendientes de aprobación del dueño.
 
   Va en la ola 2 porque mide el contraste sobre el tema oscuro de la página, que trae la T-4.
 
