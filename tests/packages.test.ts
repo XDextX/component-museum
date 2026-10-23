@@ -155,7 +155,8 @@ describe('manifestPublishProblems and licenseProblems (spec 006 RF-1)', () => {
 });
 
 for (const { framework, dir, peers, keywords, allowed } of packages) {
-  describe(`@component-museum/${framework}`, () => {
+  // React's prepack compiles dist/ (spec 006): 2.3 s alone, over 10 s beside the Edge tests.
+  describe(`@component-museum/${framework}`, { timeout: 60_000 }, () => {
     it('packs under the @component-museum scope with its entry, stylesheet and type declarations (RF-1)', () => {
       const { name, files } = packedFiles(dir);
       expect(name).toBe(`@component-museum/${framework}`);

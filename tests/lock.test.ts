@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -84,5 +84,46 @@ describe('a lock two processes fight over (T-9)', { timeout: 30_000 }, () => {
     release();
 
     expect(existsSync(lockDir)).toBe(true);
+  });
+
+  const deadOwner = () => ({ pid: spawnSync(process.execPath, ['-e', '']).pid!, runId: 'dead', startedAt: Date.now() });
+
+  it('does not delete a lock a rival took while this run was reclaiming a dead one', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'cm-lock-'));
+    const lockDir = join(dir, '.museum-test-lock');
+    mkdirSync(lockDir);
+    writeFileSync(join(lockDir, 'owner.json'), JSON.stringify(deadOwner()));
+    // The rival (A) replaces the dead lock after B read it and before B removes it.
+    const rival = { pid: process.pid, runId: 'A', startedAt: Date.now() };
+    const beforeReclaim = () => {
+      rmSync(lockDir, { recursive: true, force: true });
+      mkdirSync(lockDir);
+      writeFileSync(join(lockDir, 'owner.json'), JSON.stringify(rival));
+    };
+
+    await expect(acquireLock(lockDir, { runId: 'B', waitMs: 500, pollMs: 50, beforeReclaim, log: () => {} })).rejects.toThrow('pid ' + process.pid);
+
+    expect(JSON.parse(readFileSync(join(lockDir, 'owner.json'), 'utf8')).runId).toBe('A');
+  });
+
+  it('takes a lock whose owner.json was never written once the folder is old', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'cm-lock-'));
+    const lockDir = join(dir, '.museum-test-lock');
+    mkdirSync(lockDir);
+    const old = new Date(Date.now() - 60_000);
+    utimesSync(lockDir, old, old);
+
+    const release = await acquireLock(lockDir, { runId: 'alive', waitMs: 1_000, pollMs: 50, log: () => {} });
+
+    expect(JSON.parse(readFileSync(join(lockDir, 'owner.json'), 'utf8')).runId).toBe('alive');
+    release();
+  });
+
+  it('keeps waiting for a lock without owner.json that is still new', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'cm-lock-'));
+    const lockDir = join(dir, '.museum-test-lock');
+    mkdirSync(lockDir);
+
+    await expect(acquireLock(lockDir, { runId: 'alive', waitMs: 300, pollMs: 50, log: () => {} })).rejects.toThrow('pid unknown');
   });
 });

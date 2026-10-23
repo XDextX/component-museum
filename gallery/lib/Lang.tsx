@@ -1,4 +1,5 @@
-import { useSyncExternalStore, type ReactNode } from 'react';
+import { useTheme, type StorybookTheme } from 'storybook/theming';
+import { useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 
 export type Language = 'es' | 'en';
 
@@ -45,15 +46,29 @@ function useLanguage(): Language {
   return useSyncExternalStore(subscribe, read, () => 'es');
 }
 
+// Spec 007, RF-2/RF-3: the font is the page's; the text colour is the docs theme's (the page body sets none, so
+// `inherit` would stay black on the dark page). The pressed button gets a translucent grey fill, which stays distinct and readable on a light or a dark page.
+const buttonStyle = (pressed: boolean, color: string): CSSProperties => ({
+  font: 'inherit',
+  color,
+  background: pressed ? 'rgba(128, 128, 128, 0.25)' : 'transparent',
+  border: '1px solid currentColor',
+  borderRadius: '4px',
+  padding: '0.25rem 0.75rem',
+  cursor: 'pointer',
+});
+
 /** «Español | English»: two toggle buttons, the chosen one pressed (spec 005, RF-1). */
 export function LanguageSwitch() {
   const language = useLanguage();
+  // Storybook types Theme by augmenting it, which the root tsconfig (NodeNext) does not apply.
+  const color = (useTheme() as StorybookTheme).color?.defaultText ?? 'inherit';
   return (
     <div role="group" aria-label="Idioma · Language" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
       {LANGUAGES.map(({ code, label }, i) => (
         <span key={code} style={{ display: 'contents' }}>
-          {i > 0 && <span aria-hidden="true">|</span>}
-          <button type="button" lang={code} aria-pressed={language === code} onClick={() => choose(code)}>
+          {i > 0 && <span aria-hidden="true" style={{ color }}>|</span>}
+          <button type="button" lang={code} aria-pressed={language === code} style={buttonStyle(language === code, color)} onClick={() => choose(code)}>
             {label}
           </button>
         </span>
