@@ -1,17 +1,22 @@
+import { resolve } from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
 import { closeBrowserAndServers } from './lib/browser.ts';
+import { docLanguages, docsFile, docsId, exportedContracts, readText, sectionTitles } from './lib/gallery-pages.ts';
 import { serve, type Served } from './lib/serve.ts';
 
-const titles = {
-  es: ['Uso', 'Construcción', 'Cómo alterarlo'],
-  en: ['Usage', 'How it is built', 'How to alter it'],
-};
+const repo = resolve(import.meta.dirname, '..');
 
 /** The section titles (h2) the docs page shows right now. */
 const shown = (page: Page) => page.locator('h2').allInnerTexts();
 
-describe('the docs page language switch in the browser (spec 005, RF-1 and RF-5)', { timeout: 120_000 }, () => {
+// Every exported component's docs page, with the titles its own MDX declares in each language (spec 009, RF-10).
+const docs = exportedContracts(repo).map((c) => {
+  const langs = docLanguages(readText(repo, docsFile(c.name)) ?? '');
+  return [c.name, { es: sectionTitles(langs.es ?? ''), en: sectionTitles(langs.en ?? '') }] as const;
+});
+
+describe.each(docs)('the %s docs page language switch in the browser (spec 005, RF-1 and RF-5)', { timeout: 120_000 }, (name, titles) => {
   let served: Served;
   let browser: Browser;
   beforeAll(async () => {
@@ -23,10 +28,12 @@ describe('the docs page language switch in the browser (spec 005, RF-1 and RF-5)
   });
 
   it('starts in Spanish, switches to English, and keeps English after a reload', async () => {
+    expect(titles.es.length, 'the MDX has Spanish sections').toBeGreaterThan(0);
+    expect(titles.en.length, 'the MDX has English sections').toBeGreaterThan(0);
     // A new context has empty localStorage: no saved preference.
     const page = await (await browser.newContext()).newPage();
     try {
-      await page.goto(`${served.url}iframe.html?id=button-documentation--docs&viewMode=docs`);
+      await page.goto(`${served.url}iframe.html?id=${docsId(name)}&viewMode=docs`);
       const es = page.getByRole('button', { name: 'Español' });
       const en = page.getByRole('button', { name: 'English' });
       await es.waitFor();
