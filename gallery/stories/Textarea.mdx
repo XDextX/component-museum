@@ -1,0 +1,194 @@
+import { Canvas, Controls, Meta, Source } from '@storybook/addon-docs/blocks';
+import * as ReactStories from './Textarea.react.stories.tsx';
+import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
+import { exampleClasses } from '../lib/example-classes.ts';
+
+<Meta title="Textarea/Documentation" />
+
+# Textarea
+
+<LanguageSwitch />
+
+<Canvas of={ReactStories.Default} sourceState="shown" />
+
+<Controls of={ReactStories.Default} />
+
+<Lang lang="es">
+
+## Uso
+
+Textarea es el campo de varias líneas, para mensajes y comentarios, con su etiqueta, su ayuda y su error ya cableados: no hay que escribir ningún `id` ni atributo ARIA. Se usa y se ve como Input. `label` es obligatoria y siempre visible; `hint` (ayuda) y `error` son textos opcionales; `size` es `sm`, `md` o `lg`; `disabled` y `required` son estados. Se instala desde el paquete de tu framework y se importa siempre por su nombre de paquete, junto con su hoja de estilos.
+
+En React:
+
+```tsx
+import { Textarea } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Textarea label="Mensaje" hint="Máximo 500 caracteres" required />
+```
+
+En Astro:
+
+```astro
+---
+import { Textarea } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Textarea label="Mensaje" hint="Máximo 500 caracteres" required />
+```
+
+Solo se escriben las props que no tienen su valor por defecto (`md`, sin ayuda, sin error, sin `disabled` ni `required`). Cualquier otro atributo HTML (`name`, `rows`, `placeholder`, `maxlength`…) llega al `<textarea>`; `rows` fija el alto inicial. Los eventos `input` y `change` son los nativos del navegador. El componente muestra el `error` que recibe; quién valida es tu código.
+
+**Texto inicial: `value`.** En los dos frameworks, `value` es el texto con el que arranca el campo; se muestra tal cual, con sus saltos de línea y sin interpretar `<` ni `&` como HTML. En React, `value` sin `onChange` deja el campo de solo lectura, como cualquier `<textarea>` de React: usa `defaultValue` para un texto inicial editable, o `value` con tu `onChange`. En Astro, `value` es siempre el texto inicial editable.
+
+## Construcción
+
+Textarea son dos implementaciones de un mismo contrato (`contracts/textarea.contract.json`) que comparten una sola hoja de estilos con Input. Las dos emiten el mismo marcado:
+
+- **Etiqueta:** un `<label for>` que apunta al `id` del control; con `required`, añade un `*` oculto a los lectores de pantalla (el `required` nativo ya dice «obligatorio»).
+- **Control:** un `<textarea>` con las clases `museum-textarea`, `museum-textarea--<size>` y la clase que pases, y `data-museum-textarea`. Si pasas tu propio `id`, ese es el del control.
+- **Ayuda y error:** dos `<p>` bajo el control, que solo existen si hay texto. `aria-describedby` los enlaza, el error primero y después la ayuda, y detrás los `id` que tú pases. Con error, el control lleva `aria-invalid="true"`; sin error, no lleva ni ese atributo ni el nodo.
+- **`id`:** en React, `useId()`; en Astro, un contador, sin `Math.random()`, así que dos campos con la misma etiqueta no chocan y el marcado se repite build a build.
+- **Tamaño:** el alto inicial lo dan las filas (`rows`). El usuario lo agranda solo en vertical (`resize: vertical`); el ancho lo decide la página. Un texto largo se parte en líneas sin ensanchar el campo.
+- **CSS:** vive en la capa `components.museum`. Cada color, tamaño y fuente sale de una variable `--museum-*`. A igual `size`, Textarea y Input tienen el mismo aspecto.
+- **Temas:** el claro es el de por defecto; el oscuro llega con `prefers-color-scheme` o con `data-theme="dark"`. El error no depende solo del color: su texto siempre está.
+
+## Cómo alterarlo
+
+Como el CSS del paquete está en una capa, **tu CSS siempre gana**: no hace falta subir la especificidad ni usar `!important`.
+
+**1. Tokens.** Redefine una variable `--museum-*` en un contenedor o en `:root`:
+
+- Campo: `--museum-control-bg`, `--museum-control-fg`, `--museum-control-border`, `--museum-control-placeholder`.
+- Texto: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (que también es el borde en error).
+- Forma y tamaño: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity` y la escala `--museum-space-*`.
+- Foco: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-control-border: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+**2. Una regla sobre la clase.** Pasa tu propia clase (`className` en React, `class` en Astro): va al `<textarea>`, se añade a las del componente y, al estar fuera de la capa, gana sin más. Esta historia define y muestra `my-textarea`, que es también la opción del control de clase:
+
+<Source language="css" code={exampleClasses.Textarea['my-textarea']} />
+
+En React:
+
+```tsx
+import { Textarea } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Textarea label="Mensaje" className="my-textarea" />
+```
+
+En Astro:
+
+```astro
+---
+import { Textarea } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Textarea label="Mensaje" class="my-textarea" />
+```
+
+La misma regla sirve para el redimensionado: el componente lo deja en vertical, y tu clase puede cambiar `resize`.
+
+**3. Utilidades.** Si tu proyecto usa Tailwind, sus utilidades también ganan a la capa del paquete. Se usan igual, como clase de tu proyecto. El envoltorio del campo (`museum-field`) no se personaliza con una prop: se alcanza con los tokens.
+
+</Lang>
+
+<Lang lang="en">
+
+## Usage
+
+Textarea is the multi-line field, for messages and comments, with its label, hint and error already wired: you never write an `id` or an ARIA attribute. It is used and looks like Input. `label` is required and always visible; `hint` and `error` are optional texts; `size` is `sm`, `md` or `lg`; `disabled` and `required` are states. Install it from your framework's package and always import it by package name, together with its stylesheet.
+
+In React:
+
+```tsx
+import { Textarea } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Textarea label="Message" hint="500 characters at most" required />
+```
+
+In Astro:
+
+```astro
+---
+import { Textarea } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Textarea label="Message" hint="500 characters at most" required />
+```
+
+Only write the props that are off their default (`md`, no hint, no error, not `disabled` or `required`). Any other HTML attribute (`name`, `rows`, `placeholder`, `maxlength`…) reaches the `<textarea>`; `rows` sets the initial height. The `input` and `change` events are the browser's own. The component shows the `error` it receives; validating is your code's job.
+
+**Initial text: `value`.** In both frameworks, `value` is the text the field starts with; it is shown as is, with its line breaks and without reading `<` or `&` as HTML. In React, `value` without `onChange` makes the field read-only, like any React `<textarea>`: use `defaultValue` for editable initial text, or `value` with your own `onChange`. In Astro, `value` is always the editable initial text.
+
+## How it is built
+
+Textarea is two implementations of one contract (`contracts/textarea.contract.json`) sharing a single stylesheet with Input. Both emit the same markup:
+
+- **Label:** a `<label for>` pointing at the control's `id`; with `required`, it adds a `*` hidden from screen readers (the native `required` already says "required").
+- **Control:** a `<textarea>` with the classes `museum-textarea`, `museum-textarea--<size>` and the class you pass, plus `data-museum-textarea`. If you pass your own `id`, that is the control's.
+- **Hint and error:** two `<p>` below the control, which exist only when there is text. `aria-describedby` links them, error first and then hint, followed by any `id` you pass. With an error the control carries `aria-invalid="true"`; without one, neither that attribute nor the node exists.
+- **`id`:** in React, `useId()`; in Astro, a counter, never `Math.random()`, so two fields with the same label never clash and the markup repeats build to build.
+- **Size:** the rows (`rows`) give the initial height. The user can enlarge it vertically only (`resize: vertical`); the page decides the width. Long text wraps without widening the field.
+- **CSS:** it lives in the `components.museum` layer. Every color, size and font comes from a `--museum-*` variable. At the same `size`, Textarea and Input look the same.
+- **Themes:** light is the default; dark arrives through `prefers-color-scheme` or `data-theme="dark"`. The error does not rely on color alone: its text is always there.
+
+## How to alter it
+
+Because the package CSS sits in a layer, **your CSS always wins**: no need to raise specificity or use `!important`.
+
+**1. Tokens.** Redefine a `--museum-*` variable on a container or on `:root`:
+
+- Field: `--museum-control-bg`, `--museum-control-fg`, `--museum-control-border`, `--museum-control-placeholder`.
+- Text: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (also the border in error).
+- Shape and size: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity` and the `--museum-space-*` scale.
+- Focus: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-control-border: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+**2. A rule on the class.** Pass your own class (`className` in React, `class` in Astro): it goes to the `<textarea>`, is added to the component's and, being outside the layer, wins outright. This story defines and shows `my-textarea`, which is also the class control's option:
+
+<Source language="css" code={exampleClasses.Textarea['my-textarea']} />
+
+In React:
+
+```tsx
+import { Textarea } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Textarea label="Message" className="my-textarea" />
+```
+
+In Astro:
+
+```astro
+---
+import { Textarea } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Textarea label="Message" class="my-textarea" />
+```
+
+The same rule works for resizing: the component leaves it vertical, and your class can change `resize`.
+
+**3. Utilities.** If your project uses Tailwind, its utilities also beat the package layer. Use them the same way, as a class from your project. The field wrapper (`museum-field`) has no prop of its own: reach it through the tokens.
+
+</Lang>

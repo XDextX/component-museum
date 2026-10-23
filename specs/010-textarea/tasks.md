@@ -76,7 +76,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va en la ola 1 junto a la T-1: no comparten archivos.
 
-- [ ] **T-3 — Contrato y Textarea en los dos frameworks, con su galería**
+- [x] **T-3 — Contrato y Textarea en los dos frameworks, con su galería**
   Cubre: RF-1, RF-2 a RF-6 y RF-11 (marcado), NFR de galería (regla 5, idiomas)
   Archivos: `contracts/textarea.contract.json` (exacto, plan, bloque 4),
   `packages/react/src/Textarea/Textarea.tsx`, `packages/react/src/index.ts`,
@@ -110,6 +110,21 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Añadido por el dueño tras la T-1: un caso de Astro con ayuda y error juntos (en Input y en
   Textarea), para que la comparación con React vigile el orden error-ayuda.
+
+  Hecho (sin commit, a la espera de las capturas aprobadas):
+  - Casos de Input de la 009 en `field-markup.test.ts`: 14 antes (10 de React, 4 de Astro), 14 después,
+    mismos nombres; el único que cambia de nombre es el de Astro «(13)» a «(14)» por el caso nuevo.
+    Textarea añade 11 de React y 5 de Astro.
+  - Caso de Astro con ayuda y error juntos: `astroCases` añade `hint-error` al final cuando el contrato
+    tiene `hint` y `error` (Input pasa a 14 casos, Textarea tiene 8, no 7). Los de Button no cambian.
+  - `value` con saltos y HTML y `value` con salto inicial se prueban sobre una segunda página,
+    `gallery/astro-render/src/pages/textarea-values.astro` (sale en `dist/textarea-values/`).
+  - `rows` no sale en los snippets del MDX (`snippets.test.ts` solo admite props del contrato); se
+    explica en la prosa.
+  - Inyecciones vistas en rojo y restauradas: `set:html` para el `value` en Astro pone en rojo el caso de
+    escape (2 tests); quitar el salto inicial pone en rojo el del salto (1); hint antes que error en
+    `field.ts` pone en rojo la comparación Astro de Input y de Textarea (el caso `hint-error`, 2 tests);
+    quitar la historia Astro de Textarea pone en rojo la regla 5 (3 tests de `gallery.test.ts`).
 
 - [ ] **T-4 — Textarea en los consumidores: accesibilidad en Edge**
   Cubre: RF-2 a RF-11 (en el navegador), NFR de accesibilidad y regla 2

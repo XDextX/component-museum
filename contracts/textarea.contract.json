@@ -1,0 +1,14 @@
+{
+  "name": "Textarea",
+  "props": {
+    "label": { "type": "string", "required": true },
+    "hint": { "type": "string", "default": "" },
+    "error": { "type": "string", "default": "" },
+    "size": { "type": "enum", "values": ["sm", "md", "lg"], "default": "md" },
+    "disabled": { "type": "boolean", "default": false },
+    "required": { "type": "boolean", "default": false }
+  },
+  "events": [],
+  "content": false,
+  "classProp": true
+}
