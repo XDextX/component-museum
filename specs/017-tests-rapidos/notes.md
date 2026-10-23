@@ -167,3 +167,78 @@ Cómo saber qué ejecución vive sin borrar la de otro checkout:
   `--user-data-dir` es un perfil `playwright_chromiumdev_profile-*` de `%TEMP%` y su proceso padre
   ya no vive. Así nunca se toca el Edge del usuario, que no usa un perfil de Playwright, ni los de
   otra ejecución viva.
+
+## Base (T-1, 2026-10-23, sin otra carga)
+
+Worktree `.claude/worktrees/agent-a8d527f168119ad64`, rama `spec/017-tests-rapidos-T-1` sobre `1ed5bc2`, 12 núcleos, sin tareas ni galería en marcha. Tres ejecuciones seguidas de los pasos de `npm test`, sin cambios, todas en verde: 44 archivos, 813 tests (812 pasan, 1 omitido). La medida del `globalSetup` salió de un registro temporal (`MUSEUM_PHASE_LOG`) que se ha revertido: no hay código cambiado.
+
+**Total y por paso** (segundos; la mediana es la pasada 3, la del medio en total):
+
+| Paso | Pasada 1 | Pasada 2 | Pasada 3 | Mediana |
+|---|---|---|---|---|
+| `tsc -p packages/react/tsconfig.build.json` | 0.6 | 0.6 | 0.6 | 0.6 |
+| `npm run gallery:astro` | 2.1 | 2.4 | 2.4 | 2.4 |
+| `tsc --noEmit` | 2.2 | 2.5 | 2.4 | 2.4 |
+| `tsc --noEmit -p gallery` | 1.5 | 1.6 | 1.4 | 1.5 |
+| `astro check` de `test-package` | 4.1 | 3.6 | 3.4 | 3.6 |
+| `astro check` de `packages/astro` | 3.8 | 3.7 | 3.6 | 3.7 |
+| `astro check` de `gallery/astro-render` | 3.7 | 3.8 | 3.7 | 3.7 |
+| `vitest run` (`globalSetup` y tests) | 163.2 | 146.0 | 156.8 | 156.8 |
+| **Total** | **181.3** | **164.2** | **174.3** | **174.3 (2 min 54 s)** |
+
+Con la máquina libre la base es unas 4 veces menor que la cota alta bajo carga (688.6 s). Los pasos de tipos son casi gratis (15 s entre todos, con las cachés de tsc y Astro calientes). El peso está en `vitest run`: el 90 % del total.
+
+**`globalSetup` por partes** (pasada 3; entre paréntesis las pasadas 1 y 2). Total 62.1 s (64.3 y 53.6):
+
+| Parte | Segundos |
+|---|---|
+| starters (2 `npm exec`; el de Astro, 5.4 s) | 5.3 (5.4, 5.3) |
+| crear e instalar los 8 consumidores en paralelo (empaquetar + `npm install`) | 35.8 (37.1, 29.3); cada `npm install` de Astro 33 s, de React 12-14 s |
+| builds de los 6 consumidores en paralelo | 4.7 (5.1, 5.3); los de Astro 5 s, los de React 2 s |
+| `checkButtonTypes` (instala `@astrojs/check` y dos chequeos; el de Astro, 4-5 s) | 16.3 (16.7, 13.7) |
+| galería, en paralelo con lo anterior (de 5.3 a 23.9) | 18.6 (9.9, 33.1) |
+| - `prepack` de React y Astro | 2.3 (2.5, 2.2) |
+| - `astro build` de `astro-render` | 2.7 (3.1, 3.6) |
+| - extracción | 0.1 |
+| - Storybook | 13.5 (4.1, 27.2) |
+
+Conteos por ejecución, en el `globalSetup`: 20 `npm pack` (suman 39 s de reloj sumado; 52 y 43 en las otras), 13 `npm install` (suman 197 s sumados; 203 y 191), 2 starters. Faltan los empaquetados de `packages.test.ts` y `styles.test.ts`, que están en los tests. El camino crítico del `globalSetup` es crear e instalar los consumidores de Astro (unos 41 s hasta que están todos); la galería acaba antes y no lo alarga. Lo que queda de `vitest run` tras el `globalSetup`: unos 95 s.
+
+**Storybook varía mucho** (4.1, 13.5 y 27.2 s) con la máquina libre y sin cambios: depende de las cachés internas y del reparto con los `npm install`. Una pasada de base no distingue bien un ahorro de 10 s ahí.
+
+**Los 10 archivos más lentos** (segundos, pasada 3, con las otras dos al lado):
+
+| Archivo | P3 | P1 | P2 |
+|---|---|---|---|
+| `consumer.test.ts` | 75.8 | 82.2 | 81.8 |
+| `gallery-browser.test.ts` | 73.8 | 85.1 | 82.7 |
+| `a11y.test.ts` | 72.3 | 68.4 | 69.7 |
+| `field-a11y.test.ts` | 68.2 | 62.3 | 68.0 |
+| `typecheck.test.ts` | 58.6 | 27.6 | 52.3 |
+| `field-markup.test.ts` | 47.5 | 51.7 | 40.1 |
+| `gallery-i18n.test.ts` | 47.2 | fuera del top 10 | 43.5 |
+| `theme.test.ts` | 46.9 | 47.6 | 49.2 |
+| `gallery-story-theme.test.ts` | 39.3 | 38.2 | 38.4 |
+| `field-styles.test.ts` | 25.9 | 30.1 | fuera del top 10 |
+
+Los archivos corren en paralelo, así que sus tiempos no suman al total. `packages.test.ts` (unos 30 s, por su `npm pack --dry-run`) queda justo fuera de los diez en la pasada 3.
+
+**`%TEMP%` y Edge** (el disco `C:` tenía 61.3 GB libres al empezar):
+
+| Momento | `cm-*` | `playwright_chromiumdev_profile-*` | `msedge` (de tests) | GB libres |
+|---|---|---|---|---|
+| Antes (restos previos, no míos) | 36 | 48 | 7 (0) | 61.3 |
+| Tras una ejecución normal (las 3, igual tras cada una) | 36 | 48 | 7 (0) | 61.2 |
+| Tras una cortada a mano: `taskkill /T /F` del árbol de `vitest` a los 110 s | 42 | 57 | 7 (0) | 60.0 |
+| Tras una cortada a mano: matar solo los `node` del worktree, sin árbol | 43 | 55 | 7 (0) | 60.0 |
+
+- Una ejecución normal no deja carpetas ni Edge. Las 36 y 48 de antes son restos de ejecuciones anteriores ajenas a esta tarea, y no las toqué.
+- Una cortada deja 6 o 7 `cm-*` (`cm-<runId>`, `-guard`, `-pkg`, `-starter`, `-tw`, más `cm-release-*` o `cm-typecheck-*`) y 7 a 9 perfiles de Playwright: unos 1.2 GB. Un disco lleno se explica por la acumulación de cortes.
+- **Los 7 `msedge` son el Edge del usuario (ninguno lleva `remote-debugging-pipe` ni `playwright`) y no los toqué.** En los dos cortes los Edge de los tests murieron con su proceso padre (el pipe se cierra), y no quedó ninguno huérfano. Los 31 `msedge` de las tareas de la 012 no se reprodujeron aquí; vendrán de otra forma de cortar (un hook que pasa de 30 s, un parón con Edge a medias) o de la carga. Para el RF-10, lo medido aquí son las carpetas, no los procesos.
+- Tras cada corte quité solo las carpetas nuevas, comparadas con la lista de antes, y el lock (`node_modules/.museum-test-lock`) que dejó. Volvió a 36 y 48.
+
+**Anomalías.**
+- `[museum] teardown: closing Edge still running after 10000 ms` salió en la pasada 1 (`theme.test.ts`, `cascade.test.ts` y otros), con la máquina libre y todo en verde. El cierre de Edge pasa de 10 s en esta máquina; el `hookTimeout` de 30 s lo absorbe.
+- Una ejecución cortada deja el lock, y hay que borrarlo a mano antes de la siguiente.
+- Las cachés de herramientas (tsc incremental, Astro) estaban calientes porque `build:packages` y `gallery:astro` corrieron en el arranque. La medida de la T-8 debe hacerse en las mismas condiciones.
+- Ninguna pasada falló.

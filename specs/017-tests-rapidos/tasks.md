@@ -26,7 +26,7 @@ paralelo. Quién toca cada archivo compartido:
 - `package.json`: T-2 (`gallery:astro`) y T-6 (`test`);
 - `specs/017-tests-rapidos/notes.md`: T-1 y T-8.
 
-- [ ] **T-1 — Medir la base sin otra carga**
+- [x] **T-1 — Medir la base sin otra carga**
   Cubre: NFR de objetivo (la base)
   Archivos: `specs/017-tests-rapidos/notes.md` (sección «Base»)
   Hecho cuando:
@@ -44,6 +44,9 @@ paralelo. Quién toca cada archivo compartido:
   Inyección: no aplica (es una medida); las 3 cifras sueltas van junto a la mediana.
 
   Va sola en la ola 1: las demás tareas necesitan la base.
+  Nota: hecha. Mediana del total, 174.3 s (181.3, 164.2, 174.3), todo en verde; el desglose, los
+  archivos más lentos y el estado de `%TEMP%` y de Edge están en la sección «Base» de `notes.md`.
+  Sin cambios de código.
 
 - [ ] **T-2 — Caché honesta para Storybook y `astro-render`; un solo `astro build`**
   Cubre: RF-2, RF-3, RF-4
