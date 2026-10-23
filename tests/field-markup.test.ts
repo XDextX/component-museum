@@ -6,7 +6,7 @@ import { createElement, Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { astroCases } from '../gallery/lib/contract-args.ts';
-import { Input, Textarea } from '../packages/react/dist/index.js';
+import { Checkbox, Input, Textarea } from '../packages/react/dist/index.js';
 import { loadContract } from './lib/contract.ts';
 
 // The canonical markup of plan 009, block 4. `id` is passed so the output is exact.
@@ -144,6 +144,90 @@ describe('Textarea markup in React (spec 010, RF-2 to RF-6, RF-11)', () => {
   });
 });
 
+// Spec 012, T-3: the same field with the control before the label (inline), and a checkbox for a control.
+const cbHtml = (props: Record<string, unknown>) => renderToStaticMarkup(createElement(Checkbox, { id: 'f', label: 'Label', ...props }));
+// React's server renderer writes `checked` last, after the data attribute.
+const cbControl = (attrs = '', checked = false) =>
+  `<input id="f" class="museum-checkbox museum-checkbox--md" type="checkbox"${attrs} data-museum-checkbox=""${checked ? ' checked=""' : ''}/>`;
+const inline = (...parts: string[]) => `<div class="museum-field museum-field--inline">${parts.join('')}</div>`;
+
+describe('Checkbox markup in React (spec 012, RF-2 to RF-6, RF-12)', () => {
+  it('RF-2, RF-5: without hint or error it is a control and a label after it, with no ARIA and no empty nodes', () => {
+    expect(cbHtml({})).toBe(inline(cbControl(), label()));
+  });
+
+  it('RF-3: a hint is described by the control', () => {
+    expect(cbHtml({ hint: 'Hint' })).toBe(inline(cbControl(' aria-describedby="f-hint"'), label(), hint));
+  });
+
+  it('RF-4: an error marks the control invalid and is described by it', () => {
+    expect(cbHtml({ error: 'Error' })).toBe(inline(cbControl(' aria-describedby="f-error" aria-invalid="true"'), label(), error));
+  });
+
+  it('RF-3, RF-4: with both, the error comes first in the description', () => {
+    expect(cbHtml({ hint: 'Hint', error: 'Error' })).toBe(
+      inline(cbControl(' aria-describedby="f-error f-hint" aria-invalid="true"'), label(), hint, error),
+    );
+  });
+
+  it('RF-6: required is native and the label shows a marker hidden from reading', () => {
+    expect(cbHtml({ required: true })).toBe(inline(cbControl(' required=""'), label(star)));
+  });
+
+  it('disabled is native, on the control only', () => {
+    expect(cbHtml({ disabled: true })).toBe(inline(cbControl(' disabled=""'), label()));
+  });
+
+  it('RF-12: defaultChecked is the checked attribute, and false writes none', () => {
+    expect(cbHtml({ defaultChecked: true })).toBe(inline(cbControl('', true), label()));
+    expect(cbHtml({ defaultChecked: false })).toBe(inline(cbControl(), label()));
+  });
+
+  it('a consumer checked with its onChange is the checked attribute, and defaultChecked is not sent beside it', () => {
+    const errors: unknown[] = [];
+    const spy = console.error;
+    console.error = (...a: unknown[]) => void errors.push(a);
+    try {
+      expect(cbHtml({ checked: true, onChange: () => {} })).toBe(inline(cbControl('', true), label()));
+      expect(cbHtml({ checked: true, defaultChecked: true, onChange: () => {} })).toBe(inline(cbControl('', true), label()));
+      expect(cbHtml({ checked: false, defaultChecked: true, onChange: () => {} })).toBe(inline(cbControl(), label()));
+    } finally {
+      console.error = spy;
+    }
+    expect(errors).toEqual([]);
+  });
+
+  it('keeps the consumer id and appends its aria-describedby after the component ids', () => {
+    const out = cbHtml({ id: 'mine', hint: 'Hint', 'aria-describedby': 'extra' });
+    expect(out).toContain('<input id="mine"');
+    expect(out).toContain('for="mine"');
+    expect(out).toContain('id="mine-hint"');
+    expect(out).toContain('aria-describedby="mine-hint extra"');
+    expect(cbHtml({ 'aria-describedby': 'extra' })).toContain('aria-describedby="extra"');
+  });
+
+  it('sends free attributes and the class to the input, and the component wins a clash', () => {
+    const out = cbHtml({ name: 'q', value: 'yes', className: 'mine', 'data-museum-checkbox': 'x' });
+    expect(out).toContain('class="museum-checkbox museum-checkbox--md mine"');
+    expect(out).toContain('name="q"');
+    expect(out).toContain('value="yes"');
+    expect(out.match(/data-museum-checkbox/g)).toHaveLength(1);
+    expect(out).toContain('class="museum-field museum-field--inline"');
+  });
+
+  it('writes the size', () => {
+    expect(cbHtml({ size: 'lg' })).toContain('class="museum-checkbox museum-checkbox--lg"');
+  });
+
+  it('gives two Checkbox in one tree different ids, each label pointing at its own control', () => {
+    const out = renderToStaticMarkup(createElement(Fragment, null, createElement(Checkbox, { label: 'Same' }), createElement(Checkbox, { label: 'Same' })));
+    const ids = [...out.matchAll(/<input id="([^"]+)"/g)].map((m) => m[1]);
+    const fors = [...out.matchAll(/for="([^"]+)"/g)].map((m) => m[1]);
+    expect(new Set(ids).size).toBe(2);
+    expect(fors).toEqual(ids);
+  });
+});
+
 const repo = resolve(import.meta.dirname, '..');
 type Rendered = { id: string; props: Record<string, unknown>; html: string }[];
 const generated = (slug: string) => JSON.parse(readFileSync(resolve(repo, `gallery/generated/astro-${slug}.json`), 'utf8')) as Rendered;
@@ -227,5 +311,32 @@ describe('Textarea markup in Astro against React (spec 010, RF-1 to RF-6, RF-11)
   it('emits no <script> in any case', () => {
     expect(rendered.filter((c) => /<script/i.test(c.html)).map((c) => c.id)).toEqual([]);
     expect(values).not.toMatch(/<script/i);
+  });
+});
+
+describe('Checkbox markup in Astro against React (spec 012, RF-1 to RF-6, RF-12)', () => {
+  const contract = loadContract(resolve(repo, 'contracts/checkbox.contract.json'));
+  const rendered = generated('checkbox');
+  const norm = (m: string) => serialised(normalise('input', m));
+
+  it('has one Astro render per case of the contract (9, the owner\'s hint-error one last)', () => {
+    expect(rendered.map((c) => c.id)).toEqual(astroCases(contract).map((c) => c.id));
+    expect(rendered.map((c) => c.id)).toEqual(['default', 'hint', 'error', 'size-sm', 'size-lg', 'disabled', 'required', 'defaultChecked', 'hint-error']);
+  });
+
+  it('renders every case with the same markup as React', () => {
+    for (const { id, props, html: astro } of rendered) {
+      const react = renderToStaticMarkup(createElement(Checkbox, props as never));
+      expect(norm(astro), `case ${id}`).toBe(norm(react));
+    }
+  });
+
+  it('RF-12: the default case has no checked attribute and defaultChecked has it', () => {
+    expect(rendered.find((c) => c.id === 'default')!.html).not.toMatch(/\schecked/);
+    expect(rendered.find((c) => c.id === 'defaultChecked')!.html).toMatch(/\schecked/);
+  });
+
+  it('emits no <script> in any case', () => {
+    expect(rendered.filter((c) => /<script/i.test(c.html)).map((c) => c.id)).toEqual([]);
   });
 });

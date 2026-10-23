@@ -72,7 +72,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va en la ola 1 junto a la T-1: no comparten archivos.
 
-- [ ] **T-3 — Contrato y Checkbox en los dos frameworks, con su galería**
+- [x] **T-3 — Contrato y Checkbox en los dos frameworks, con su galería**
   Cubre: RF-1, RF-2 a RF-6 y RF-12 (marcado), NFR de galería
   Archivos: `contracts/checkbox.contract.json` (exacto, plan, bloque 4),
   `packages/react/src/Checkbox/Checkbox.tsx`, `packages/react/src/index.ts`,
@@ -100,6 +100,15 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
     del commit.
   Inyección: escribir `checked` siempre en Astro pone en rojo el caso `default` contra React;
   declarar `defaultChecked?: string` en React (en la rama) pone en rojo `contract.test.ts` (RF-1).
+  Hecho (2026-10-23, rama `spec/012-checkbox-T-3`): inyecciones vistas en rojo y restauradas. Con `checked={true}`
+  siempre en Astro fallan 2 tests de `field-markup.test.ts` (el caso `default` contra React y el de RF-12). Con
+  `defaultChecked?: string` en React, `contract.test.ts` falla con `prop defaultChecked is "string", expected
+  "boolean"` (la inyección pelada rompe antes el `tsc` del global-setup; se vio con un `as never` en la rama).
+  Números: `field-markup.test.ts`, 30 tests antes (Input y Textarea) y 46 después, los 30 sin tocar.
+  Desvíos del plan, menores: `astroCases` da 9 casos y no 8 (el `hint-error` que añade para todo campo con ayuda
+  y error, como en Textarea); el marcado de React escribe `checked` al final, tras `data-museum-checkbox`, y el
+  de Astro lo copia; `tests/gallery-browser.test.ts` lee `defaultChecked` como el atributo `checked`, y
+  `tests/theme-docs.test.ts` incluye `Checkbox.mdx`.
 
   Va sola en la ola 2: necesita el ayudante (T-1), y sus capturas, la hoja (T-2).
 

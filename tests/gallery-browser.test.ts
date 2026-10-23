@@ -19,7 +19,7 @@ const components = exportedContracts(repo).filter((c) => packageExports(repo).Re
 /**
  * One arg per contract prop, off its default, with how it must show on the component's root element
  * (`[data-museum-<name>]`): an enum as the class `museum-<name>--<value>` or the attribute
- * `<prop>="<value>"`, a boolean as its attribute, a text as part of what the story shows. Then the
+ * `<prop>="<value>"`, a boolean as its attribute (`defaultChecked` as `checked`), a text as part of what the story shows. Then the
  * content and the class controls (RF-4). Button's own cases come out exactly as they always did.
  */
 function casesOf(contract: Contract): { arg: string; shows: (b: Rendered) => boolean }[] {
@@ -32,7 +32,8 @@ function casesOf(contract: Contract): { arg: string; shows: (b: Rendered) => boo
         const text = exampleText(prop);
         return [{ arg: `${prop}:${text}`, shows: (b: Rendered) => b.shown.includes(text) }];
       }
-      if (spec.type === 'boolean') return [{ arg: `${prop}:!${!spec.default}`, shows: (b: Rendered) => prop in b.attributes }];
+      // `defaultChecked` is the HTML attribute `checked` (spec 012); every other boolean is its own name.
+      if (spec.type === 'boolean') return [{ arg: `${prop}:!${!spec.default}`, shows: (b: Rendered) => (prop === 'defaultChecked' ? 'checked' : prop) in b.attributes }];
       const value = spec.values.find((v) => v !== spec.default)!;
       return [{
         arg: `${prop}:${value}`,
