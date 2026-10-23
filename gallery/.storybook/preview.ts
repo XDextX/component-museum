@@ -57,12 +57,14 @@ function ThemedDocsContainer(props: ComponentProps<typeof DocsContainer>) {
       media.removeEventListener('change', onMedia);
     };
   }, [context]);
-  const theme = docsScheme(global, prefersDark) === 'dark' ? themes.dark : themes.light;
+  const scheme = docsScheme(global, prefersDark);
+  const theme = scheme === 'dark' ? themes.dark : themes.light;
   // The container paints the theme's background but colours only the elements it styles (p, th…);
   // the rest, a table caption among them, would inherit the body's black: give them the theme's text.
   return createElement(
     'div',
-    { style: { color: theme.textColor } },
+    // data-docs-scheme (spec 008, RF-2): preview-head.html reads it to set the root's colour scheme.
+    { 'data-docs-scheme': scheme, style: { color: theme.textColor } },
     createElement(Suspense, { fallback: null }, createElement(DocsContainer, { ...props, theme })),
   );
 }

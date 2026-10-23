@@ -27,12 +27,19 @@ export const Variants: StoryObj = {
       <ThemeProvider theme={convert(dark ? themes.dark : themes.light)}>
         <div style={{ display: 'grid', gap: '1.5rem' }}>
           {(cases as AstroCase[]).map(({ id, html, usage }) => (
-            <section key={id} id={`astro-${id}`} aria-label={id}>
+            <section
+              key={id}
+              id={`astro-${id}`}
+              aria-label={id}
+              // anywhere breaks a word wider than the view (spec 008, RF-4). Not a grid or flex container: the
+              // code block's copy button is clipped below the block when it is a grid item (spec 007, RF-6).
+              style={{ overflowWrap: 'anywhere' }}
+            >
               <h3 style={{ margin: '0 0 0.5rem', fontFamily: 'system-ui', fontSize: '0.875rem' }}>{id}</h3>
-              {/* The HTML Astro rendered, as is: Storybook only shows it. */}
-              <div dangerouslySetInnerHTML={{ __html: html }} />
+              {/* The HTML Astro rendered, as is: Storybook only shows it. 8 px above the code (spec 008, RF-3). */}
+              <div style={{ marginBottom: '0.5rem' }} dangerouslySetInnerHTML={{ __html: html }} />
               {/* "astro" is not a registered language; Astro files are HTML plus a frontmatter fence. */}
-              <SyntaxHighlighter language="html" copyable>
+              <SyntaxHighlighter language="html" copyable wrapLongLines>
                 {usage}
               </SyntaxHighlighter>
             </section>
