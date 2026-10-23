@@ -26,7 +26,8 @@ async function measure(url: string, colorScheme: 'light' | 'dark'): Promise<Meas
     const page = await (await browser.newContext({ colorScheme })).newPage();
     await page.goto(url);
     await page.waitForSelector('#button-primary-md');
-    const total = await page.locator('button, a, input, select, textarea, [tabindex]').count();
+    // One press per element Tab can reach: disabled controls and tabindex=-1 are not on its path.
+    const total = await page.locator('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])').count();
     const out: Measured[] = [];
     for (let i = 0; i < total; i++) {
       await page.keyboard.press('Tab');
