@@ -139,7 +139,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
     `snippets.test.ts` en rojo en 3 tests, el MDX sin limpiar, «Input uses only example classes its
     story defines» (`['my-button']`) y «the Input story and docs keep no copy».
 
-- [ ] **T-5 — Input de Astro, con su historia**
+- [x] **T-5 — Input de Astro, con su historia**
   Cubre: RF-1, RF-2 a RF-6 (marcado), RF-10 (Astro)
   Archivos: `packages/astro/src/Input/Input.astro`, `packages/astro/index.js`,
   `packages/astro/index.d.ts`, `gallery/stories/Input.astro.stories.tsx`,
@@ -156,6 +156,14 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - El coordinator aprueba las capturas de la historia en los dos temas antes del commit.
   Inyección: quitar la historia Astro de Input pone en rojo la regla 5 (comprobación de RF-10); un
   `id` con `Math.random()` pone en rojo la comparación entre dos builds.
+  Visto en rojo y restaurado: con `Math.random()` en el `id`, falla la comparación de dos builds de
+  `astro-render` (1 test de `input-markup.test.ts`); sin `Input.astro.stories.tsx` falla la regla 5
+  de `gallery.test.ts` ("Input has no Astro story titled Input/Astro", 3 tests). Arreglo en
+  `extract-astro.mjs` (T-3): un caso corría hasta el siguiente caso del mismo componente, y el último
+  Button absorbía los casos de Input; ahora corre hasta el siguiente `<div id="case-`, de cualquiera.
+  El id de Astro usa un contador en `globalThis` (el frontmatter no tiene ámbito de módulo). La
+  comparación con React normaliza los `id` y la serialización (`/>`, `=""`). Los dos commits los
+  hace la sesión git.
 
 - [ ] **T-6 — Input en los consumidores: accesibilidad en Edge**
   Cubre: RF-2 a RF-9 (en el navegador), NFR de accesibilidad y regla 2

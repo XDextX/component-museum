@@ -1,7 +1,13 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { createElement, Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { astroCases } from '../gallery/lib/contract-args.ts';
 import { Input } from '../packages/react/dist/index.js';
+import { loadContract } from './lib/contract.ts';
 
 // The canonical markup of plan 009, block 4. `id` is passed so the output is exact.
 const html = (props: Record<string, unknown>) => renderToStaticMarkup(createElement(Input, { id: 'f', label: 'Label', ...props }));
@@ -68,4 +74,54 @@ describe('Input markup in React (spec 009, RF-2 to RF-6)', () => {
     expect(new Set(ids).size).toBe(2);
     expect(fors).toEqual(ids);
   });
+});
+
+// Spec 009, T-5: the Astro Input must render the same markup as the React one, case by case.
+describe('Input markup in Astro against React (spec 009, RF-1 to RF-6)', () => {
+  const repo = resolve(import.meta.dirname, '..');
+  const contract = loadContract(resolve(repo, 'contracts/input.contract.json'));
+  const rendered = JSON.parse(readFileSync(resolve(repo, 'gallery/generated/astro-input.json'), 'utf8')) as {
+    id: string;
+    props: Record<string, unknown>;
+    html: string;
+  }[];
+
+  // Only the generated ids are normalised: the control's id stands for every occurrence.
+  const normalise = (markup: string) => {
+    const id = /<input[^>]*? id="([^"]+)"/.exec(markup)?.[1];
+    expect(id, 'the control has an id').toBeTruthy();
+    return markup.split(id!).join('ID');
+  };
+  // Where the two serialisers write the same DOM differently: `/>` against `>`, and an empty boolean value.
+  const serialised = (markup: string) => markup.replace(/ ?\/>/g, '>').replace(/=""/g, '');
+
+  it('has one Astro render per case of the contract (13)', () => {
+    expect(rendered.map((c) => c.id)).toEqual(astroCases(contract).map((c) => c.id));
+    expect(rendered).toHaveLength(13);
+  });
+
+  it('renders every case with the same markup as React', () => {
+    for (const { id, props, html: astro } of rendered) {
+      const react = renderToStaticMarkup(createElement(Input, props as never));
+      expect(serialised(normalise(astro)), `case ${id}`).toBe(serialised(normalise(react)));
+    }
+  });
+
+  it('emits no <script> in any case', () => {
+    expect(rendered.filter((c) => /<script/i.test(c.html)).map((c) => c.id)).toEqual([]);
+  });
+
+  it('is reproducible: two builds of the render page give the same ids', () => {
+    const astro = resolve(repo, 'node_modules/astro/bin/astro.mjs');
+    const dir = mkdtempSync(join(tmpdir(), 'museum-astro-'));
+    try {
+      const pages = [0, 1].map((n) => {
+        execFileSync(process.execPath, [astro, 'build', '--root', 'gallery/astro-render', '--outDir', join(dir, String(n))], { cwd: repo, stdio: 'pipe' });
+        return readFileSync(join(dir, String(n), 'index.html'), 'utf8');
+      });
+      expect(pages[0]).toBe(pages[1]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 120_000);
 });
