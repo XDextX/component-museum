@@ -126,7 +126,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
     `field.ts` pone en rojo la comparaciÃ³n Astro de Input y de Textarea (el caso `hint-error`, 2 tests);
     quitar la historia Astro de Textarea pone en rojo la regla 5 (3 tests de `gallery.test.ts`).
 
-- [ ] **T-4 â€” Textarea en los consumidores: accesibilidad en Edge**
+- [x] **T-4 â€” Textarea en los consumidores: accesibilidad en Edge**
   Cubre: RF-2 a RF-11 (en el navegador), NFR de accesibilidad y regla 2
   Archivos: `tests/lib/consumer.ts` (`textareaInstances`, plan, bloque 4),
   `tests/input-a11y.test.ts` â†’ `tests/field-a11y.test.ts` (con `git mv`)
@@ -147,29 +147,29 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   `textarea-newline`.
 
   Hecho (sin commit):
-  - Casos de Input de la 009 en `field-a11y.test.ts`: 32 antes (8 por framework y tema), 32 después,
-    mismos nombres. Textarea añade 40 (10 por framework y tema): los mismos casos, un RF-9 propio
-    (contra Input del mismo `size`, y también en error y `disabled`), RF-10 y RF-11. Total 72.
-  - Textarea usa etiquetas y textos propios (`Area …`) salvo las gemelas, que se llaman «Twin» como las de
-    Input: con las cuatro en la página, cada etiqueta enfoca su control y los ids difieren. En React hay
-    además `textarea-readonly` (`value` sin `onChange`): sigue siendo «Fixed text» tras teclear; el
-    `defaultValue`/`value` inicial (`textarea-sm`) sí se edita.
+  - Casos de Input de la 009 en `field-a11y.test.ts`: 32 antes (8 por framework y tema), 32 despuÃ©s,
+    mismos nombres. Textarea aÃ±ade 40 (10 por framework y tema): los mismos casos, un RF-9 propio
+    (contra Input del mismo `size`, y tambiÃ©n en error y `disabled`), RF-10 y RF-11. Total 72.
+  - Textarea usa etiquetas y textos propios (`Area â€¦`) salvo las gemelas, que se llaman Â«TwinÂ» como las de
+    Input: con las cuatro en la pÃ¡gina, cada etiqueta enfoca su control y los ids difieren. En React hay
+    ademÃ¡s `textarea-readonly` (`value` sin `onChange`): sigue siendo Â«Fixed textÂ» tras teclear; el
+    `defaultValue`/`value` inicial (`textarea-sm`) sÃ­ se edita.
   - Los contrastes del RF-7 y del valor y el placeholder del RF-8 se miden ahora, para los dos campos,
-    contra el fondo compuesto real bajo el control (el suelo opaco más cercano, o el lienzo blanco), con un
-    ayudante instalado una vez en la página; el RF-8 de textos usa `visibleTexts`, como antes.
+    contra el fondo compuesto real bajo el control (el suelo opaco mÃ¡s cercano, o el lienzo blanco), con un
+    ayudante instalado una vez en la pÃ¡gina; el RF-8 de textos usa `visibleTexts`, como antes.
   - Medido en Edge, React y Astro iguales, claro / oscuro: borde 4.83 / 6.99 en reposo y 6.47 / 9.35 en
-    error (también en `disabled`); valor 17.74 / 16.98; placeholder 4.83 / 6.99; etiquetas 17.74 / 16.98;
+    error (tambiÃ©n en `disabled`); valor 17.74 / 16.98; placeholder 4.83 / 6.99; etiquetas 17.74 / 16.98;
     ayuda 7.56 / 12.04; error 6.47 / 9.35 (el de `disabled` incluido); anillo 6.70 / 9.84, de 2 px y con el
     halo del paquete. RF-9: sm 14px/6px, md 16px/8px, lg 18px/12px (fuente / `padding`), radio 6px, borde
     1px, iguales a los de Input. RF-10: `vertical` en los 13 (Astro) y 14 (React) textarea. RF-11:
     `textarea-escape` = `<b>&\nx` y `textarea-newline` = `\nx`, sin elemento `<b>`.
-  - Hallazgo y arreglo (aprobado por el dueño): `a11y.test.ts` (Button) pulsaba `Tab` una vez por cada
+  - Hallazgo y arreglo (aprobado por el dueÃ±o): `a11y.test.ts` (Button) pulsaba `Tab` una vez por cada
     coincidencia de `button, a, input, select, textarea, [tabindex]`, deshabilitadas incluidas, y contaba con
     un hueco de sobra. Con el segundo campo `disabled` (el Textarea) el consumidor Astro daba dos vueltas y
-    veía 10 botones en vez de 9. Ahora cuenta solo lo que Tab alcanza (`:not(:disabled)`, `a[href]`,
+    veÃ­a 10 botones en vez de 9. Ahora cuenta solo lo que Tab alcanza (`:not(:disabled)`, `a[href]`,
     `tabindex` distinto de -1); sigue exigiendo los nueve Buttons, el anillo y el halo. Tests de ese
-    archivo: 4 antes, 4 después. Inyección: con el conteo viejo y los dos campos deshabilitados, el test cae
-    en Astro, claro y oscuro (2 rojos, «got 10»); con el nuevo pasa. Restaurado.
+    archivo: 4 antes, 4 despuÃ©s. InyecciÃ³n: con el conteo viejo y los dos campos deshabilitados, el test cae
+    en Astro, claro y oscuro (2 rojos, Â«got 10Â»); con el nuevo pasa. Restaurado.
 
 ## Grafo de olas
 
