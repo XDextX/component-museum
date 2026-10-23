@@ -36,7 +36,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   Inyección: poner la ayuda antes del error en el ayudante de cada paquete pone en rojo el caso
   «with both» de `input-markup.test.ts`, en React y en la comparación Astro.
 
-- [ ] **T-2 — Hoja de Textarea sobre las reglas del campo**
+- [x] **T-2 — Hoja de Textarea sobre las reglas del campo**
   Cubre: RF-7, RF-8, RF-9, RF-10 (sobre la página fija)
   Archivos: `styles/museum.css`, `tests/fixtures/input-field.html` → `tests/fixtures/field.html`,
   `tests/input-styles.test.ts` → `tests/field-styles.test.ts` (con `git mv`)
@@ -55,6 +55,20 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - El coordinator aprueba las capturas de la página fija en los dos temas antes del commit.
   Inyección: quitar `.museum-textarea--md` del selector de `padding` pone en rojo RF-9 en `md`;
   `resize: both` pone en rojo RF-10.
+
+  Hecho (sin commit, a la espera de las capturas aprobadas):
+  - Casos de Input de la 009 en `field-styles.test.ts`: 28 antes, 28 después, mismos nombres. El
+    archivo pasa de 28 a 32 tests; los 4 nuevos son «includes the Textarea rules grouped with Input», RF-9 de Textarea, RF-10 y
+    el error largo en 320 px de Textarea. Los casos de borde, texto, error del `disabled` y anillo
+    recorren también los controles `ta-*`.
+  - `tests/fixtures/input-field.html` pasa a `field.html`; el único test que lo cargaba es el
+    propio de estilos.
+  - Contrastes de Textarea en Edge (iguales en los cuatro modos de cada tema): claro: borde 4.83 en
+    reposo y 6.47 en error, valor 17.74, placeholder 4.83, etiqueta 17.74, ayuda 7.56, error 6.47
+    (también en `disabled`), anillo 6.70; oscuro: 6.99, 9.35, 16.98, 6.99, 16.98, 12.04, 9.35,
+    9.35 y 9.84.
+  - Inyecciones vistas en rojo y restauradas: quitar `.museum-textarea--md` del selector de
+    `padding` pone en rojo RF-9 de Textarea (1 test); `resize: both` pone en rojo RF-10 (1 test).
 
   Va en la ola 1 junto a la T-1: no comparten archivos.
 

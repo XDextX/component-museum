@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Input field fixture</title>
+    <title>Field fixture</title>
     <!-- museum.css -->
     <style>
       body { margin: 0; padding: 1rem; background: var(--museum-surface); font-family: var(--museum-font-family); }
       .row { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
       .row > .museum-field { flex: 1; }
-      #narrow { width: 320px; }
+      .narrow { width: 320px; }
     </style>
   </head>
   <body>
@@ -51,11 +51,53 @@
       <input id="in-disabled" class="museum-input museum-input--md" type="text" value="Value" aria-describedby="in-disabled-error" aria-invalid="true" disabled data-museum-input />
       <p id="in-disabled-error" class="museum-field__error">Error</p>
     </div>
-    <div id="narrow">
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="ta-sm">Small</label>
+        <textarea id="ta-sm" class="museum-textarea museum-textarea--sm" data-museum-textarea>Value</textarea>
+      </div>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="ta-md">Medium</label>
+        <textarea id="ta-md" class="museum-textarea museum-textarea--md" data-museum-textarea>Value</textarea>
+      </div>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="ta-lg">Large</label>
+        <textarea id="ta-lg" class="museum-textarea museum-textarea--lg" data-museum-textarea>Value</textarea>
+      </div>
+    </div>
+
+    <div class="museum-field">
+      <label class="museum-field__label" for="ta-placeholder">Placeholder</label>
+      <textarea id="ta-placeholder" class="museum-textarea museum-textarea--md" placeholder="Type here" aria-describedby="ta-placeholder-hint" data-museum-textarea></textarea>
+      <p id="ta-placeholder-hint" class="museum-field__hint">Hint</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="ta-error">Error<span class="museum-field__required" aria-hidden="true">*</span></label>
+      <textarea id="ta-error" class="museum-textarea museum-textarea--md" aria-describedby="ta-error-error ta-error-hint" aria-invalid="true" required data-museum-textarea>Value</textarea>
+      <p id="ta-error-hint" class="museum-field__hint">Hint</p>
+      <p id="ta-error-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="ta-disabled">Disabled</label>
+      <textarea id="ta-disabled" class="museum-textarea museum-textarea--md" aria-describedby="ta-disabled-error" aria-invalid="true" disabled data-museum-textarea>Value</textarea>
+      <p id="ta-disabled-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="narrow">
       <div class="museum-field" id="long-field">
         <label class="museum-field__label" for="in-long">Long</label>
         <input id="in-long" class="museum-input museum-input--md" type="text" aria-describedby="in-long-error" aria-invalid="true" data-museum-input />
         <p id="in-long-error" class="museum-field__error">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+      </div>
+    </div>
+    <div class="narrow">
+      <div class="museum-field" id="long-field-ta">
+        <label class="museum-field__label" for="ta-long">Long</label>
+        <textarea id="ta-long" class="museum-textarea museum-textarea--md" aria-describedby="ta-long-error" aria-invalid="true" data-museum-textarea></textarea>
+        <p id="ta-long-error" class="museum-field__error">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
       </div>
     </div>
   </body>
