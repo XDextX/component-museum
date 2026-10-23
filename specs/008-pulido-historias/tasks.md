@@ -17,7 +17,7 @@ Ningún archivo es compartido:
 - `gallery/.storybook/preview-head.html` y `gallery/.storybook/preview.ts`: solo la T-1;
 - `gallery/stories/Button.astro.stories.tsx`: solo la T-2.
 
-- [ ] **T-1 — La vista de historia y sus barras siguen al tema de la galería**
+- [x] **T-1 — La vista de historia y sus barras siguen al tema de la galería**
   Cubre: RF-1, RF-2, regla 7 en las vistas de historia
   Archivos: `gallery/.storybook/preview-head.html` (fondo de la vista, `color-scheme` de la raíz),
   `gallery/.storybook/preview.ts` (`data-docs-scheme` en `ThemedDocsContainer`),
@@ -38,6 +38,20 @@ Ningún archivo es compartido:
     (trabajo visual).
   Inyección: quitar la regla de `min-height` en la rama del worktree deja blancas las esquinas
   inferiores y pone en rojo RF-1; quitar las reglas `:root` de `color-scheme` pone en rojo RF-2.
+  Inyecciones vistas (T-1, en el worktree, restauradas):
+  - Sin la línea `min-height: 100vh`: 4 fallos de RF-1 (`Button/React/Default`, esquinas inferiores sin
+    el fondo del decorador, en `theme:dark`, `theme:light` y `theme:system` con las dos emulaciones).
+  - Sin las tres reglas `:root` de `color-scheme`: 10 fallos de RF-2 (raíz y contenedores de
+    desplazamiento en `normal`).
+  Notas: el `body` lleva `sb-show-main sb-main-padded` y Storybook fija su `padding` con
+  `.sb-show-main.sb-main-padded` (0,2,0), así que la regla de la galería usa
+  `body.sb-show-main.sb-main-padded`. Las reglas `:root:has(...)` leen `#storybook-root > [data-theme]`
+  y `[data-docs-scheme]`, no cualquier `data-theme`, porque una página de documentación puede
+  contener historias fijadas al otro tema. El test de RF-2 deja fuera los bloques `Source` de la
+  página de documentación (`.docblock-source`, que Storybook pinta siempre claros) y el panel de
+  código de cada canvas (siempre oscuro): son de Storybook y están fuera de alcance. Hallazgo: en
+  `theme:dark` esos `Source` explícitos siguen claros; en `theme:light` el panel de código del
+  canvas sigue oscuro.
 
 - [ ] **T-2 — Casos Astro separados y con el código partido**
   Cubre: RF-3, RF-4

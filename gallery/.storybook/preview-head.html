@@ -20,4 +20,23 @@
     max-width: 100%;
     overflow-x: auto;
   }
+  /* Spec 008, RF-1: the story view is painted whole by the decorator's surface, with no 16 px frame. */
+  body.sb-show-main.sb-main-padded {
+    padding: 0;
+  }
+  #storybook-root > div {
+    box-sizing: border-box;
+    min-height: 100vh;
+  }
+  /* Spec 008, RF-2: the root (and so every scrollbar) follows the gallery theme; "system" sets no attribute. */
+  /* Only the decorator and the docs container count: a docs page may hold stories pinned to the other theme. */
+  :root {
+    color-scheme: light dark;
+  }
+  :root:has(#storybook-root > [data-theme="light"], [data-docs-scheme="light"]) {
+    color-scheme: light;
+  }
+  :root:has(#storybook-root > [data-theme="dark"], [data-docs-scheme="dark"]) {
+    color-scheme: dark;
+  }
 </style>
