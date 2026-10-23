@@ -20,14 +20,15 @@ const contracts = readdirSync(contractsDir)
 mkdirSync(new URL('generated/', gallery), { recursive: true });
 for (const contract of contracts) {
   const slug = contract.name.toLowerCase();
-  const cases = astroCases(contract).map(({ id, props }, _i, all) => {
+  const cases = astroCases(contract).map(({ id, props }) => {
     const open = new RegExp(`<div id="case-${slug}-${id}"[^>]*>`).exec(page);
     if (!open) throw new Error(`case ${slug}-${id} is missing from the astro-render build`);
-    // A case runs to the next case's <div>, or to the end of the body; the last </div> before that is its wrapper.
+    // A case runs to the next case's <div> (of any component), or to the end of the body; the last </div>
+    // before that is its wrapper.
     const from = open.index + open[0].length;
-    const next = all.map((c) => page.indexOf(`<div id="case-${slug}-${c.id}"`, from)).filter((i) => i >= 0);
+    const next = page.indexOf('<div id="case-', from);
     const bodyEnd = page.indexOf('</body>', from);
-    const to = Math.min(...next, bodyEnd < 0 ? page.length : bodyEnd);
+    const to = Math.min(next < 0 ? page.length : next, bodyEnd < 0 ? page.length : bodyEnd);
     const inner = page.slice(from, to).trim().replace(/<\/div>$/, '');
     // Astro emits a component's script once per page, beside whichever case comes first: it is not the case.
     const html = inner.replace(/<script[\s\S]*?<\/script>/g, '').trim();
