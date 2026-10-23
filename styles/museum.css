@@ -26,6 +26,7 @@
 
     --museum-font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --museum-font-weight: 600;
+    --museum-font-weight-regular: 400;
     --museum-line-height: 1.25;
     --museum-font-size-sm: 0.875rem;
     --museum-font-size-md: 1rem;
@@ -37,6 +38,14 @@
   [data-theme="light"] {
     --museum-surface: #ffffff;
     --museum-focus-ring: #1d4ed8;
+
+    --museum-control-bg: var(--museum-surface);
+    --museum-control-fg: #111827;
+    --museum-control-border: #6b7280;
+    --museum-control-placeholder: #6b7280;
+    --museum-field-label: #111827;
+    --museum-field-hint: #4b5563;
+    --museum-field-error: #b91c1c;
 
     --museum-button-primary-bg: #1d4ed8;
     --museum-button-primary-fg: #ffffff;
@@ -57,6 +66,14 @@
       --museum-surface: #111827;
       --museum-focus-ring: #93c5fd;
 
+      --museum-control-bg: var(--museum-surface);
+      --museum-control-fg: #f9fafb;
+      --museum-control-border: #9ca3af;
+      --museum-control-placeholder: #9ca3af;
+      --museum-field-label: #f9fafb;
+      --museum-field-hint: #d1d5db;
+      --museum-field-error: #fca5a5;
+
       --museum-button-primary-bg: #2563eb;
       --museum-button-primary-fg: #ffffff;
       --museum-button-primary-border: #2563eb;
@@ -75,6 +92,14 @@
   [data-theme="dark"] {
     --museum-surface: #111827;
     --museum-focus-ring: #93c5fd;
+
+    --museum-control-bg: var(--museum-surface);
+    --museum-control-fg: #f9fafb;
+    --museum-control-border: #9ca3af;
+    --museum-control-placeholder: #9ca3af;
+    --museum-field-label: #f9fafb;
+    --museum-field-hint: #d1d5db;
+    --museum-field-error: #fca5a5;
 
     --museum-button-primary-bg: #2563eb;
     --museum-button-primary-fg: #ffffff;
@@ -149,6 +174,96 @@
   }
 
   .museum-button:disabled {
+    opacity: var(--museum-disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  /* Field: the label, the control, the hint and the error, laid out in a column. */
+  .museum-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--museum-space-sm-y);
+    font-family: var(--museum-font-family);
+    line-height: var(--museum-line-height);
+  }
+
+  .museum-field__label {
+    color: var(--museum-field-label);
+    font-size: var(--museum-font-size-sm);
+    font-weight: var(--museum-font-weight);
+  }
+
+  .museum-field__required {
+    margin-inline-start: var(--museum-space-sm-y);
+    color: var(--museum-field-error);
+  }
+
+  .museum-field__hint,
+  .museum-field__error {
+    margin: 0;
+    font-size: var(--museum-font-size-sm);
+    font-weight: var(--museum-font-weight-regular);
+    overflow-wrap: anywhere;
+  }
+
+  .museum-field__hint {
+    color: var(--museum-field-hint);
+  }
+
+  .museum-field__error {
+    color: var(--museum-field-error);
+  }
+
+  /* Input matches Button's vertical padding, font size, line height and border, so both stand equally tall. */
+  .museum-input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    border-width: var(--museum-border-width);
+    border-style: solid;
+    border-color: var(--museum-control-border);
+    border-radius: var(--museum-radius);
+    background-color: var(--museum-control-bg);
+    color: var(--museum-control-fg);
+    font-family: var(--museum-font-family);
+    font-weight: var(--museum-font-weight-regular);
+    line-height: var(--museum-line-height);
+  }
+
+  .museum-input::placeholder {
+    color: var(--museum-control-placeholder);
+    opacity: 1;
+  }
+
+  .museum-input--sm {
+    padding: var(--museum-space-sm-y) var(--museum-space-sm-x);
+    font-size: var(--museum-font-size-sm);
+  }
+
+  .museum-input--md {
+    padding: var(--museum-space-md-y) var(--museum-space-md-x);
+    font-size: var(--museum-font-size-md);
+  }
+
+  .museum-input--lg {
+    padding: var(--museum-space-lg-y) var(--museum-space-lg-x);
+    font-size: var(--museum-font-size-lg);
+  }
+
+  .museum-input[aria-invalid="true"] {
+    border-color: var(--museum-field-error);
+  }
+
+  /* The same two-tone keyboard ring as Button. */
+  .museum-input:focus-visible {
+    outline: var(--museum-focus-width) solid var(--museum-focus-ring);
+    outline-offset: var(--museum-focus-offset);
+    box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) var(--museum-surface);
+  }
+
+  /* Only the control is dimmed: the label, hint and error keep their contrast. */
+  .museum-input:disabled {
     opacity: var(--museum-disabled-opacity);
     cursor: not-allowed;
   }
