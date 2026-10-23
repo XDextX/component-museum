@@ -41,7 +41,7 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   «Grid visibility», «Measure tool» ni «Outline tool», y sí «Tema de la galería».
   Inyección: dejar `measure: true` en la rama del worktree pone en rojo el caso de «Measure tool».
 
-- [ ] **T-4 — La página de documentación sigue al tema de la galería**
+- [x] **T-4 — La página de documentación sigue al tema de la galería**
   Cubre: RF-5
   Archivos: `gallery/.storybook/preview.ts` (`parameters.docs.container`, `docsScheme`),
   `tests/gallery-docs-theme.test.ts`
@@ -53,6 +53,10 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   la página en los dos temas y la aprueba antes del commit (trabajo visual).
   Inyección: que el contenedor ignore el global y use siempre `themes.light` pone en rojo los casos
   oscuros.
+  Hecho (inyección vista): con `const theme = themes.light` fijo, fallan 4 de 11 (`theme:dark` con sistema claro y oscuro,
+  `theme:system` con sistema oscuro, y el cambio desde la barra); restaurado, 11 de 11 en verde. Contrastes del
+  párrafo: claro 12.75:1 (rgb 46,51,56 sobre blanco), oscuro 9.75:1 (rgb 201,204,207 sobre rgb 34,35,37).
+  El global se lee de `globals=` en la URL del iframe, no del contexto (ver notes.md). Capturas pendientes de aprobación del dueño.
 
 - [ ] **T-5 — Código de Astro con resaltado y botón de copiar**
   Cubre: RF-6

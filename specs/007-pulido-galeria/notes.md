@@ -59,3 +59,6 @@ espera, porque se corta de `main` (`AGENTS.md`).
 - RF-7: buscar qué elemento desborda con una barra clásica; si es de Storybook, corregirlo con CSS
   de la galería.
 - Ninguna dependencia nueva prevista.
+
+- T-4 (RF-5): `Button.mdx` no tiene historia primaria, así que el contexto de documentación no da contexto de historia
+  ni el global `theme`; el contenedor lo lee de `globals=` en la URL del iframe (que el gestor mantiene al día) y de `globalsUpdated`.

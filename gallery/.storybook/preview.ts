@@ -1,5 +1,6 @@
-import { createElement } from 'react';
+import { createElement, lazy, Suspense, useEffect, useState, type ComponentProps } from 'react';
 import type { Decorator, Preview } from '@storybook/react-vite';
+import { themes } from 'storybook/theming';
 // By specifier, exactly as an outside project imports it (constitution, rule 1; spec 004, RF-10).
 import '@component-museum/react/styles.css';
 
@@ -20,8 +21,49 @@ const withTheme: Decorator = (Story, { globals }) => {
   );
 };
 
+/** Spec 007, RF-5. The scheme of the documentation page: light or dark from the gallery global, else the system's. */
+export function docsScheme(global: unknown, prefersDark: boolean): 'light' | 'dark' {
+  return global === 'light' || global === 'dark' ? global : prefersDark ? 'dark' : 'light';
+}
+
+// Lazy: the blocks need `document`, and the tests import this file in Node for `docsScheme` and the decorator.
+const DocsContainer = lazy(async () => ({ default: (await import('@storybook/addon-docs/blocks')).DocsContainer }));
+
+const darkQuery = '(prefers-color-scheme: dark)';
+
+/**
+ * The `theme` in a `?globals=theme:dark;other:x` query string, or undefined. Button.mdx has no primary
+ * story, so the docs context gives no story context to read globals from (spec 007, T-4): the manager
+ * puts the globals in the iframe URL instead.
+ */
+export function themeFromSearch(search: string): string | undefined {
+  const globals = new URLSearchParams(search).get('globals') ?? '';
+  return globals.split(';').map((pair) => pair.split(':')).find(([key]) => key === 'theme')?.[1];
+}
+
+// The docs page is not a story, so the decorator does not reach it: this container reads the global itself.
+function ThemedDocsContainer(props: ComponentProps<typeof DocsContainer>) {
+  const { context } = props;
+  const [global, setGlobal] = useState<unknown>(() => themeFromSearch(location.search));
+  const [prefersDark, setPrefersDark] = useState(() => matchMedia(darkQuery).matches);
+  useEffect(() => {
+    const onGlobals = ({ globals }: { globals: Record<string, unknown> }) => setGlobal(globals.theme);
+    const media = matchMedia(darkQuery);
+    const onMedia = () => setPrefersDark(media.matches);
+    context.channel.on('globalsUpdated', onGlobals);
+    media.addEventListener('change', onMedia);
+    return () => {
+      context.channel.off('globalsUpdated', onGlobals);
+      media.removeEventListener('change', onMedia);
+    };
+  }, [context]);
+  const theme = docsScheme(global, prefersDark) === 'dark' ? themes.dark : themes.light;
+  return createElement(Suspense, { fallback: null }, createElement(DocsContainer, { ...props, theme }));
+}
+
 const preview: Preview = {
   decorators: [withTheme],
+  parameters: { docs: { container: ThemedDocsContainer } },
   globalTypes: {
     theme: {
       // Storybook names the toolbar button from this description (the toolbar title is not read):
