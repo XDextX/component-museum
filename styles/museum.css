@@ -218,8 +218,10 @@
     color: var(--museum-field-error);
   }
 
-  /* Input matches Button's vertical padding, font size, line height and border, so both stand equally tall. */
-  .museum-input {
+  /* Textarea shares every rule of Input (grouped selectors, no copied declarations).
+     Input matches Button's vertical padding, font size, line height and border, so both stand equally tall. */
+  .museum-input,
+  .museum-textarea {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
@@ -235,39 +237,52 @@
     line-height: var(--museum-line-height);
   }
 
-  .museum-input::placeholder {
+  .museum-input::placeholder,
+  .museum-textarea::placeholder {
     color: var(--museum-control-placeholder);
     opacity: 1;
   }
 
-  .museum-input--sm {
+  .museum-input--sm,
+  .museum-textarea--sm {
     padding: var(--museum-space-sm-y) var(--museum-space-sm-x);
     font-size: var(--museum-font-size-sm);
   }
 
-  .museum-input--md {
+  .museum-input--md,
+  .museum-textarea--md {
     padding: var(--museum-space-md-y) var(--museum-space-md-x);
     font-size: var(--museum-font-size-md);
   }
 
-  .museum-input--lg {
+  .museum-input--lg,
+  .museum-textarea--lg {
     padding: var(--museum-space-lg-y) var(--museum-space-lg-x);
     font-size: var(--museum-font-size-lg);
   }
 
-  .museum-input[aria-invalid="true"] {
+  .museum-input[aria-invalid="true"],
+  .museum-textarea[aria-invalid="true"] {
     border-color: var(--museum-field-error);
   }
 
   /* The same two-tone keyboard ring as Button. */
-  .museum-input:focus-visible {
+  .museum-input:focus-visible,
+  .museum-textarea:focus-visible {
     outline: var(--museum-focus-width) solid var(--museum-focus-ring);
     outline-offset: var(--museum-focus-offset);
     box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) var(--museum-surface);
   }
 
+  /* A <textarea> is inline-block (it would leave a line gap) and the user may stretch it only down. */
+  .museum-textarea {
+    display: block;
+    resize: vertical;
+  }
+
   /* Only the control is dimmed: the label, hint and error keep their contrast. */
-  .museum-input:disabled {
+  .museum-input:disabled,
+  .museum-textarea:disabled {
     opacity: var(--museum-disabled-opacity);
     cursor: not-allowed;
   }

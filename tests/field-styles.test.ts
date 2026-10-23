@@ -9,7 +9,7 @@ import { visibleTexts } from './lib/contrast.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const css = readFileSync(join(repo, 'styles', 'museum.css'), 'utf8').replace(/\r\n/g, '\n');
-const html = readFileSync(join(repo, 'tests', 'fixtures', 'input-field.html'), 'utf8').replace('<!-- museum.css -->', `<style>${css}</style>`);
+const html = readFileSync(join(repo, 'tests', 'fixtures', 'field.html'), 'utf8').replace('<!-- museum.css -->', `<style>${css}</style>`);
 const sizes = ['sm', 'md', 'lg'];
 const tokens = ['control-bg', 'control-fg', 'control-border', 'control-placeholder', 'field-label', 'field-hint', 'field-error'];
 
@@ -59,9 +59,10 @@ describe('the field tokens live in the three theme blocks', () => {
 
 describe('every Input rule reads only var(--museum-*)', () => {
   const bodies = [...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
-    .filter((m) => /\.museum-(field|input)/.test(m[1]))
+    .filter((m) => /\.museum-(field|input|textarea)/.test(m[1]))
     .flatMap((m) => m[2].split(';').map((d) => d.trim()).filter(Boolean).map((d) => ({ rule: m[1].trim(), decl: d })));
   it('has rules', () => expect(bodies.length).toBeGreaterThan(5));
+  it('includes the Textarea rules grouped with Input', () => expect(bodies.some(({ rule }) => rule.includes('.museum-textarea'))).toBe(true));
   it('has no literal color or length', () => {
     expect(bodies.filter(({ decl }) => /#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(|\d(px|rem|em)\b/i.test(decl.replace(/var\([^)]*\)/g, '')))).toEqual([]);
   });
@@ -72,7 +73,7 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
     describe(mode.name, () => {
       it('RF-7: the control border is 3:1 against the surface, at rest and in error', async () => {
         const page = await open(mode);
-        for (const id of ['in-md', 'in-error']) {
+        for (const id of ['in-md', 'in-error', 'ta-md', 'ta-error']) {
           const p = await paint(page, id);
           expect(contrastRatio(parseRgb(p.border), parseRgb(p.surface)), `${id} border`).toBeGreaterThanOrEqual(3);
           expect(contrastRatio(parseRgb(p.border), parseRgb(p.bg)), `${id} border on its own background`).toBeGreaterThanOrEqual(3);
@@ -87,7 +88,7 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
         const rated = texts.map((t) => ({ text: t.text, ratio: contrastRatio(parseRgb(t.fg), parseRgb(t.bg)) }));
         expect(rated.filter((r) => r.ratio < 4.5)).toEqual([]);
         // Input values are not text nodes, so they and the placeholder are measured apart.
-        for (const id of ['in-md', 'in-placeholder']) {
+        for (const id of ['in-md', 'in-placeholder', 'ta-md', 'ta-placeholder']) {
           const p = await paint(page, id);
           expect(contrastRatio(parseRgb(p.fg), parseRgb(p.bg)), `${id} value`).toBeGreaterThanOrEqual(4.5);
           expect(contrastRatio(parseRgb(p.placeholder), parseRgb(p.bg)), `${id} placeholder`).toBeGreaterThanOrEqual(4.5);
@@ -97,30 +98,36 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
 
       it('the error of a disabled field keeps 4.5:1: the opacity dims only the control', async () => {
         const page = await open(mode);
-        const error = await page.locator('#in-disabled-error').evaluate((el) => {
-          let opacity = 1;
-          for (let n: Element | null = el; n; n = n.parentElement) opacity *= +getComputedStyle(n).opacity;
-          return { fg: getComputedStyle(el).color, opacity };
-        });
-        expect(error.opacity).toBe(1);
-        const p = await paint(page, 'in-disabled');
-        expect(+p.opacity).toBeLessThan(1);
-        expect(contrastRatio(parseRgb(error.fg), parseRgb(p.surface))).toBeGreaterThanOrEqual(4.5);
+        for (const id of ['in-disabled', 'ta-disabled']) {
+          const error = await page.locator(`#${id}-error`).evaluate((el) => {
+            let opacity = 1;
+            for (let n: Element | null = el; n; n = n.parentElement) opacity *= +getComputedStyle(n).opacity;
+            return { fg: getComputedStyle(el).color, opacity };
+          });
+          expect(error.opacity, id).toBe(1);
+          const p = await paint(page, id);
+          expect(+p.opacity, id).toBeLessThan(1);
+          expect(contrastRatio(parseRgb(error.fg), parseRgb(p.surface)), id).toBeGreaterThanOrEqual(4.5);
+        }
         await page.context().close();
       });
 
       it('the focus ring is 3:1 against the halo around it', async () => {
         const page = await open(mode);
+        // Input by Tab, Textarea by focus(): a text control always matches :focus-visible.
         await page.keyboard.press('Tab');
-        const ring = await page.evaluate(() => {
-          const el = document.activeElement as HTMLElement;
-          const s = getComputedStyle(el);
-          return { id: el.id, color: s.outlineColor, width: parseFloat(s.outlineWidth), style: s.outlineStyle, surface: getComputedStyle(document.body).backgroundColor };
-        });
-        expect(ring.id).toBe('in-sm');
-        expect(ring.style).not.toBe('none');
-        expect(ring.width).toBeGreaterThanOrEqual(2);
-        expect(contrastRatio(parseRgb(ring.color), parseRgb(ring.surface))).toBeGreaterThanOrEqual(3);
+        for (const id of ['in-sm', 'ta-sm']) {
+          if (id === 'ta-sm') await page.locator('#ta-sm').focus();
+          const ring = await page.evaluate(() => {
+            const el = document.activeElement as HTMLElement;
+            const s = getComputedStyle(el);
+            return { id: el.id, color: s.outlineColor, width: parseFloat(s.outlineWidth), style: s.outlineStyle, surface: getComputedStyle(document.body).backgroundColor };
+          });
+          expect(ring.id).toBe(id);
+          expect(ring.style, id).not.toBe('none');
+          expect(ring.width, id).toBeGreaterThanOrEqual(2);
+          expect(contrastRatio(parseRgb(ring.color), parseRgb(ring.surface)), id).toBeGreaterThanOrEqual(3);
+        }
         await page.context().close();
       });
     });
@@ -146,6 +153,43 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
     });
     expect(box.field).toBe(320);
     expect(box.input).toBe(box.content);
+    expect(box.scroll).toBeLessThanOrEqual(320);
+    await page.context().close();
+  });
+
+  it('RF-9: Textarea has the same font, border, radius, padding and colors as the Input of its size', async () => {
+    const props = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderTopLeftRadius', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'color', 'backgroundColor', 'boxSizing'] as const;
+    const pairs = [...sizes.map((s) => [`in-${s}`, `ta-${s}`]), ['in-error', 'ta-error'], ['in-disabled', 'ta-disabled']];
+    for (const mode of modes) {
+      const page = await open(mode);
+      for (const [input, textarea] of pairs) {
+        const [a, b] = await page.evaluate(({ list, ids }) => ids.map((id) => {
+          const s = getComputedStyle(document.getElementById(id)!);
+          return { ...Object.fromEntries(list.map((p) => [p, s[p as keyof CSSStyleDeclaration]])), opacity: s.opacity };
+        }), { list: [...props], ids: [input, textarea] });
+        expect(b, `${mode.name}, ${textarea}`).toEqual(a);
+      }
+      await page.context().close();
+    }
+  });
+
+  it('RF-10: the Textarea resizes only vertically', async () => {
+    const page = await open(modes[2]);
+    const resize = await page.evaluate((ids) => ids.map((id) => getComputedStyle(document.getElementById(id)!).resize), sizes.map((s) => `ta-${s}`));
+    expect(resize).toEqual(['vertical', 'vertical', 'vertical']);
+    await page.context().close();
+  });
+
+  it('a 600 px error with no spaces does not widen a 320 px Textarea field', async () => {
+    const page = await open(modes[2], 800);
+    const box = await page.evaluate(() => {
+      const field = document.getElementById('long-field-ta')!;
+      const s = getComputedStyle(field);
+      const content = field.getBoundingClientRect().width - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight);
+      return { field: field.getBoundingClientRect().width, content, control: document.getElementById('ta-long')!.getBoundingClientRect().width, scroll: field.scrollWidth };
+    });
+    expect(box.field).toBe(320);
+    expect(box.control).toBe(box.content);
     expect(box.scroll).toBeLessThanOrEqual(320);
     await page.context().close();
   });
