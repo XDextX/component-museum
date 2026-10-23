@@ -34,12 +34,14 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
 
   Va en la ola 2 porque mide el contraste sobre el tema oscuro de la página, que trae la T-4.
 
-- [ ] **T-3 — Quitar fondos, rejilla, medir y contornos de la barra**
+- [x] **T-3 — Quitar fondos, rejilla, medir y contornos de la barra**
   Cubre: RF-4
   Archivos: `gallery/.storybook/main.ts`, `tests/gallery-toolbar.test.ts`
   Hecho cuando: en Edge, la barra del gestor del Storybook construido no tiene «Preview background»,
   «Grid visibility», «Measure tool» ni «Outline tool», y sí «Tema de la galería».
   Inyección: dejar `measure: true` en la rama del worktree pone en rojo el caso de «Measure tool».
+  Hecho: sin la corrección, el test dio rojo con las cuatro herramientas; con `measure: true`, rojo solo con
+  `['Measure tool']`; restaurado `measure: false`, verde.
 
 - [ ] **T-4 — La página de documentación sigue al tema de la galería**
   Cubre: RF-5
