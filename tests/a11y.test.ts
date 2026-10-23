@@ -7,7 +7,13 @@ import { serve, type Served } from './lib/serve.ts';
 
 const consumers = inject('consumers');
 const frameworks: Framework[] = ['react', 'astro'];
-const themes = ['light', 'dark'] as const;
+// How the page gets its theme (spec 011): dark is asked for with data-theme under a light system; light is what a
+// page that asks for nothing gets under a dark system; "system" follows the dark system.
+const modes = [
+  { name: 'light', scheme: 'dark', attribute: undefined },
+  { name: 'dark', scheme: 'light', attribute: 'dark' },
+  { name: 'system', scheme: 'dark', attribute: 'system' },
+] as const;
 
 type Measured = {
   id: string; fg: string; bg: string; outlineWidth: number; outlineStyle: string; outlineColor: string; outlineOffset: number;
@@ -20,10 +26,19 @@ type Measured = {
 
 // Buttons are focused with real Tab presses; the disabled ones are exempt from the WCAG contrast rule
 // (1.4.3 excludes inactive components), and the consumers render none, so they are skipped here by :disabled.
-async function measure(url: string, colorScheme: 'light' | 'dark'): Promise<Measured[]> {
+async function measure(url: string, colorScheme: 'light' | 'dark', attribute?: string): Promise<Measured[]> {
   const browser: Browser = await chromium.launch({ channel: 'msedge' });
   try {
-    const page = await (await browser.newContext({ colorScheme })).newPage();
+    const context = await browser.newContext({ colorScheme });
+    // The attribute is written into the served HTML, on <html>, as a page asking for the theme would.
+    if (attribute) {
+      await context.route(url + '**', async (route) => {
+        const response = await route.fetch();
+        const body = await response.text();
+        await route.fulfill({ response, body: response.headers()['content-type']?.includes('text/html') ? body.replace('<html', `<html data-theme="${attribute}"`) : body });
+      });
+    }
+    const page = await context.newPage();
     await page.goto(url);
     await page.waitForSelector('#button-primary-md');
     // One press per element Tab can reach: disabled controls and tabindex=-1 are not on its path.
@@ -67,7 +82,7 @@ async function measure(url: string, colorScheme: 'light' | 'dark'): Promise<Meas
   }
 }
 
-describe('Button accessibility in both themes (RF-11, constitution 7)', { timeout: 60_000 }, () => {
+describe('Button accessibility in the light default, dark and system themes (RF-11, constitution 7)', { timeout: 60_000 }, () => {
   const servers: Served[] = [];
   const urls = {} as Record<Framework, string>;
   beforeAll(async () => {
@@ -80,9 +95,9 @@ describe('Button accessibility in both themes (RF-11, constitution 7)', { timeou
   afterAll(() => Promise.all(servers.map((s) => s.close())));
 
   for (const framework of frameworks) {
-    for (const theme of themes) {
+    for (const { name: theme, scheme, attribute } of modes) {
       it(`${framework}, ${theme}: text is 4.5:1 on its own background and Tab shows a 3:1 ring of 2px or more`, async () => {
-        const buttons = await measure(urls[framework], theme);
+        const buttons = await measure(urls[framework], scheme, attribute);
         expect(buttons.map((b) => b.id).sort(), 'Tab did not reach all nine Buttons').toHaveLength(9);
         const report = buttons.map((b) => {
           const ratio = contrastRatio(parseRgb(b.fg), parseRgb(b.bg));
@@ -92,6 +107,8 @@ describe('Button accessibility in both themes (RF-11, constitution 7)', { timeou
             haloIsSurface: b.halo?.color === b.ground, haloPastRing: (b.halo?.spread ?? 0) > b.outlineOffset + b.outlineWidth,
           };
         });
+        // The mode really gave the theme it stands for: the browser resolved the surface token to it.
+        expect(buttons[0].ground, 'the theme the page got').toBe(theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(17, 24, 39)');
         console.log(`${framework} ${theme}`, JSON.stringify(report));
         for (const r of report) {
           expect(r.text, `${r.id} text contrast`).toBeGreaterThanOrEqual(4.5);

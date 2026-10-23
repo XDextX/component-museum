@@ -5,9 +5,9 @@ import { themes } from 'storybook/theming';
 import '@component-museum/react/styles.css';
 
 // Spec 005, RF-3. No JSX here: gallery/tsconfig.json only includes `.storybook/*.ts`.
-// "system" sets no attribute, so the package's prefers-color-scheme rule decides.
+// "system" asks for data-theme="system" (spec 011): the package follows the system preference only when asked.
 const withTheme: Decorator = (Story, { globals }) => {
-  const theme = globals.theme === 'light' || globals.theme === 'dark' ? globals.theme : undefined;
+  const theme = globals.theme === 'light' || globals.theme === 'dark' ? globals.theme : 'system';
   // The surface token paints the canvas, so dark buttons do not sit on a white one. The gallery's own
   // text (headings, usage code) takes the system text colour of the same scheme, so it reads on that
   // canvas in every theme without a text token in the package.
@@ -15,7 +15,7 @@ const withTheme: Decorator = (Story, { globals }) => {
     'div',
     {
       'data-theme': theme,
-      style: { background: 'var(--museum-surface)', colorScheme: theme ?? 'light dark', color: 'CanvasText', padding: '1rem' },
+      style: { background: 'var(--museum-surface)', colorScheme: theme === 'system' ? 'light dark' : theme, color: 'CanvasText', padding: '1rem' },
     },
     createElement(Story),
   );

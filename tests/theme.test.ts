@@ -17,7 +17,7 @@ const colorTokens = ['surface', 'focus', ...variants.flatMap((v) => ['bg', 'fg',
 
 /** The `--museum-*` hex tokens a theme block declares in the source sheet, as `{ name: '#rrggbb' }`. */
 function themeTokens(theme: 'light' | 'dark'): Record<string, string> {
-  const block = new RegExp(`\\[data-theme="${theme}"\\]\\s*\\{([^}]*)\\}`).exec(source)?.[1] ?? '';
+  const block = new RegExp(`\\[data-theme="${theme}"\\](?:,\\s*\\[data-theme="system"\\])?\\s*\\{([^}]*)\\}`).exec(source)?.[1] ?? '';
   return Object.fromEntries([...block.matchAll(/--museum-([\w-]+):\s*(#[0-9a-f]{6})/gi)].map((m) => [m[1], m[2].toLowerCase()]));
 }
 const themes = { light: themeTokens('light'), dark: themeTokens('dark') };
@@ -33,9 +33,20 @@ afterAll(async () => {
   await closeBrowserAndServers(browser, Object.values(servers));
 });
 
-/** Opens the built consumer in a fresh context with an explicit viewport; the page is ready once Button is in the DOM. */
-async function open(f: Framework, scheme: 'light' | 'dark', javaScriptEnabled = true): Promise<Page> {
+/**
+ * Opens the built consumer in a fresh context with an explicit viewport; the page is ready once Button is in the DOM.
+ * `attribute` is a data-theme the page asks for on <html>: it is written into the served HTML, so it is there from the
+ * first paint and also with JavaScript off.
+ */
+async function open(f: Framework, scheme: 'light' | 'dark', javaScriptEnabled = true, attribute?: string): Promise<Page> {
   const context = await browser.newContext({ colorScheme: scheme, javaScriptEnabled, viewport: { width: 1024, height: 768 } });
+  if (attribute) {
+    await context.route(servers[f]!.url + '**', async (route) => {
+      const response = await route.fetch();
+      const body = await response.text();
+      await route.fulfill({ response, body: response.headers()['content-type']?.includes('text/html') ? body.replace('<html', `<html data-theme="${attribute}"`) : body });
+    });
+  }
   const page = await context.newPage();
   await page.goto(servers[f]!.url);
   await page.waitForSelector('#button-primary-md');
@@ -74,18 +85,26 @@ const buttonColours = (page: Page, id: string, variant: string) =>
 const themeMatcher = (theme: 'light' | 'dark') =>
   Object.fromEntries(colorTokens.filter((n) => themes[theme][n]).map((n) => [n, themes[theme][n]]));
 
+// How a page gets a theme (spec 011): the dark one is asked for, against the opposite system preference.
+const requests = [
+  { name: 'light', scheme: 'dark', attribute: 'light', theme: 'light' },
+  { name: 'dark', scheme: 'light', attribute: 'dark', theme: 'dark' },
+  { name: 'no data-theme, system dark', scheme: 'dark', attribute: undefined, theme: 'light' },
+  { name: 'system, system dark', scheme: 'dark', attribute: 'system', theme: 'dark' },
+] as const;
+
 describe('RF-1: Button wears the package styles', { timeout: 60_000 }, () => {
   for (const f of frameworks) {
-    for (const scheme of ['light', 'dark'] as const) {
+    for (const { name, scheme, attribute, theme } of requests) {
       for (const js of f === 'astro' ? [true, false] : [true]) {
-        it(`${f}, ${scheme}${js ? '' : ', without JavaScript'}: background, text and border are the variant's tokens`, async () => {
-          const page = await open(f, scheme, js);
+        it(`${f}, ${name}${js ? '' : ', without JavaScript'}: background, text and border are the variant's tokens`, async () => {
+          const page = await open(f, scheme, js, attribute);
           for (const v of variants) for (const s of sizes) {
             const { got, want } = await buttonColours(page, `button-${v}-${s}`, v);
             expect(got, `${v} ${s}`).toEqual(want);
           }
           // A raw colour in a rule would still render a colour, so the tokens must also be the theme's own.
-          expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher(scheme));
+          expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher(theme));
         });
       }
     }
@@ -158,23 +177,48 @@ async function themedProbe(page: Page, chain: string[]): Promise<Record<string, 
   return tokensAt(page, '#probe', colorTokens);
 }
 
-describe('RF-5: with no data-theme, the system preference decides', { timeout: 60_000 }, () => {
+describe('RF-1 (spec 011): with no data-theme, the package is light whatever the system prefers', { timeout: 60_000 }, () => {
   for (const f of frameworks) {
     for (const scheme of ['light', 'dark'] as const) {
-      it(`${f}: ${scheme} emulation gives the ${scheme} tokens`, async () => {
+      it(`${f}: ${scheme} emulation gives the light tokens`, async () => {
         const page = await open(f, scheme);
-        expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher(scheme));
+        expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher('light'));
       });
       it(`${f}: an unknown data-theme on <html> is treated as absent under ${scheme} emulation`, async () => {
         const page = await open(f, scheme);
         await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'sepia'));
-        expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher(scheme));
+        expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher('light'));
       });
     }
   }
 });
 
-describe('RF-6: the nearest data-theme wins over the system preference', { timeout: 60_000 }, () => {
+describe('RF-3 (spec 011): data-theme="system" follows the system preference', { timeout: 60_000 }, () => {
+  for (const f of frameworks) {
+    for (const scheme of ['light', 'dark'] as const) {
+      it(`${f}: <html data-theme="system"> under ${scheme} emulation gives ${scheme}`, async () => {
+        const page = await open(f, scheme);
+        await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'system'));
+        expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher(scheme));
+      });
+      it(`${f}: a system container under ${scheme} emulation gives ${scheme} inside`, async () => {
+        const page = await open(f, scheme);
+        expect(await themedProbe(page, ['system'])).toMatchObject(themeMatcher(scheme));
+      });
+    }
+    it(`${f}: with the page open, the tokens change when the system preference does`, async () => {
+      const page = await open(f, 'dark');
+      await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'system'));
+      expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher('dark'));
+      await page.emulateMedia({ colorScheme: 'light' });
+      expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher('light'));
+      await page.emulateMedia({ colorScheme: 'dark' });
+      expect(await tokensAt(page, '#button-primary-md', colorTokens)).toMatchObject(themeMatcher('dark'));
+    });
+  }
+});
+
+describe('RF-2 (spec 011), RF-6 of 003: the nearest data-theme wins over the system preference', { timeout: 60_000 }, () => {
   for (const f of frameworks) {
     for (const [attr, scheme] of [['dark', 'light'], ['light', 'dark']] as const) {
       it(`${f}: <html data-theme="${attr}"> under ${scheme} emulation gives ${attr}`, async () => {
@@ -192,12 +236,24 @@ describe('RF-6: the nearest data-theme wins over the system preference', { timeo
       expect(await themedProbe(page, ['dark', 'light'])).toMatchObject(themeMatcher('light'));
       expect(await themedProbe(page, ['light', 'dark'])).toMatchObject(themeMatcher('dark'));
     });
-    it(`${f}: an unknown container value inherits from the ancestor, and with no ancestor from the system`, async () => {
+    it(`${f}: system inside dark with a light system gives light, and with a dark system gives dark`, async () => {
+      const light = await open(f, 'light');
+      expect(await themedProbe(light, ['dark', 'system'])).toMatchObject(themeMatcher('light'));
+      const dark = await open(f, 'dark');
+      expect(await themedProbe(dark, ['dark', 'system'])).toMatchObject(themeMatcher('dark'));
+    });
+    it(`${f}: light inside system with a dark system gives light, and a dark one inside gives dark with a light system`, async () => {
+      const dark = await open(f, 'dark');
+      expect(await themedProbe(dark, ['system', 'light'])).toMatchObject(themeMatcher('light'));
+      const light = await open(f, 'light');
+      expect(await themedProbe(light, ['system', 'dark'])).toMatchObject(themeMatcher('dark'));
+    });
+    it(`${f}: an unknown container value inherits from the ancestor, and with no ancestor from the light default`, async () => {
       const light = await open(f, 'light');
       expect(await themedProbe(light, ['dark', 'sepia'])).toMatchObject(themeMatcher('dark'));
       expect(await themedProbe(light, ['sepia'])).toMatchObject(themeMatcher('light'));
       const dark = await open(f, 'dark');
-      expect(await themedProbe(dark, ['sepia'])).toMatchObject(themeMatcher('dark'));
+      expect(await themedProbe(dark, ['sepia'])).toMatchObject(themeMatcher('light'));
     });
     it(`${f}: a :root token of the consumer loses inside a nearer data-theme`, async () => {
       const page = await open(f, 'light');

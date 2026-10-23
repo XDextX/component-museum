@@ -21,11 +21,11 @@ describe('gallery theme global (RF-3)', () => {
     ]);
   });
 
-  it('wraps the story in data-theme for light and dark, and in none for system', () => {
+  it('wraps the story in data-theme for light and dark, and in data-theme="system" for system (spec 011)', () => {
     expect(wrap('dark')).toMatch(/^<div[^>]* data-theme="dark"[^>]*><p>story<\/p><\/div>$/);
     expect(wrap('light')).toContain('data-theme="light"');
-    expect(wrap('system')).not.toContain('data-theme');
-    expect(wrap(undefined)).not.toContain('data-theme');
+    expect(wrap('system')).toContain('data-theme="system"');
+    expect(wrap(undefined)).toContain('data-theme="system"');
   });
 
   it('paints the canvas with the package surface token', () => {

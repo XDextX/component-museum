@@ -21,7 +21,7 @@ Ningún archivo es compartido:
 - los dos README, `Button.mdx`, `Input.mdx`, `Textarea.mdx`, `specs/003-estilos-temas/spec.md` y
   `tests/theme-docs.test.ts`: la T-2.
 
-- [ ] **T-1 — El oscuro solo cuando la página lo pide**
+- [x] **T-1 — El oscuro solo cuando la página lo pide**
   Cubre: RF-1, RF-2, RF-3, RF-4, RF-5, NFR de accesibilidad (regla 7)
   Archivos: `styles/museum.css` (selectores de los bloques claro y `@media`, plan, bloque 4),
   `gallery/.storybook/preview.ts` (`data-theme="system"` con «Sistema»), `tests/theme.test.ts`,
@@ -52,6 +52,21 @@ Ningún archivo es compartido:
     oscuro.
   - Quitar `[data-theme="system"]` del bloque claro pone en rojo el caso `system` dentro de `dark`.
   - Volver a `undefined` en el decorador pone en rojo el caso «Sistema» de `gallery-theme.test.ts`.
+
+  Hecho (T-1):
+  - Inyecciones vistas en rojo y restauradas:
+    - `:root:not([data-theme="light"])` en el `@media`: 20 rojos (RF-1 en `theme.test.ts`, `a11y`,
+      `field-a11y`, `field-styles`);
+    - sin `[data-theme="system"]` en el bloque claro: rojo `system inside dark with a light system`
+      (react y astro);
+    - `undefined` en el decorador: 5 rojos en `gallery-theme.test.ts`;
+    - extra: `--museum-field-hint` claro en el bloque claro: 5 rojos en `field-styles.test.ts`.
+  - `gallery-preview.test.ts`: la aserción de Sistema pasa a `data-theme="system"`, decidido por el
+    coordinator; el plan lo daba por sin cambio.
+  - Tests antes/después: `theme` 48→68, `field-styles` 32→38, `a11y` 4→6, `field-a11y` 72→120,
+    `gallery-theme` 15→19; `gallery-preview` sin cambio de número.
+  - Para la validación: el borde de RF-5 se mide contra la superficie del campo (lo que lo rodea), no
+    contra el `body` oscuro (el borde de error da 2.74:1 contra `#111827`).
 
 - [ ] **T-2 — Documentar cómo se pide el tema**
   Cubre: RF-6, RF-7

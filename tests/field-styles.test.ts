@@ -13,12 +13,13 @@ const html = readFileSync(join(repo, 'tests', 'fixtures', 'field.html'), 'utf8')
 const sizes = ['sm', 'md', 'lg'];
 const tokens = ['control-bg', 'control-fg', 'control-border', 'control-placeholder', 'field-label', 'field-hint', 'field-error'];
 
-// The four ways a page gets a theme: the attribute, or the system preference (the attribute wins over it).
+// The five ways a page gets a theme (spec 011): it asks for light, dark or the system's, or asks for nothing and gets light.
 const modes = [
   { name: 'light, data-theme', scheme: 'dark', attribute: 'light' },
   { name: 'dark, data-theme', scheme: 'light', attribute: 'dark' },
-  { name: 'light, system', scheme: 'light', attribute: undefined },
-  { name: 'dark, system', scheme: 'dark', attribute: undefined },
+  { name: 'system, system light', scheme: 'light', attribute: 'system' },
+  { name: 'system, system dark', scheme: 'dark', attribute: 'system' },
+  { name: 'no data-theme, system dark', scheme: 'dark', attribute: undefined },
 ] as const;
 
 let browser: Browser;
@@ -29,20 +30,20 @@ afterAll(async () => {
   await closeBrowserAndServers(browser, []);
 });
 
-async function open(mode: (typeof modes)[number], width = 1024): Promise<Page> {
+async function open(mode: Pick<(typeof modes)[number], 'scheme' | 'attribute'>, width = 1024): Promise<Page> {
   const page = await (await browser.newContext({ colorScheme: mode.scheme, viewport: { width, height: 900 } })).newPage();
   await page.setContent(html);
   if (mode.attribute) await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), mode.attribute);
   return page;
 }
 
-/** What a control paints: its border, text, placeholder and own background, plus the page surface under it. */
+/** What a control paints: its border, text, placeholder and own background, plus the surface under it: its field's own, else the page's. */
 const paint = (page: Page, id: string) =>
   page.locator(`#${id}`).evaluate((el) => {
     const s = getComputedStyle(el);
     return {
       border: s.borderTopColor, fg: s.color, placeholder: getComputedStyle(el, '::placeholder').color,
-      bg: s.backgroundColor, surface: getComputedStyle(document.body).backgroundColor, opacity: s.opacity,
+      bg: s.backgroundColor, surface: getComputedStyle(el.closest('.museum-field') ?? document.body).backgroundColor, opacity: s.opacity,
     };
   });
 
@@ -68,31 +69,57 @@ describe('every Input rule reads only var(--museum-*)', () => {
   });
 });
 
+/** RF-7 of 009: the control border is 3:1 against the page surface and against its own background. */
+async function expectBorders(page: Page): Promise<void> {
+  for (const id of ['in-md', 'in-error', 'ta-md', 'ta-error']) {
+    const p = await paint(page, id);
+    expect(contrastRatio(parseRgb(p.border), parseRgb(p.surface)), `${id} border`).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(parseRgb(p.border), parseRgb(p.bg)), `${id} border on its own background`).toBeGreaterThanOrEqual(3);
+  }
+}
+
+/** RF-8 of 009: label, hint, error, value and placeholder are 4.5:1. */
+async function expectTexts(page: Page): Promise<void> {
+  const texts = await visibleTexts(page);
+  expect(texts.length).toBeGreaterThan(5);
+  const rated = texts.map((t) => ({ text: t.text, ratio: contrastRatio(parseRgb(t.fg), parseRgb(t.bg)) }));
+  expect(rated.filter((r) => r.ratio < 4.5)).toEqual([]);
+  // Input values are not text nodes, so they and the placeholder are measured apart.
+  for (const id of ['in-md', 'in-placeholder', 'ta-md', 'ta-placeholder']) {
+    const p = await paint(page, id);
+    expect(contrastRatio(parseRgb(p.fg), parseRgb(p.bg)), `${id} value`).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(parseRgb(p.placeholder), parseRgb(p.bg)), `${id} placeholder`).toBeGreaterThanOrEqual(4.5);
+  }
+}
+
+describe('RF-5 (spec 011): a field on a dark page that asks for no theme stays legible', { timeout: 60_000 }, () => {
+  // The page is dark (#111827) and sets no data-theme: the package is light, and the field paints its own surface.
+  for (const scheme of ['light', 'dark'] as const) {
+    it(`system ${scheme}: borders are 3:1 and texts 4.5:1 over the page`, async () => {
+      const page = await open({ scheme, attribute: undefined });
+      await page.addStyleTag({ content: 'body { background: #111827; }' });
+      // The page really is dark, and the surface under the control is the field's own, not the page's.
+      expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(17, 24, 39)');
+      expect((await paint(page, 'in-md')).surface).toBe('rgb(255, 255, 255)');
+      await expectBorders(page);
+      await expectTexts(page);
+      await page.context().close();
+    });
+  }
+});
+
 describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
   for (const mode of modes) {
     describe(mode.name, () => {
       it('RF-7: the control border is 3:1 against the surface, at rest and in error', async () => {
         const page = await open(mode);
-        for (const id of ['in-md', 'in-error', 'ta-md', 'ta-error']) {
-          const p = await paint(page, id);
-          expect(contrastRatio(parseRgb(p.border), parseRgb(p.surface)), `${id} border`).toBeGreaterThanOrEqual(3);
-          expect(contrastRatio(parseRgb(p.border), parseRgb(p.bg)), `${id} border on its own background`).toBeGreaterThanOrEqual(3);
-        }
+        await expectBorders(page);
         await page.context().close();
       });
 
       it('RF-8: label, hint, error, value and placeholder are 4.5:1', async () => {
         const page = await open(mode);
-        const texts = await visibleTexts(page);
-        expect(texts.length).toBeGreaterThan(5);
-        const rated = texts.map((t) => ({ text: t.text, ratio: contrastRatio(parseRgb(t.fg), parseRgb(t.bg)) }));
-        expect(rated.filter((r) => r.ratio < 4.5)).toEqual([]);
-        // Input values are not text nodes, so they and the placeholder are measured apart.
-        for (const id of ['in-md', 'in-placeholder', 'ta-md', 'ta-placeholder']) {
-          const p = await paint(page, id);
-          expect(contrastRatio(parseRgb(p.fg), parseRgb(p.bg)), `${id} value`).toBeGreaterThanOrEqual(4.5);
-          expect(contrastRatio(parseRgb(p.placeholder), parseRgb(p.bg)), `${id} placeholder`).toBeGreaterThanOrEqual(4.5);
-        }
+        await expectTexts(page);
         await page.context().close();
       });
 
