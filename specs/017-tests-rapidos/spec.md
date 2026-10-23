@@ -1,7 +1,8 @@
 # Spec 017 — tests-rapidos
 
 **Status:** approved · **Approved:** 2026-10-23 · el dueño: entrega 4, tras la 012; consumidores guardados entre ejecuciones
-**Size:** L (9 RF) · **Entrega:** 4 (tras la 012, antes de la 013) · **Depende de:** 012
+**Changed:** 2026-10-23 · RF-10 añadido (limpieza de %TEMP% de ejecuciones muertas) · coordinator en modo autónomo
+**Size:** L (10 RF) · **Entrega:** 4 (tras la 012, antes de la 013) · **Depende de:** 012
 
 ## Contexto y objetivo
 
@@ -50,6 +51,9 @@ hace, se hace una vez.
   **Check:** un test que pide la galería sin prepararla falla con el nombre de la galería.
 - RF-9: EL SISTEMA informa, al acabar `npm test`, de la duración de cada fase. — **Check:** la
   salida de `npm test` lleva una tabla de fases con sus segundos.
+- RF-10: CUANDO una ejecución empieza, EL SISTEMA borra de `%TEMP%` las carpetas `cm-*` y los
+  perfiles de Edge de los tests de ejecuciones muertas, y cierra sus Edge. — **Check:** con restos
+  de un `runId` muerto y de uno vivo, solo desaparecen los del muerto; el Edge del usuario sigue.
 
 ## Requisitos no funcionales
 
@@ -67,6 +71,8 @@ hace, se hace una vez.
 
 - **Una ejecución se corta a medias:** su build a medio escribir no se reutiliza (RF-4).
 - **Dos checkouts (worktrees):** cada uno tiene su caché, junto a su lock (RF-3, RF-5).
+- **Restos de otro checkout vivo, o un Edge del usuario:** no se tocan; ante la duda, no se borra
+  (RF-10).
 - **Se cambia la versión de un starter o de una dependencia de la raíz:** cambia la clave y se
   rehace (RF-4, RF-5).
 - **`gallery/generated/` borrado a mano:** se reconstruye, no se sirve el JSON guardado (RF-4).
@@ -80,7 +86,7 @@ hace, se hace una vez.
 
 ## Hecho cuando
 
-- `npm test` termina en 0; RF-1 a RF-9 son tests vistos en rojo una vez inyectando su violación
+- `npm test` termina en 0; RF-1 a RF-10 son tests vistos en rojo una vez inyectando su violación
   (regla 8), y la muestra de inyecciones anteriores sigue en rojo.
 - La tabla de fases, antes y después, en el informe, con las medianas del objetivo.
 
