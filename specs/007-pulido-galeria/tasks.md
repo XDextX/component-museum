@@ -65,7 +65,7 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   párrafo: claro 12.75:1 (rgb 46,51,56 sobre blanco), oscuro 9.75:1 (rgb 201,204,207 sobre rgb 34,35,37).
   El global se lee de `globals=` en la URL del iframe, no del contexto (ver notes.md). Capturas pendientes de aprobación del dueño.
 
-- [ ] **T-5 — Código de Astro con resaltado y botón de copiar**
+- [x] **T-5 — Código de Astro con resaltado y botón de copiar**
   Cubre: RF-6
   Archivos: `gallery/stories/Button.astro.stories.tsx`, `tests/gallery-astro-code.test.ts`
   Hecho cuando: lo primero, comprobar que `SyntaxHighlighter` de `storybook/internal/components` se
@@ -75,6 +75,7 @@ antes de quitar cada worktree. Cada archivo compartido lo toca una sola tarea:
   alcanza con `Tab` y tiene nombre accesible.
   Inyección: quitar `copyable` en la rama del worktree deja los casos sin botón y pone el test en
   rojo.
+  Inyección vista en rojo (2026-10-22): quitar `copyable` de `SyntaxHighlighter` dejó los 6 casos sin botón y puso el test en rojo (7 de 10 fallan: los 6 de copiar y el de `Tab`); restaurado, 10 de 10 en verde.
 
 - [ ] **T-6 — Sin desborde horizontal desde 320 px**
   Cubre: RF-7

@@ -62,3 +62,4 @@ espera, porque se corta de `main` (`AGENTS.md`).
 
 - T-4 (RF-5): `Button.mdx` no tiene historia primaria, así que el contexto de documentación no da contexto de historia
   ni el global `theme`; el contenedor lo lee de `globals=` en la URL del iframe (que el gestor mantiene al día) y de `globalsUpdated`.
+- T-5, cambio de plan (coordinator): `SyntaxHighlighter` no se pinta en el iframe de una historia sin tema de Storybook, así que la historia lo envuelve en `ThemeProvider` con `convert(themes.light|dark)` según el global `theme`; y `language="html"` en lugar de `astro`, que no es un lenguaje registrado.
