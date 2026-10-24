@@ -349,7 +349,7 @@ arranque y de informe que arriba. Además:
   Inyección (sin `htmlFor` en `field.tsx`): RF-2 en rojo en los tres archivos (React, tres modos cada uno; también
   caen RF-6, RF-9, RF-10 y RF-12 de Checkbox/Input/Textarea que dependen de la etiqueta), revertida por ruta.
 
-- [ ] **T-13 — El RF-5 de los consumidores, en su archivo y en paralelo**
+- [x] **T-13 — El RF-5 de los consumidores, en su archivo y en paralelo**
   Cubre: NFR de objetivo
   Archivos: `tests/consumer.test.ts` (sin el bloque «undeclared module (RF-5)»),
   `tests/consumer-undeclared.test.ts` (nuevo: el bloque, con React y Astro a la vez y
@@ -362,6 +362,20 @@ arranque y de informe que arriba. Además:
   - Los dos frameworks trabajan en carpetas distintas de `cm-*-guard`, sin pisarse.
   Inyección: declarar el módulo en el consumidor guardado, antes del primer build, pone en rojo el
   primer paso en los dos frameworks.
+
+  Nota: hecha. `tests/consumer-undeclared.test.ts` llama a `need('consumers')` él mismo, así que `splitTests`
+  lo manda a `e2e` sin tocar `projects.ts`; `tests/projects.test.ts` lo comprueba (un test nuevo). Nombres de
+  `it` (JSON de Vitest) antes y después: 25 y 25, listas idénticas (23 en `consumer.test.ts`, 2 en el nuevo).
+  Desvío del plan: el módulo sin declarar se pone en la raíz del repo y en el padre de los consumidores, que los
+  dos frameworks comparten; por eso no hay un `it` en paralelo por framework, sino un `beforeAll` que, en cada
+  paso, coloca el módulo, construye los dos consumidores a la vez con `buildConsumerAsync` y lo quita; luego
+  declara, instala y construye los dos a la vez, cada uno en su carpeta de `cm-*-guard`. Cada `it` comprueba
+  los tres pasos de su framework. El `beforeAll` lleva su propio timeout (300 s; el del `describe` no llega a los
+  hooks y con 30 s cayó bajo carga). El `afterAll` de la foto del árbol (RF-6) pasó al archivo nuevo: en
+  `consumer.test.ts` corría a la vez que el módulo puesto en la raíz y veía `node_modules/museum-undeclared`.
+  Tiempos (junit): `consumer-undeclared` 16.4 s, `consumer` 0.3 s de tests (el de hoy eran unos 72 s con carga,
+  21.5 s solo). Inyección (copiar el módulo en `node_modules` de cada consumidor guardado antes del primer
+  build): el primer paso en rojo en React y en Astro (el build sale con 0), revertida por ruta.
 
 - [x] **T-14 — `gallery-browser` partido por componente**
   Cubre: NFR de objetivo
