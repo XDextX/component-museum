@@ -7,8 +7,9 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { cacheDir, repoRoot } from './cache.mjs';
 
-// gallery:astro goes first and alone: the astro checks read its output.
+// build react and gallery:astro go first and alone: the type checks read packages/react/dist and the astro checks read the gallery output.
 export const testSteps = [
+  { name: 'build react', command: 'tsc -p packages/react/tsconfig.build.json' },
   { name: 'gallery:astro', command: 'npm run gallery:astro' },
   ...[
     'tsc --noEmit',

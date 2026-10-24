@@ -14,12 +14,13 @@ afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 const names = testSteps.map((step) => step.name);
 type Step = { name: string; group?: string };
-const typeSteps = names.slice(1, 6);
+const typeSteps = names.slice(2, 7);
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('scripts/test.mjs steps (spec 017, RF-9)', () => {
-  it('keeps the commands of the old chain, without the packages/react build', () => {
+  it('keeps the commands of the old chain, with the packages/react build first', () => {
     expect(testSteps.map((step) => step.command)).toEqual([
+      'tsc -p packages/react/tsconfig.build.json',
       'npm run gallery:astro',
       'tsc --noEmit',
       'tsc --noEmit -p gallery',
@@ -30,8 +31,8 @@ describe('scripts/test.mjs steps (spec 017, RF-9)', () => {
     ]);
   });
 
-  it('runs the five type steps as one parallel group, between gallery:astro and vitest', () => {
-    expect(testSteps.map((step: Step) => step.group)).toEqual([undefined, 'tipos', 'tipos', 'tipos', 'tipos', 'tipos', undefined]);
+  it('runs the five type steps as one parallel group, between gallery:astro and vitest, after build react', () => {
+    expect(testSteps.map((step: Step) => step.group)).toEqual([undefined, undefined, 'tipos', 'tipos', 'tipos', 'tipos', 'tipos', undefined]);
   });
 
   it('is what `npm test` runs', () => {
@@ -57,7 +58,7 @@ describe('runTests', () => {
       log: (line: string) => out.push(line),
     });
     expect(code).toBe(2);
-    expect(ran).toEqual(['gallery:astro']);
+    expect(ran).toEqual(['build react', 'gallery:astro']);
     expect(out.join('\n')).not.toContain('vitest');
   });
 
@@ -113,13 +114,13 @@ describe('runTests', () => {
 
   it('gives each type step its time and the group its own, without counting them twice in the total', async () => {
     const out: string[] = [];
-    await runTests({ run: () => sleep(20).then(() => 0), dir, log: (line: string) => out.push(line) });
+    await runTests({ run: () => sleep(200).then(() => 0), dir, log: (line: string) => out.push(line) });
     const rows = out.join('\n').split('\n');
     for (const name of typeSteps) expect(rows.some((row) => row.includes(name))).toBe(true);
     expect(rows.find((row) => row.startsWith('tipos'))).toMatch(/\|\s+0\.\d\s+\|/);
-    // 3 serial stages of ~20 ms: summing the five steps too would give a total >= 0.1 s
+    // 4 serial stages of ~200 ms give ~0.8 s; counting the five nested steps too would add ~1.0 s (~1.8 s), so 1.3 s splits the two with margin on a loaded machine
     const total = Number(rows.at(-1)!.match(/\|\s+([\d.]+)\s+\|/)![1]);
-    expect(total).toBeLessThan(0.2);
+    expect(total).toBeLessThan(1.3);
   });
 
   it('clears phases.json first, so an old entry is not counted', async () => {
