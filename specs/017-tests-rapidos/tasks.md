@@ -48,7 +48,7 @@ paralelo. Quién toca cada archivo compartido:
   archivos más lentos y el estado de `%TEMP%` y de Edge están en la sección «Base» de `notes.md`.
   Sin cambios de código.
 
-- [ ] **T-2 — Caché honesta para Storybook y `astro-render`; un solo `astro build`**
+- [x] **T-2 — Caché honesta para Storybook y `astro-render`; un solo `astro build`**
   Cubre: RF-2, RF-3, RF-4
   Archivos: `scripts/cache.mjs`, `tests/cache.test.ts`, `gallery/scripts/astro-cached.mjs`,
   `package.json` (solo `gallery:astro`), `tests/global-setup.ts` (`buildGallery` sin `astro build`
@@ -69,6 +69,16 @@ paralelo. Quién toca cada archivo compartido:
   la hoja, y pone en rojo el caso RF-4 de la hoja.
 
   Va sola en la ola 2: abre el registro de fases que usan las siguientes.
+  Nota: hecha. `scripts/cache.mjs` (`inputKey(root, files, extra)`, `cached`, `recordPhase` y las listas de
+  entradas de cada build), `gallery/scripts/astro-cached.mjs` (`gallery:astro` y el `globalSetup` pasan por
+  él: la segunda llamada es un acierto, así que hay una sola `astro build` por ejecución) y Storybook por
+  `cached()` en el `globalSetup`. `phases.json` (en `node_modules/.museum-cache/`) lleva las fases con
+  `seconds` y `cache`. Tests nuevos: `tests/cache.test.ts` (29) y `tests/phases.test.ts` (3); de 813 a 845
+  tests, ninguno borrado. Inyección vista en rojo: quitar `styles/museum.css` de `storybookInputs` pone en
+  rojo `Storybook: styles/museum.css` (1 de 29). Desviaciones: `inputKey` recibe la raíz como primer
+  argumento; `cached` un quinto argumento (carpeta de la caché) para los tests; dos `.d.mts` para
+  importar los `.mjs` desde TypeScript; las fases del `globalSetup` se llaman `globalSetup: <fase>` y
+  `phases.json` no se limpia entre ejecuciones (lo hará `scripts/test.mjs`, T-6).
 
 - [ ] **T-3 — Un empaquetado por paquete, el mismo tarball en todos**
   Cubre: RF-1
