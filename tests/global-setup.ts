@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 import type { TestProject } from 'vitest/node';
 import { ensureAstroRender } from '../gallery/scripts/astro-cached.mjs';
 import { cached, inputKey, recordPhase, storybookInputs } from '../scripts/cache.mjs';
-import { buildConsumerAsync, createConsumer, npmCli, scaffold } from './lib/consumer.ts';
+import { buildConsumerAsync, createConsumer, npmCli, packPackage, scaffold, type Tarball } from './lib/consumer.ts';
 import { acquireLock } from './lib/lock.ts';
 import { consumerDir, type Framework } from './lib/paths.ts';
 import type { RunResult } from './lib/run.ts';
@@ -36,6 +36,8 @@ export type SharedConsumers = {
 declare module 'vitest' {
   export interface ProvidedContext {
     consumers: SharedConsumers;
+    /** Spec 017 RF-1: the one tarball of each package for the whole run, packed (prepack included) before anything else. */
+    tarballs: Record<'react' | 'astro' | 'testPackage' | 'undeclaring', Tarball>;
     /** The repo before anything ran (RF-6). */
     treeBefore: Snapshot;
     /** Spec 002 RF-3: each consumer that installs the framework packages, built once here. */
@@ -76,7 +78,7 @@ async function phase<T>(name: string, fn: () => Promise<T>): Promise<T> {
 }
 
 /**
- * Spec 004 and 017: copies the stylesheets, makes sure the Astro cases are extracted (a hit when
+ * Spec 004 and 017: makes sure the Astro cases are extracted (a hit when
  * `npm run gallery:astro` just ran) and builds Storybook, unless nothing it depends on changed. A failing
  * step fails the whole run.
  */
@@ -84,10 +86,7 @@ async function buildGallery(): Promise<{ storybook: string; astroJson: string }>
   const fail = (name: string, result: RunResult) => {
     if (result.code !== 0) throw new Error(`gallery: ${name} failed\n${result.output.slice(-4000)}`);
   };
-  // Each package's styles.css is written on prepack; the gallery imports it by specifier.
-  await phase('prepack', async () =>
-    fail('copy the stylesheets', await npmRun(['run', 'prepack', '--workspace=@component-museum/react', '--workspace=@component-museum/astro'], repo)),
-  );
+  // Each package's styles.css and dist/ were written by the prepack of the run's one pack, which finished before this.
   // The Astro story imports the JSON, so it exists before Storybook builds.
   await ensureAstroRender('globalSetup: astro-render');
   const storybook = join(gallery, 'storybook-static');
@@ -136,20 +135,29 @@ export default async function setup(project: TestProject): Promise<() => void> {
   const packageRunId = `${runId}-pkg`;
   const tailwindRunId = `${runId}-tw`;
   const starterParent = join(base, `cm-${runId}-starter`);
-  const created = [join(base, `cm-${runId}`), guardParent, join(base, `cm-${packageRunId}`), join(base, `cm-${tailwindRunId}`), starterParent];
+  const packParent = join(base, `cm-${runId}-pack`);
+  const created = [join(base, `cm-${runId}`), guardParent, join(base, `cm-${packageRunId}`), join(base, `cm-${tailwindRunId}`), starterParent, packParent];
   const teardown = () => {
     created.forEach((dir) => rmSync(dir, { recursive: true, force: true }));
     releaseLock();
   };
 
   try {
-    const [reactStarter, astroStarter] = await phase('starters', () => Promise.all(frameworks.map((f) => scaffold(starterParent, f))));
-    const starters = { react: reactStarter, astro: astroStarter };
-
     const undeclaringPackage = join(guardParent, 'pkg-undeclaring');
     cpSync(testPackage, undeclaringPackage, { recursive: true });
     const index = join(undeclaringPackage, 'index.js');
     writeFileSync(index, `import 'museum-undeclared';\n${readFileSync(index, 'utf8')}`);
+
+    // Spec 017 RF-1: each package is packed once, here, and every consumer and test installs or reads that tarball.
+    // npm pack runs the prepack (dist/ and styles.css), so the gallery below can only start after it.
+    const packDirs = { react: frameworkPackage('react'), astro: frameworkPackage('astro'), testPackage, undeclaring: undeclaringPackage };
+    const [[reactStarter, astroStarter], ...packed] = await Promise.all([
+      phase('starters', () => Promise.all(frameworks.map((f) => scaffold(starterParent, f)))),
+      ...Object.entries(packDirs).map(([name, dir]) => phase(`pack ${name}`, () => packPackage(dir, join(packParent, name)))),
+    ]);
+    const starters = { react: reactStarter, astro: astroStarter };
+    const tarballs = Object.fromEntries(Object.keys(packDirs).map((name, i) => [name, packed[i]])) as Record<keyof typeof packDirs, Tarball>;
+    project.provide('tarballs', tarballs);
 
     // A consumer left at the same path by an earlier run: createConsumer must wipe it (RF-4).
     const leftoverDir = consumerDir(base, runId, 'react');
@@ -162,15 +170,15 @@ export default async function setup(project: TestProject): Promise<() => void> {
     galleryBuilt.catch(() => {});
 
     const [plainReact, plainAstro, guardedReact, guardedAstro, packageReact, packageAstro, tailwindReact, tailwindAstro] = await phase('consumers', () => Promise.all([
-      createConsumer(base, runId, 'react', testPackage, { starter: starters.react, packages: [frameworkPackage('react')] }),
-      createConsumer(base, runId, 'astro', testPackage, { starter: starters.astro, packages: [frameworkPackage('astro')] }),
-      createConsumer(base, guardRunId, 'react', undeclaringPackage, { starter: starters.react, guardResolution: true }),
-      createConsumer(base, guardRunId, 'astro', undeclaringPackage, { starter: starters.astro, guardResolution: true }),
-      createConsumer(base, packageRunId, 'react', testPackage, { starter: starters.react, guardResolution: true, packages: [frameworkPackage('react')] }),
-      createConsumer(base, packageRunId, 'astro', testPackage, { starter: starters.astro, guardResolution: true, packages: [frameworkPackage('astro')] }),
+      createConsumer(base, runId, 'react', tarballs.testPackage, { starter: starters.react, packages: [tarballs.react] }),
+      createConsumer(base, runId, 'astro', tarballs.testPackage, { starter: starters.astro, packages: [tarballs.astro] }),
+      createConsumer(base, guardRunId, 'react', tarballs.undeclaring, { starter: starters.react, guardResolution: true }),
+      createConsumer(base, guardRunId, 'astro', tarballs.undeclaring, { starter: starters.astro, guardResolution: true }),
+      createConsumer(base, packageRunId, 'react', tarballs.testPackage, { starter: starters.react, guardResolution: true, packages: [tarballs.react] }),
+      createConsumer(base, packageRunId, 'astro', tarballs.testPackage, { starter: starters.astro, guardResolution: true, packages: [tarballs.astro] }),
       // Spec 003 T-7: Tailwind v4 consumers (no guard), two pages each.
-      createConsumer(base, tailwindRunId, 'react', testPackage, { starter: starters.react, packages: [frameworkPackage('react')], tailwind: true }),
-      createConsumer(base, tailwindRunId, 'astro', testPackage, { starter: starters.astro, packages: [frameworkPackage('astro')], tailwind: true }),
+      createConsumer(base, tailwindRunId, 'react', tarballs.testPackage, { starter: starters.react, packages: [tarballs.react], tailwind: true }),
+      createConsumer(base, tailwindRunId, 'astro', tarballs.testPackage, { starter: starters.astro, packages: [tarballs.astro], tailwind: true }),
     ]));
 
     // Built here, not in a test: the shared consumers stay read-only for every test file.
