@@ -1,5 +1,6 @@
 import { chromium, type Browser, type Page } from 'playwright-core';
-import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { closeBrowserAndServers } from './lib/browser.ts';
 import { visibleTexts } from './lib/contrast.ts';
 import { contrastRatio, parseRgb } from './lib/css.ts';
@@ -35,7 +36,7 @@ describe('story views follow the gallery theme (spec 008)', { timeout: 180_000 }
   let served: Served;
   let browser: Browser;
   beforeAll(async () => {
-    served = await serve(inject('gallery').storybook);
+    served = await serve(need('gallery').storybook);
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {

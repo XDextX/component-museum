@@ -3,7 +3,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, expectTypeOf, inject, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { Button, type ButtonProps } from '../packages/react/dist/index.js';
 import { readElements } from './lib/browser.ts';
 import { loadContract } from './lib/contract.ts';
@@ -18,7 +19,7 @@ describe('same HTML in React and Astro (RF-9)', { timeout: 60_000 }, () => {
     const reactHtml = ids
       .map(({ id, v, s }) => renderToStaticMarkup(createElement(Button, { id, variant: v as 'primary', size: s as 'sm' }, `${v} ${s}`)))
       .join('');
-    const astroHtml = readFileSync(join(inject('consumers').plain.astro, 'dist', 'index.html'), 'utf8');
+    const astroHtml = readFileSync(join(need('consumers').plain.astro, 'dist', 'index.html'), 'utf8');
 
     const react = await readElements(reactHtml, 'button');
     const astro = await readElements(astroHtml, 'button[id^="button-"]:not(#button-attrs)');
@@ -36,7 +37,7 @@ describe('HTML attributes reach the <button> (RF-11)', { timeout: 60_000 }, () =
     const reactHtml = renderToStaticMarkup(
       createElement(Button, { ...consumerAttributes, className: 'consumer-class' } as ButtonProps, 'attrs'),
     );
-    const astroHtml = readFileSync(join(inject('consumers').plain.astro, 'dist', 'index.html'), 'utf8');
+    const astroHtml = readFileSync(join(need('consumers').plain.astro, 'dist', 'index.html'), 'utf8');
 
     const [react] = await readElements(reactHtml, '#button-attrs');
     const [astro] = await readElements(astroHtml, '#button-attrs');

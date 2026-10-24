@@ -118,7 +118,10 @@ async function checkButtonTypes(framework: Framework, dir: string): Promise<{ cl
   }
 }
 
-/** Creates every consumer once per run, in parallel, and removes them all when the run ends. */
+/**
+ * Creates every consumer once per run, in parallel, and removes them all when the run ends. Only the e2e
+ * project has it (vitest.config.ts): a run of unit files alone never gets here (spec 017, RF-7).
+ */
 export default async function setup(project: TestProject): Promise<() => void> {
   const runId = randomUUID().slice(0, 8);
   // One run per checkout (T-9): a second npm test would see this run's RF-5 module in RF-6.

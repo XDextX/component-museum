@@ -1,11 +1,12 @@
 import { join } from 'node:path';
 import { chromium, type Browser } from 'playwright-core';
-import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { contrastRatio, parseRgb } from './lib/css.ts';
 import type { Framework } from './lib/paths.ts';
 import { serve, type Served } from './lib/serve.ts';
 
-const consumers = inject('consumers');
+const consumers = need('consumers');
 const frameworks: Framework[] = ['react', 'astro'];
 // How the page gets its theme (spec 011): dark is asked for with data-theme under a light system; light is what a
 // page that asks for nothing gets under a dark system; "system" follows the dark system.

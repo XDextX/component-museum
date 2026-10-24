@@ -1,7 +1,8 @@
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser } from 'playwright-core';
-import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { exampleText, type Contract } from '../gallery/lib/contract-args.ts';
 import { exampleClasses } from '../gallery/lib/example-classes.ts';
 import { closeBrowserAndServers } from './lib/browser.ts';
@@ -72,7 +73,7 @@ describe.each(components.map((c) => [c.name, c] as const))('the React story re-r
   let served: Served;
   let browser: Browser;
   beforeAll(async () => {
-    served = await serve(inject('gallery').storybook);
+    served = await serve(need('gallery').storybook);
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {
@@ -106,7 +107,7 @@ describe('the example CSS is seen beside its control and on the docs page (RF-9)
   let served: Served;
   let browser: Browser;
   beforeAll(async () => {
-    served = await serve(inject('gallery').storybook);
+    served = await serve(need('gallery').storybook);
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {

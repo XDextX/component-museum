@@ -2,14 +2,15 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser, type Page } from 'playwright-core';
-import { afterAll, beforeAll, describe, expect, it, inject } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import type { Framework } from './lib/paths.ts';
 import { closeBrowserAndServers } from './lib/browser.ts';
 import { serve, type Served } from './lib/serve.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const source = readFileSync(join(repo, 'styles', 'museum.css'), 'utf8').replace(/\r\n/g, '\n');
-const consumers = inject('consumers');
+const consumers = need('consumers');
 const frameworks: Framework[] = ['react', 'astro'];
 const variants = ['primary', 'secondary', 'outline'];
 const sizes = ['sm', 'md', 'lg'];

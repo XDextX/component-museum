@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright-core';
-import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { closeBrowserAndServers } from './lib/browser.ts';
 import { docLanguages, docsFile, docsId, exportedContracts, readText, sectionTitles } from './lib/gallery-pages.ts';
 import { serve, type Served } from './lib/serve.ts';
@@ -20,7 +21,7 @@ describe.each(docs)('the %s docs page language switch in the browser (spec 005, 
   let served: Served;
   let browser: Browser;
   beforeAll(async () => {
-    served = await serve(inject('gallery').storybook);
+    served = await serve(need('gallery').storybook);
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {

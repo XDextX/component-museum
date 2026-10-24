@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright-core';
-import { describe, expect, inject, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { serve } from './lib/serve.ts';
 
-const consumers = inject('consumers');
+const consumers = need('consumers');
 
 // T-5 smoke test: the served React SPA runs its module and renders the own-class Button.
 describe('serve and the own-class Button (spec 003, T-5)', { timeout: 60_000 }, () => {

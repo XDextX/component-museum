@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
-import { describe, expect, inject, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { atRules } from './lib/css.ts';
 import type { Framework } from './lib/paths.ts';
 import { fileInTarball } from './lib/tarball.ts';
@@ -15,7 +16,7 @@ describe('one CSS source, copied into each package when it is packed', () => {
   for (const framework of frameworks) {
     it(`ships styles/museum.css byte for byte as @component-museum/${framework}/styles.css`, () => {
       // The run's own tarball (spec 017 RF-1): the globalSetup packed it once, prepack included.
-      const shipped = fileInTarball(readFileSync(inject('tarballs')[framework].path), 'package/styles.css');
+      const shipped = fileInTarball(readFileSync(need('tarballs')[framework].path), 'package/styles.css');
       expect(shipped, 'styles.css is not in the tarball').toBeDefined();
       expect(shipped!.equals(source), 'the packed styles.css differs from styles/museum.css').toBe(true);
     });
