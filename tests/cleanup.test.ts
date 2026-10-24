@@ -189,3 +189,23 @@ describe('RF-10: reading the process list', () => {
     expect(parseProcesses('[]')).toEqual([]);
   });
 });
+
+describe('a folder that vanishes between the listing and the stat', () => {
+  it('is not removed, not counted and does not throw', () => {
+    const bare = folder('cm-gone0000', 25);
+    const profile = folder(`${PROFILE}gone`, 1);
+    // `now` runs right before the stat: a parallel run removes both folders there.
+    const result = cleanup({
+      temp,
+      isAlive: (pid) => alive.has(pid),
+      processes: () => [],
+      kill: () => {},
+      now: () => {
+        rmSync(bare, { recursive: true, force: true });
+        rmSync(profile, { recursive: true, force: true });
+        return Date.now();
+      },
+    });
+    expect(result).toEqual({ folders: [], edges: [], profiles: [] });
+  });
+});

@@ -104,7 +104,15 @@ const remove = (dir: string) => {
 export function cleanup(options: CleanupOptions): { folders: string[]; edges: number[]; profiles: string[] } {
   const { temp, isAlive, now = Date.now, maxAgeMs = 24 * 3_600_000, profileGraceMs = 120_000 } = options;
   const entries = readdirSync(temp, { withFileTypes: true }).filter((entry) => entry.isDirectory());
-  const ageOf = (dir: string) => now() - statSync(dir).mtimeMs;
+  // An entry that vanishes between the listing and the stat (a parallel run cleaned it) or cannot be read is never
+  // old: -Infinity keeps it, so a cleanup never stops a run.
+  const ageOf = (dir: string) => {
+    try {
+      return now() - statSync(dir).mtimeMs;
+    } catch {
+      return -Infinity;
+    }
+  };
 
   const folders = entries
     .filter((entry) => entry.name.startsWith('cm-'))
