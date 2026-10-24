@@ -19,11 +19,23 @@ function outputs() {
   return [join(repoRoot, 'gallery', 'astro-render', 'dist', 'index.html'), ...json];
 }
 
+/**
+ * The astro-render key, computed after copying styles/museum.css into both packages the way their prepack
+ * does. Without the copy, the key reads the stylesheet the previous run's prepack left, and the prepack of
+ * this run then changes it and the key (a second astro build).
+ */
+export function astroRenderKey(root = repoRoot) {
+  for (const name of ['react', 'astro']) {
+    execFileSync(process.execPath, [join(root, 'scripts', 'sync-styles.mjs')], { cwd: join(root, 'packages', name) });
+  }
+  const { files, extra } = astroRenderInputs();
+  return inputKey(root, files, extra);
+}
+
 /** Builds and extracts unless the stored build is still valid; records the phase under `phase`. */
 export async function ensureAstroRender(phase = 'gallery:astro') {
   const started = performance.now();
-  const { files, extra } = astroRenderInputs();
-  const result = await cached('astro-render', inputKey(repoRoot, files, extra), outputs(), async () => {
+  const result = await cached('astro-render', astroRenderKey(), outputs(), async () => {
     const run = (args) => execFileSync(process.execPath, args, { cwd: repoRoot, stdio: 'inherit' });
     run([join(repoRoot, 'node_modules', 'astro', 'bin', 'astro.mjs'), 'build', '--root', join(repoRoot, 'gallery', 'astro-render')]);
     run([join(repoRoot, 'gallery', 'scripts', 'extract-astro.mjs')]);
