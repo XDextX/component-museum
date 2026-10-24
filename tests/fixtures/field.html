@@ -132,6 +132,93 @@
       <label class="museum-field__label" for="cb-disabled-checked">Disabled checked</label>
       <p id="cb-disabled-checked-error" class="museum-field__error">Error</p>
     </div>
+    <fieldset id="rg-sm" class="museum-field museum-radiogroup museum-radiogroup--sm" role="radiogroup" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio small</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-sm-0" type="radio" class="museum-radio" name="rg-sm" value="0" />
+        <label for="rg-sm-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-sm-1" type="radio" class="museum-radio" name="rg-sm" value="1" checked />
+        <label for="rg-sm-1">Option B</label>
+      </div>
+    </fieldset>
+    <fieldset id="rg-md" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" aria-describedby="rg-md-hint" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio medium</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-md-0" type="radio" class="museum-radio" name="rg-md" value="0" />
+        <label for="rg-md-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-md-1" type="radio" class="museum-radio" name="rg-md" value="1" checked />
+        <label for="rg-md-1">Option B</label>
+      </div>
+      <p id="rg-md-hint" class="museum-field__hint">Radio hint</p>
+    </fieldset>
+    <fieldset id="rg-lg" class="museum-field museum-radiogroup museum-radiogroup--lg" role="radiogroup" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio large</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-lg-0" type="radio" class="museum-radio" name="rg-lg" value="0" />
+        <label for="rg-lg-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-lg-1" type="radio" class="museum-radio" name="rg-lg" value="1" checked />
+        <label for="rg-lg-1">Option B</label>
+      </div>
+    </fieldset>
+    <fieldset id="rg-error" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" aria-describedby="rg-error-error rg-error-hint" aria-invalid="true" aria-required="true" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio error<span class="museum-field__required" aria-hidden="true">*</span></legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-error-0" type="radio" class="museum-radio" name="rg-error" value="0" required />
+        <label for="rg-error-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-error-1" type="radio" class="museum-radio" name="rg-error" value="1" required checked />
+        <label for="rg-error-1">Option B</label>
+      </div>
+      <p id="rg-error-hint" class="museum-field__hint">Radio hint</p>
+      <p id="rg-error-error" class="museum-field__error">Radio error text</p>
+    </fieldset>
+    <fieldset id="rg-disabled" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" aria-describedby="rg-disabled-error" aria-invalid="true" disabled data-museum-radiogroup>
+      <legend class="museum-field__label">Radio disabled</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-disabled-0" type="radio" class="museum-radio" name="rg-disabled" value="0" />
+        <label for="rg-disabled-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-disabled-1" type="radio" class="museum-radio" name="rg-disabled" value="1" checked />
+        <label for="rg-disabled-1">Option B</label>
+      </div>
+      <p id="rg-disabled-error" class="museum-field__error">Radio error text</p>
+    </fieldset>
+    <fieldset id="rg-option" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio one option</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-option-0" type="radio" class="museum-radio" name="rg-option" value="0" />
+        <label for="rg-option-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-option-1" type="radio" class="museum-radio" name="rg-option" value="1" disabled />
+        <label for="rg-option-1">Option B disabled</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-option-2" type="radio" class="museum-radio" name="rg-option" value="2" />
+        <label for="rg-option-2">Option C</label>
+      </div>
+    </fieldset>
+    <div class="narrow" id="long-field-rg">
+    <fieldset id="rg-long" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio long</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-long-0" type="radio" class="museum-radio" name="rg-long" value="0" />
+        <label for="rg-long-0">A very long label that has to break into several lines on the right of the circle, which must stay on top of the first one xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-long-1" type="radio" class="museum-radio" name="rg-long" value="1" />
+        <label for="rg-long-1">Option B</label>
+      </div>
+    </fieldset>
+    </div>
     <div class="narrow">
       <div class="museum-field museum-field--inline" id="long-field-cb">
         <input id="cb-long" type="checkbox" class="museum-checkbox museum-checkbox--md" data-museum-checkbox />

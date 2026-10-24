@@ -11,7 +11,7 @@ const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const css = readFileSync(join(repo, 'styles', 'museum.css'), 'utf8').replace(/\r\n/g, '\n');
 const html = readFileSync(join(repo, 'tests', 'fixtures', 'field.html'), 'utf8').replace('<!-- museum.css -->', `<style>${css}</style>`);
 const sizes = ['sm', 'md', 'lg'];
-const tokens = ['control-bg', 'control-fg', 'control-border', 'control-placeholder', 'field-label', 'field-hint', 'field-error', 'checkbox-checked-bg', 'checkbox-mark'];
+const tokens = ['control-bg', 'control-fg', 'control-border', 'control-placeholder', 'field-label', 'field-hint', 'field-error', 'checkbox-checked-bg', 'checkbox-mark', 'radio-checked-bg', 'radio-mark'];
 
 // The five ways a page gets a theme (spec 011): it asks for light, dark or the system's, or asks for nothing and gets light.
 const modes = [
@@ -99,6 +99,19 @@ describe('every Checkbox rule reads only var(--museum-*) or a system color (spec
   it('has rules, among them the forced-colors ones', () => {
     expect(bodies.length).toBeGreaterThan(10);
     expect(bodies.some(({ decl }) => /^forced-color-adjust:\s*none$/.test(decl))).toBe(true);
+  });
+  it('has no literal color or length', () => {
+    expect(bodies.filter(({ decl }) => /#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(|\d(px|rem|em)\b/i.test(decl.replace(/var\([^)]*\)/g, '')))).toEqual([]);
+  });
+});
+
+describe('every RadioGroup rule reads only var(--museum-*) or a system color (spec 013)', () => {
+  const bodies = [...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter((m) => /\.museum-radio/.test(m[1]))
+    .flatMap((m) => m[2].split(';').map((d) => d.trim()).filter(Boolean).map((d) => ({ rule: m[1].trim(), decl: d })));
+  it('has rules, among them the forced-colors ones', () => {
+    expect(bodies.length).toBeGreaterThan(10);
+    expect(bodies.some(({ rule, decl }) => rule.includes('.museum-radio') && /^forced-color-adjust:\s*none$/.test(decl))).toBe(true);
   });
   it('has no literal color or length', () => {
     expect(bodies.filter(({ decl }) => /#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(|\d(px|rem|em)\b/i.test(decl.replace(/var\([^)]*\)/g, '')))).toEqual([]);
@@ -311,6 +324,177 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
       }
     }
     console.log('RF-13 forced borders', JSON.stringify(report));
+    const low = report.flatMap((r) => Object.entries(r)).filter(([, ratio]) => ratio < 3);
+    expect(low, JSON.stringify(report)).toEqual([]);
+  });
+
+  /** What a radio paints: its circle, its dot, and the surface under it (the group's own). */
+  const rd = (page: Page, id: string) =>
+    page.locator(`#${id}`).evaluate((el) => {
+      const s = getComputedStyle(el);
+      const dot = getComputedStyle(el, '::before');
+      return { border: s.borderTopColor, bg: s.backgroundColor, dot: dot.backgroundColor, scale: dot.transform, dotWidth: parseFloat(dot.width), radius: s.borderTopLeftRadius, surface: getComputedStyle(el.closest('.museum-field')!).backgroundColor };
+    });
+
+  for (const mode of modes) {
+    describe(`RadioGroup, ${mode.name}`, () => {
+      it('RF-10: the circle border is 3:1 against the surface, at rest and in error, and in error it is the error one', async () => {
+        const page = await open(mode);
+        for (const id of ['rg-md-0', 'rg-error-0', 'rg-disabled-0']) {
+          const p = await rd(page, id);
+          expect(contrastRatio(parseRgb(p.border), parseRgb(p.surface)), id).toBeGreaterThanOrEqual(3);
+          expect(p.radius, id).toBe('50%');
+        }
+        const [rest, error] = [await rd(page, 'rg-md-0'), await rd(page, 'rg-error-0')];
+        expect(error.border).not.toBe(rest.border);
+        expect(error.border).toBe(await page.locator('#rg-error-error').evaluate((el) => getComputedStyle(el).color));
+        await page.context().close();
+      });
+
+      it('RF-11: the dot is 3:1 against the checked circle, and the circle against the surface', async () => {
+        const page = await open(mode);
+        for (const id of ['rg-sm-1', 'rg-md-1', 'rg-lg-1', 'rg-error-1', 'rg-disabled-1']) {
+          const p = await rd(page, id);
+          expect(contrastRatio(parseRgb(p.dot), parseRgb(p.bg)), `${id} dot`).toBeGreaterThanOrEqual(3);
+          expect(contrastRatio(parseRgb(p.bg), parseRgb(p.surface)), `${id} circle`).toBeGreaterThanOrEqual(3);
+          expect(p.scale, `${id} dot is shown`).toBe('matrix(1, 0, 0, 1, 0, 0)');
+          expect(p.dotWidth, `${id} dot has a size`).toBeGreaterThanOrEqual(4);
+        }
+        // Unchecked, the dot is scaled away.
+        expect((await rd(page, 'rg-md-0')).scale).toBe('matrix(0, 0, 0, 0, 0, 0)');
+        await page.context().close();
+      });
+
+      it('RF-12: legend, labels, hint and error of every group (also the disabled with error) keep 4.5:1', async () => {
+        const page = await open(mode);
+        const texts = await visibleTexts(page);
+        const rated = texts.filter((t) => /Radio|Option|very long/.test(t.text)).map((t) => ({ text: t.text, ratio: contrastRatio(parseRgb(t.fg), parseRgb(t.bg)) }));
+        expect(rated.length).toBeGreaterThan(15);
+        expect(rated.filter((r) => r.ratio < 4.5)).toEqual([]);
+        await page.context().close();
+      });
+
+      it('RF-13: circle and label together measure at least 24 x 24 px in every size', async () => {
+        const page = await open(mode);
+        for (const id of ['rg-sm-0', 'rg-sm-1', 'rg-md-0', 'rg-lg-0', 'rg-lg-1']) {
+          const box = await page.evaluate((i) => {
+            const a = document.getElementById(i)!.getBoundingClientRect();
+            const b = document.querySelector(`label[for="${i}"]`)!.getBoundingClientRect();
+            return { w: Math.max(a.right, b.right) - Math.min(a.left, b.left), h: Math.max(a.bottom, b.bottom) - Math.min(a.top, b.top) };
+          }, id);
+          expect(box.w, id).toBeGreaterThanOrEqual(24);
+          expect(box.h, id).toBeGreaterThanOrEqual(24);
+        }
+        await page.context().close();
+      });
+
+      it('RF-14: the focus ring is 3:1 around the circle, and in error the border stays the error one', async () => {
+        const page = await open(mode);
+        await page.keyboard.press('Tab');
+        for (const id of ['rg-md-0', 'rg-error-0', 'rg-error-1']) {
+          await page.locator(`#${id}`).focus();
+          const ring = await page.evaluate(() => {
+            const el = document.activeElement as HTMLElement;
+            const s = getComputedStyle(el);
+            return { id: el.id, visible: el.matches(':focus-visible'), color: s.outlineColor, width: parseFloat(s.outlineWidth), style: s.outlineStyle, offset: parseFloat(s.outlineOffset), border: s.borderTopColor, surface: getComputedStyle(el.closest('.museum-field')!).backgroundColor };
+          });
+          expect(ring.id).toBe(id);
+          expect(ring.visible, id).toBe(true);
+          expect(ring.style, id).not.toBe('none');
+          expect(ring.width, id).toBeGreaterThanOrEqual(2);
+          expect(ring.offset, id).toBeGreaterThan(0);
+          expect(contrastRatio(parseRgb(ring.color), parseRgb(ring.surface)), id).toBeGreaterThanOrEqual(3);
+          if (id.startsWith('rg-error')) {
+            const error = await page.locator('#rg-error-error').evaluate((el) => getComputedStyle(el).color);
+            expect(ring.border, id).toBe(error);
+          }
+        }
+        await page.context().close();
+      });
+
+      it('a long label breaks on the right of the circle, which sits on its first line, with no overflow', async () => {
+        const page = await open(mode, 800);
+        const box = await page.evaluate(() => {
+          const field = document.getElementById('long-field-rg')!;
+          const input = document.getElementById('rg-long-0')!.getBoundingClientRect();
+          const labelEl = document.querySelector('label[for="rg-long-0"]')!;
+          const label = labelEl.getBoundingClientRect();
+          return { field: field.getBoundingClientRect().width, scroll: field.scrollWidth, height: label.height, line: parseFloat(getComputedStyle(labelEl).lineHeight), top: input.top - label.top, h: input.height };
+        });
+        expect(box.field).toBe(320);
+        expect(box.scroll).toBeLessThanOrEqual(320);
+        expect(box.height).toBeGreaterThan(box.line * 1.5);
+        expect(box.top + box.h / 2).toBeCloseTo(box.line / 2, 0);
+        await page.context().close();
+      });
+    });
+  }
+
+  it('RF-14: with focus, the ring box of the circle leaves at least 2 px before its label, in every size (the Checkbox gap is the same)', async () => {
+    const page = await open(modes[2]);
+    await page.keyboard.press('Tab');
+    for (const id of ['rg-sm-0', 'rg-md-0', 'rg-lg-0', 'cb-md']) {
+      await page.locator(`#${id}`).focus();
+      const gap = await page.evaluate((i) => {
+        const el = document.getElementById(i)!;
+        const s = getComputedStyle(el);
+        const reach = parseFloat(s.outlineOffset) + parseFloat(s.outlineWidth);
+        return { visible: el.matches(':focus-visible'), gap: document.querySelector(`label[for="${i}"]`)!.getBoundingClientRect().left - (el.getBoundingClientRect().right + reach) };
+      }, id);
+      expect(gap.visible, id).toBe(true);
+      expect(gap.gap, id).toBeGreaterThanOrEqual(2);
+    }
+    await page.context().close();
+  });
+
+  it('the options of a group stack in a column, and the legend sits above them', async () => {
+    const page = await open(modes[2]);
+    const pos = await page.evaluate(() => {
+      const top = (e: Element) => e.getBoundingClientRect().top;
+      const g = document.getElementById('rg-md')!;
+      return { legend: top(g.querySelector('legend')!), a: top(document.getElementById('rg-md-0')!), b: top(document.getElementById('rg-md-1')!), hint: top(document.getElementById('rg-md-hint')!), border: getComputedStyle(g).borderTopWidth };
+    });
+    expect(pos.border).toBe('0px');
+    expect(pos.legend).toBeLessThan(pos.a);
+    expect(pos.a).toBeLessThan(pos.b);
+    expect(pos.b).toBeLessThan(pos.hint);
+    await page.context().close();
+  });
+
+  it('RF-15: with forced colors, the checked circle and the unchecked one differ, the dot differs from its circle, also in error', async () => {
+    for (const mode of [modes[0], modes[3]]) {
+      const page = await (await browser.newContext({ colorScheme: mode.scheme, forcedColors: 'active', viewport: { width: 1024, height: 900 } })).newPage();
+      await page.setContent(html);
+      if (mode.attribute) await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), mode.attribute);
+      for (const group of ['rg-sm', 'rg-md', 'rg-lg', 'rg-error']) {
+        const off = await rd(page, `${group}-0`);
+        const on = await rd(page, `${group}-1`);
+        expect(on.bg, `${group} checked vs unchecked fill`).not.toBe(off.bg);
+        expect(on.dot, `${group} dot vs its circle`).not.toBe(on.bg);
+        expect(on.scale, `${group} dot shown`).toBe('matrix(1, 0, 0, 1, 0, 0)');
+        expect(off.border, `${group} border vs the canvas`).not.toBe(off.bg);
+      }
+      await page.context().close();
+    }
+  });
+
+  it('RF-15: with forced colors, every circle border is 3:1 against what surrounds it, and an unchecked one against its own fill, the error ones included', async () => {
+    const report: Record<string, number>[] = [];
+    for (const scheme of ['light', 'dark'] as const) {
+      for (const theme of ['light', 'dark']) {
+        const page = await (await browser.newContext({ colorScheme: scheme, forcedColors: 'active', viewport: { width: 1024, height: 900 } })).newPage();
+        await page.setContent(html);
+        await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme);
+        for (const id of ['rg-md-0', 'rg-error-0', 'rg-md-1', 'rg-error-1']) {
+          const box = await rd(page, id);
+          const around = contrastRatio(parseRgb(box.border), parseRgb(box.surface));
+          const own = id.endsWith('-1') ? Infinity : contrastRatio(parseRgb(box.border), parseRgb(box.bg));
+          report.push({ [`${scheme}/${theme} ${id} around`]: +around.toFixed(2), [`${scheme}/${theme} ${id} own`]: +own.toFixed(2) });
+        }
+        await page.context().close();
+      }
+    }
+    console.log('RF-15 forced borders', JSON.stringify(report));
     const low = report.flatMap((r) => Object.entries(r)).filter(([, ratio]) => ratio < 3);
     expect(low, JSON.stringify(report)).toEqual([]);
   });
