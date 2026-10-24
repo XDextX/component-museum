@@ -1,7 +1,8 @@
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { argTypesFromContract, astroCases, defaultSummary, exampleText, usageSnippet } from '../gallery/lib/contract-args.ts';
+import { argTypesFromContract, astroCases, defaultSummary, exampleOptions, exampleText, usageSnippet } from '../gallery/lib/contract-args.ts';
 import { loadContract, type Contract } from './lib/contract.ts';
+import { casesOf } from './lib/gallery-browser.ts';
 
 const button = loadContract(resolve(import.meta.dirname, '..', 'contracts/button.contract.json'));
 const example = { 'my-button': '.my-button { color: red; }' };
@@ -16,6 +17,25 @@ const input: Contract = {
     size: { type: 'enum', values: ['sm', 'md', 'lg'], default: 'md' },
     disabled: { type: 'boolean', default: false },
     required: { type: 'boolean', default: false },
+  },
+  events: [],
+  content: false,
+  classProp: true,
+};
+
+// In memory on purpose: the RadioGroup contract file belongs to another task (spec 013).
+const radiogroup: Contract = {
+  name: 'RadioGroup',
+  props: {
+    label: { type: 'string', required: true },
+    name: { type: 'string', required: true },
+    options: { type: 'options', required: true },
+    hint: { type: 'string', default: '' },
+    error: { type: 'string', default: '' },
+    size: { type: 'enum', values: ['sm', 'md', 'lg'], default: 'md' },
+    disabled: { type: 'boolean', default: false },
+    required: { type: 'boolean', default: false },
+    defaultValue: { type: 'string', default: '' },
   },
   events: [],
   content: false,
@@ -138,5 +158,72 @@ describe('text props (spec 009, RF-1)', () => {
     expect(cases[3].props).toEqual({ label: 'Label', type: 'email' });
     expect(cases[11].props).toEqual({ label: 'Label', disabled: true });
     expect(cases[13].props).toEqual({ label: 'Label', hint: 'Hint', error: 'Error' });
+  });
+});
+
+describe('options props (spec 013, RF-1)', () => {
+  it('gives the three example options', () => {
+    expect(exampleOptions()).toEqual([
+      { value: 'a', label: 'Option A' },
+      { value: 'b', label: 'Option B' },
+      { value: 'c', label: 'Option C' },
+    ]);
+  });
+
+  it('gives options an object control and no default', () => {
+    const types = argTypesFromContract(radiogroup, {});
+    expect(types.options.control).toEqual({ type: 'object' });
+    expect(types.options.table).toBeUndefined();
+    expect(defaultSummary(radiogroup.props.options)).toBeUndefined();
+  });
+
+  it('writes options={[…]} with the example options, in React and in Astro', () => {
+    const args = { label: 'Plan', name: 'plan', options: exampleOptions() };
+    const list = "options={[{ value: 'a', label: 'Option A' }, { value: 'b', label: 'Option B' }, { value: 'c', label: 'Option C' }]}";
+    expect(usageSnippet('react', args, radiogroup)).toContain(`<RadioGroup label="Plan" name="plan" ${list} />`);
+    expect(usageSnippet('astro', args, radiogroup)).toContain(`<RadioGroup label="Plan" name="plan" ${list} />`);
+  });
+
+  it('writes disabled in an option that has it', () => {
+    const args = { label: 'Plan', name: 'plan', options: [{ value: 'a', label: 'A', disabled: true }] };
+    expect(usageSnippet('react', args, radiogroup)).toContain("options={[{ value: 'a', label: 'A', disabled: true }]}");
+  });
+
+  it('gives the 9 Astro cases of a RadioGroup contract, the options in each, defaultValue naming an option', () => {
+    const cases = astroCases(radiogroup);
+    expect(cases.map((c) => c.id)).toEqual([
+      'default', 'hint', 'error', 'size-sm', 'size-lg', 'disabled', 'required', 'defaultValue', 'hint-error',
+    ]);
+    const base = { label: 'Label', name: 'Name', options: exampleOptions() };
+    expect(cases[0].props).toEqual(base);
+    expect(cases[5].props).toEqual({ ...base, disabled: true });
+    expect(cases[7].props).toEqual({ ...base, defaultValue: 'b' });
+    expect(cases[8].props).toEqual({ ...base, hint: 'Hint', error: 'Error' });
+  });
+
+  it('leaves the cases of the contracts without options as they were', () => {
+    expect(astroCases(button)).toHaveLength(6);
+    expect(astroCases(input)).toHaveLength(14);
+    for (const name of ['textarea', 'checkbox']) {
+      const ids = astroCases(loadContract(resolve(import.meta.dirname, '..', `contracts/${name}.contract.json`))).map((c) => c.id);
+      expect(ids.join()).toBe(name === 'textarea' ? 'default,hint,error,size-sm,size-lg,disabled,required,hint-error' : 'default,hint,error,size-sm,size-lg,disabled,required,defaultChecked,hint-error');
+    }
+  });
+
+  it('gives the story an options case that is not the example and checks it is shown', () => {
+    const c = casesOf(radiogroup).find((x) => x.arg.startsWith('options'))!;
+    expect(c.arg).not.toContain('Option A');
+    const rendered = { classes: [], attributes: {}, text: '', shown: 'Plan Other', error: false, checked: [], names: [] };
+    expect(c.shows(rendered)).toBe(true);
+    expect(c.shows({ ...rendered, shown: 'Plan Option A' })).toBe(false);
+  });
+
+  it('checks the name and the default value in the radios, not in the text', () => {
+    const rendered = { classes: [], attributes: {}, text: '', shown: '', error: false, checked: ['b'], names: ['Name'] };
+    const by = (prefix: string) => casesOf(radiogroup).find((x) => x.arg.startsWith(prefix))!;
+    expect(by('name:').shows(rendered)).toBe(true);
+    expect(by('name:').shows({ ...rendered, names: [] })).toBe(false);
+    expect(by('defaultValue:').shows(rendered)).toBe(true);
+    expect(by('defaultValue:').shows({ ...rendered, checked: [] })).toBe(false);
   });
 });

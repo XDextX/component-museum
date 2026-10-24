@@ -98,6 +98,38 @@ describe('expectedApi with text props', () => {
   });
 });
 
+describe('options props (spec 013, RF-1)', () => {
+  // In memory on purpose: the RadioGroup contract file belongs to another task.
+  const group: Contract = {
+    name: 'Group',
+    props: { label: { type: 'string', required: true }, options: { type: 'options', required: true } },
+    events: [],
+    content: false,
+    classProp: true,
+  };
+  const groupType = (options: string) => `export type GroupProps = { label: string; ${options}; className?: string };`;
+  const check = (options: string) =>
+    diffApi(expectedApi(group, 'react'), declaredProps('virtual-group.tsx', 'GroupProps', groupType(options)).own);
+
+  it('translates a required options prop to options!', () => {
+    expect(expectedApi(group, 'react')).toEqual({ label: 'string!', options: 'options!', className: 'any' });
+    expect(expectedApi(group, 'astro')).toMatchObject({ options: 'options!', class: 'any' });
+  });
+
+  it('accepts a required list of { value, label, disabled? }', () => {
+    expect(check('options: { value: string; label: string; disabled?: boolean }[]')).toEqual([]);
+    expect(check('options: Array<{ value: string; label: string }>')).toEqual([]);
+  });
+
+  it('flags an optional list, a list of another shape and another type', () => {
+    expect(check('options?: { value: string; label: string }[]')).toHaveLength(1);
+    expect(check('options: { value: string }[]')).toHaveLength(1);
+    expect(check('options: { value: string; label: string; extra: string }[]')).toHaveLength(1);
+    expect(check('options: string[]')).toHaveLength(1);
+    expect(check('options: string')).toHaveLength(1);
+  });
+});
+
 describe('problems', () => {
   const c = (name: string) => ({ file: `${name}.contract.json`, name });
 
