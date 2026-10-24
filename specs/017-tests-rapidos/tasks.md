@@ -80,7 +80,7 @@ paralelo. Quién toca cada archivo compartido:
   importar los `.mjs` desde TypeScript; las fases del `globalSetup` se llaman `globalSetup: <fase>` y
   `phases.json` no se limpia entre ejecuciones (lo hará `scripts/test.mjs`, T-6).
 
-- [ ] **T-3 — Un empaquetado por paquete, el mismo tarball en todos**
+- [x] **T-3 — Un empaquetado por paquete, el mismo tarball en todos**
   Cubre: RF-1
   Archivos: `tests/global-setup.ts` (empaqueta al principio, `provide('tarballs')`),
   `tests/lib/consumer.ts` (`installPackage` con tarballs), `tests/packages.test.ts`,
@@ -95,6 +95,13 @@ paralelo. Quién toca cada archivo compartido:
   ahora leído del tarball de la ejecución.
 
   Va en la ola 3 junto a la T-6: no comparten archivos.
+  Nota: hecha. El `globalSetup` empaqueta al principio react, astro, `test-package` y el no declarado, cada uno
+  una vez y en su carpeta (`cm-<runId>-pack/<nombre>`), y los expone con `provide('tarballs')`; `phases.json` da
+  4 fases `pack` y ninguna `prepack` aparte. `installPackage` y `createConsumer` reciben tarballs. Lista de
+  archivos del tarball por lectura de cabeceras (`tests/lib/tarball.ts`, `node:zlib`), no `tar.exe`. Tests: de 845
+  a 848 (`tarballFiles`, un `pack` por paquete, y el tarball instalado en cada consumidor). Inyección vista en
+  rojo: `tsconfig.build.json` en `files` de `packages/react` pone en rojo `packages.test.ts` (RF-2). El test de
+  «clon limpio» de `packages.test.ts` conserva su `npm pack --dry-run` propio: prueba justo el pack sin `dist/`.
 
 - [ ] **T-4 — Consumidores guardados entre ejecuciones, con los tarballs nuevos**
   Cubre: RF-5, RF-6
