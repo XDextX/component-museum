@@ -251,7 +251,7 @@ arranque y de informe que arriba. Además:
   - `scripts/test.mjs`: solo la T-10;
   - `gallery/scripts/astro-cached.mjs`: solo la T-9.
 
-- [ ] **T-9 — Una sola build de `astro-render` también tras tocar la hoja**
+- [x] **T-9 — Una sola build de `astro-render` también tras tocar la hoja**
   Cubre: RF-3, RF-4 (el fallo de la T-8)
   Archivos: `gallery/scripts/astro-cached.mjs` (ejecuta `scripts/sync-styles.mjs` de los dos
   paquetes antes de calcular la clave), `tests/astro-render-key.test.ts` (nuevo)
@@ -264,6 +264,13 @@ arranque y de informe que arriba. Además:
     carpeta temporal: la clave cambia tras la copia, y no antes.
   Inyección: quitar la llamada a `sync-styles` vuelve a dar dos builds tras tocar la hoja y pone en
   rojo `phases.test.ts`, y el test nuevo.
+  Nota: hecha. `astro-cached.mjs` exporta `astroRenderKey(root)`, que ejecuta `scripts/sync-styles.mjs`
+  en `packages/react` y `packages/astro` y luego calcula la clave; `ensureAstroRender` la usa (más su
+  declaración en `astro-cached.d.mts`). Tests: 893 antes, 894 después (el nuevo
+  `tests/astro-render-key.test.ts`, que prueba la clave con una raíz temporal y una hoja vieja en los dos
+  paquetes). Tras un byte de `styles/museum.css` sin `build:packages`, un solo `npm test` sale en 0 con
+  `gallery:astro` «construido» y `globalSetup: astro-render` «acierto». Inyección (el bucle sin paquetes) en
+  rojo: `phases.test.ts` y el test nuevo.
 
 - [x] **T-10 — Los pasos de tipos de `npm test`, en paralelo**
   Cubre: NFR de objetivo
