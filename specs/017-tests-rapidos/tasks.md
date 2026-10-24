@@ -363,7 +363,7 @@ arranque y de informe que arriba. Además:
   Inyección: declarar el módulo en el consumidor guardado, antes del primer build, pone en rojo el
   primer paso en los dos frameworks.
 
-- [ ] **T-14 — `gallery-browser` partido por componente**
+- [x] **T-14 — `gallery-browser` partido por componente**
   Cubre: NFR de objetivo
   Archivos: `tests/lib/gallery-browser.ts` (el cuerpo de hoy), un archivo
   `tests/gallery-browser-<componente>.test.ts` por contrato con historia React, y
@@ -377,6 +377,15 @@ arranque y de informe que arriba. Además:
   una prop en la historia de Input pone en rojo su archivo.
 
   Va en la ola 10 junto a la T-13: no comparten archivos.
+  Nota: hecha. El cuerpo vive en `tests/lib/gallery-browser.ts` (renombrado con `git mv`): `defineGalleryBrowser(componente,
+  storybook)` para el bloque RF-4 de un componente y `defineExampleClasses(storybook)` para los bloques de clases de
+  ejemplo (el «offers … example class» y el RF-9). Cada `tests/gallery-browser-{button,checkbox,input,textarea,classes}.test.ts`
+  llama a `need('gallery')` él mismo, así que `splitTests` los manda a `e2e` sin tocar `projects.ts`. `tests/projects.test.ts`
+  tiene dos tests nuevos al final: los `gallery-browser-*` están en `e2e` y piden `gallery`, y hay un archivo por contrato
+  con historia React (el test como dato). Nombres de `it` (JSON de Vitest) antes y después: 20 y 20, listas idénticas.
+  Inyecciones: quitar `tests/gallery-browser-textarea.test.ts` pone en rojo el test como dato; una historia de Input que
+  ignora sus args (`render: () => <Input label="Email" />`) pone en rojo los dos `it` de `gallery-browser-input` y deja en
+  verde el de Button; las dos revertidas por ruta.
 
 - [ ] **T-15 — `theme` por framework y `gallery-story-theme` por historia**
   Cubre: NFR de objetivo
