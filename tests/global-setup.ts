@@ -9,6 +9,7 @@ import type { TestProject } from 'vitest/node';
 import { ensureAstroRender } from '../gallery/scripts/astro-cached.mjs';
 import { cached, inputKey, recordPhase, storybookInputs } from '../scripts/cache.mjs';
 import { buildConsumerAsync, cachedStarter, createConsumer, npmCli, packPackage, type Tarball } from './lib/consumer.ts';
+import { cleanup, isAlive, killTree, listProcesses, writeOwner } from './lib/cleanup.ts';
 import { acquireLock } from './lib/lock.ts';
 import { consumerDir, type Framework } from './lib/paths.ts';
 import type { RunResult } from './lib/run.ts';
@@ -129,6 +130,13 @@ export default async function setup(project: TestProject): Promise<() => void> {
   // Before any consumer exists, so whatever creating them changes in the repo shows in RF-6.
   project.provide('treeBefore', takeSnapshot(repo, snapshotRoots));
   const base = tmpdir();
+  // Spec 017 RF-10: before this run's folders exist, clear what runs that died left; a live run (this checkout's or another's) is not touched.
+  await phase('cleanup', async () => {
+    const gone = cleanup({ temp: base, isAlive, processes: listProcesses, kill: killTree });
+    if (gone.folders.length + gone.edges.length + gone.profiles.length > 0) {
+      console.log(`[museum] cleanup: ${gone.folders.length} cm-* folders, ${gone.edges.length} Edge, ${gone.profiles.length} profiles of dead runs`);
+    }
+  });
   const guardRunId = `${runId}-guard`;
   const guardParent = join(base, `cm-${guardRunId}`);
   const packageRunId = `${runId}-pkg`;
@@ -136,6 +144,8 @@ export default async function setup(project: TestProject): Promise<() => void> {
   const starterParent = join(base, `cm-${runId}-starter`);
   const packParent = join(base, `cm-${runId}-pack`);
   const created = [join(base, `cm-${runId}`), guardParent, join(base, `cm-${packageRunId}`), join(base, `cm-${tailwindRunId}`), starterParent, packParent];
+  // Each folder names its owner, so a later run can tell this run's leftovers from a live run's.
+  created.forEach((dir) => writeOwner(dir, { runId, pid: process.pid }));
   const teardown = () => {
     created.forEach((dir) => rmSync(dir, { recursive: true, force: true }));
     releaseLock();
