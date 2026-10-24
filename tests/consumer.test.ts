@@ -52,7 +52,8 @@ describe('external consumer (RF-4)', () => {
   });
 });
 
-// The RF-5 block lives in consumer-undeclared.test.ts, which modifies the guarded consumers; this reads them untouched.
+// The RF-5 block and the byte check of the RF-5 guarded consumers live in consumer-undeclared.test.ts, the only file
+// that touches the RF-5 guarded consumers: it modifies them, so reading them here would race with it.
 describe('the installed packages are the run\'s tarballs (spec 017, RF-6)', () => {
   const tarballs = need('tarballs');
   const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
@@ -61,10 +62,10 @@ describe('the installed packages are the run\'s tarballs (spec 017, RF-6)', () =
     { label: `plain ${framework}`, dir: consumers.plain[framework], packed: [tarballs.testPackage, tarballs[framework]] },
     { label: `002 guarded ${framework}`, dir: consumers.packageGuarded[framework], packed: [tarballs.testPackage, tarballs[framework]] },
     { label: `tailwind ${framework}`, dir: consumers.tailwind[framework], packed: [tarballs.testPackage, tarballs[framework]] },
-    { label: `RF-5 guarded ${framework}`, dir: consumers.guarded[framework], packed: [tarballs.undeclaring] },
   ]);
 
-  it('covers the 8 consumers', () => expect(installs).toHaveLength(8));
+  // 8 consumers in all; the RF-5 guarded ones (one per framework) are checked in consumer-undeclared.test.ts.
+  it('covers the 8 consumers', () => expect(installs).toHaveLength(8 - frameworks.length));
 
   for (const { label, dir, packed } of installs) {
     // Every file, not only package.json and dist/index.js: the barrel does not change when a component does.
