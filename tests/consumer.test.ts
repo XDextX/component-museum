@@ -84,7 +84,8 @@ describe('undeclared module (RF-5)', { timeout: 300_000 }, () => {
       const json = JSON.parse(readFileSync(manifest, 'utf8'));
       json.dependencies = { 'museum-undeclared': `file:${undeclaredTarball.path}` };
       writeFileSync(manifest, JSON.stringify(json, null, 2));
-      await installPackage(dir, declaring);
+      // This copy's manifest is rewritten here, so it is the one package packed outside the globalSetup.
+      await installPackage(dir, await packPackage(declaring, join(consumers.guardParent, `pack-declaring-${framework}`)));
       const declared = buildConsumer(dir);
       expect(declared.code, declared.output).toBe(0);
     });

@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { loadContract } from './contract.ts';
@@ -35,8 +35,8 @@ export type ConsumerOptions = {
   guardResolution?: boolean;
   /** A starter already scaffolded by `scaffold`, copied instead of running the starter again. */
   starter?: string;
-  /** Framework packages installed with the test package; the entry then renders Button from them. */
-  packages?: string[];
+  /** Framework package tarballs installed with the test package; the entry then renders Button from them. */
+  packages?: Tarball[];
   /** Spec 003 T-7: Tailwind v4 in the consumer, with one page per import order (see `tailwindPages`). */
   tailwind?: boolean;
 };
@@ -74,21 +74,21 @@ export async function scaffold(parent: string, framework: Framework): Promise<st
   return dir;
 }
 
+/** A packed package: its name and the .tgz that `npm pack` wrote. */
+export type Tarball = { name: string; path: string };
+
 /** Packs `packageDir` into `destination` and returns the package name and the tarball path. */
-export async function packPackage(packageDir: string, destination: string): Promise<{ name: string; path: string }> {
+export async function packPackage(packageDir: string, destination: string): Promise<Tarball> {
   mkdirSync(destination, { recursive: true });
   const [packed] = JSON.parse(await npm(['pack', packageDir, '--json', '--pack-destination', destination], destination, `npm pack failed for ${packageDir}`));
   return { name: packed.name, path: join(destination, packed.filename) };
 }
 
-/** Packs each package next to the consumer, never inside the repo, and installs the tarballs at once. */
-export async function installPackage(dir: string, ...packageDirs: string[]): Promise<string[]> {
-  // One pack folder per consumer: two consumers installing at once never share a tarball.
-  const destination = join(dirname(dir), `pack-${basename(dir)}`);
-  const packed = await Promise.all(packageDirs.map((packageDir) => packPackage(packageDir, destination)));
+/** Installs already packed tarballs at once (spec 017 RF-1: the run packs each package once, never here). */
+export async function installPackage(dir: string, ...tarballs: Tarball[]): Promise<string[]> {
   // No --prefer-offline: with it npm trusts stale cached metadata and misses the starter's versions.
-  await npm(['install', '--no-audit', '--no-fund', ...packed.map((p) => p.path)], dir, `npm install failed in ${dir}`);
-  return packed.map((p) => p.name);
+  await npm(['install', '--no-audit', '--no-fund', ...tarballs.map((t) => t.path)], dir, `npm install failed in ${dir}`);
+  return tarballs.map((t) => t.name);
 }
 
 /** Runs the consumer's own build script. */
@@ -277,10 +277,10 @@ function guardResolution(framework: Framework, dir: string, names: string[]): vo
 
 /**
  * Creates `<base>/cm-<runId>/<framework>` from its pinned starter, from scratch, and installs the
- * package at `packageDir` packed as a tarball, the way a consumer outside the repo gets it. The
+ * package from `tarball`, the way a consumer outside the repo gets it. The
  * starter's config stays untouched unless `guardResolution` adds the RF-5 resolution guard.
  */
-export async function createConsumer(base: string, runId: string, framework: Framework, packageDir: string, options: ConsumerOptions = {}): Promise<string> {
+export async function createConsumer(base: string, runId: string, framework: Framework, tarball: Tarball, options: ConsumerOptions = {}): Promise<string> {
   const dir = consumerDir(base, runId, framework);
   if (options.starter) {
     if (existsSync(dir)) rmSync(dir, { recursive: true });
@@ -289,7 +289,7 @@ export async function createConsumer(base: string, runId: string, framework: Fra
     await scaffold(dirname(dir), framework);
   }
   const packages = options.packages ?? [];
-  const [name, ...frameworkPackages] = await installPackage(dir, packageDir, ...packages);
+  const [name, ...frameworkPackages] = await installPackage(dir, tarball, ...packages);
   importPackage(framework, dir, name);
   if (options.tailwind) {
     // Pinned (plan 003): a new Tailwind release never changes the suite.
