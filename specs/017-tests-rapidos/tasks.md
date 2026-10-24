@@ -238,6 +238,134 @@ paralelo. Quién toca cada archivo compartido:
   ejecución tras cambiar `styles/museum.css` (doble build de `astro-render`). Las tablas, en la sección
   «Después» de `notes.md`.
 
+## Segunda ronda (decisión del dueño, 2026-10-24)
+
+«Arregla el fallo de astro-render y añade a la 017 tareas para bajar los tests de navegador y los
+builds de consumidores, hasta llegar al 50 %.» Plan, sección «Segunda ronda». Mismas reglas de
+arranque y de informe que arriba. Además:
+- **Ningún caso se quita ni se afloja:** cada tarea que parte un archivo compara la lista de nombres
+  de `it` antes y después (los mismos, y el mismo número), y reproduce una inyección del archivo.
+- **No más de dos tareas con `npm test` a la vez**, para no tumbar archivos por carga.
+- **Quién toca cada archivo compartido:**
+  - `tests/global-setup.ts` y `tests/lib/consumer.ts`: solo la T-11;
+  - `scripts/test.mjs`: solo la T-10;
+  - `gallery/scripts/astro-cached.mjs`: solo la T-9.
+
+- [ ] **T-9 — Una sola build de `astro-render` también tras tocar la hoja**
+  Cubre: RF-3, RF-4 (el fallo de la T-8)
+  Archivos: `gallery/scripts/astro-cached.mjs` (ejecuta `scripts/sync-styles.mjs` de los dos
+  paquetes antes de calcular la clave), `tests/astro-render-key.test.ts` (nuevo)
+  Hecho cuando:
+  - Tras cambiar `styles/museum.css` sin `build:packages`, una sola ejecución construye
+    `astro-render` una vez y `phases.test.ts` sale en verde a la primera.
+  - El build lee la hoja de esta ejecución: `packages/astro/styles.css` es igual, byte a byte, a
+    `styles/museum.css` cuando se calcula la clave.
+  - `tests/astro-render-key.test.ts` lo comprueba como dato, con una hoja copiada vieja en una
+    carpeta temporal: la clave cambia tras la copia, y no antes.
+  Inyección: quitar la llamada a `sync-styles` vuelve a dar dos builds tras tocar la hoja y pone en
+  rojo `phases.test.ts`, y el test nuevo.
+
+- [ ] **T-10 — Los pasos de tipos de `npm test`, en paralelo**
+  Cubre: NFR de objetivo
+  Archivos: `scripts/test.mjs` (`gallery:astro` primero; luego los dos `tsc` y los tres
+  `astro check` a la vez; luego `vitest`), `tests/test-runner.test.ts`
+  Hecho cuando:
+  - Un error de tipos en cualquiera de los cinco pasos sigue cortando antes de Vitest, con el
+    código de salida de ese paso. Si fallan varios, el código es distinto de 0 y la salida nombra
+    cada uno.
+  - La tabla de fases da cada paso con su tiempo, y el bloque paralelo con el suyo.
+  - `tests/test-runner.test.ts` lo prueba como dato, con pasos falsos (uno lento, uno que falla).
+  - Los cinco pasos tardan, juntos, ≤ 6 s en la máquina de la T-8 (eran 14.3 s en serie).
+  Inyección: un error de tipos en `tests/`, con el bloque paralelo, pone `npm test` en distinto de 0
+  sin llegar a Vitest.
+
+  Va en la ola 8 junto a la T-9: no comparten archivos.
+
+- [ ] **T-11 — Builds de consumidores guardados, y cada consumidor en su cadena**
+  Cubre: RF-5, RF-6 (los builds), NFR de objetivo
+  Archivos: `tests/global-setup.ts` (una cadena por consumidor: restaurar, instalar tarballs, build
+  y type check; todas en paralelo), `tests/lib/consumer.ts` (build guardado por clave),
+  `tests/consumer-cache.test.ts`
+  Hecho cuando:
+  - La clave de un build es la del consumidor (T-4) más el `sha256` de los tarballs que tiene
+    instalados. Si hay acierto, se restaura la salida (`dist/`) en lugar de construir.
+  - Con un byte distinto en un tarball, el build se rehace.
+  - Los type checks (`checkButtonTypes`, 002 RF-5) se ejecutan siempre, nunca desde la caché, y
+    siguen fallando con `variant="nope"`.
+  - El `globalSetup` sin cambios baja de unos 35 s a ≤ 20 s (la fase de cada cadena, en la tabla).
+  - `consumer.test.ts` (RF-3 y RF-6) sigue en verde sin cambiar sus casos.
+  Inyección: guardar el build con una clave sin los tarballs reutiliza un `dist/` viejo tras cambiar
+  un componente, y pone en rojo el caso de `consumer-cache.test.ts` que lo comprueba.
+
+- [ ] **T-12 — `field-a11y` partido por `kind`**
+  Cubre: NFR de objetivo
+  Archivos: `tests/lib/field-a11y.ts` (el cuerpo de hoy, como `defineFieldA11y(kind)`);
+  `tests/field-a11y.test.ts` pasa a `tests/field-a11y-input.test.ts`,
+  `tests/field-a11y-textarea.test.ts` y `tests/field-a11y-checkbox.test.ts`
+  Hecho cuando:
+  - Los tres archivos dan, juntos, la misma lista de nombres de `it` que el de hoy, y el mismo
+    número de tests.
+  - Cada archivo tarda ≤ 30 s.
+  - Caen en el proyecto `e2e` (usan `inject`).
+  Inyección: la 009 RF-2 de la T-8 (sin `htmlFor` en `field.tsx`) pone en rojo RF-2 en los tres
+  archivos.
+
+  Va en la ola 9 junto a la T-11: no comparten archivos.
+
+- [ ] **T-13 — El RF-5 de los consumidores, en su archivo y en paralelo**
+  Cubre: NFR de objetivo
+  Archivos: `tests/consumer.test.ts` (sin el bloque «undeclared module (RF-5)»),
+  `tests/consumer-undeclared.test.ts` (nuevo: el bloque, con React y Astro a la vez y
+  `buildConsumerAsync` en lugar de `buildConsumer`)
+  Hecho cuando:
+  - Los dos archivos dan, juntos, la misma lista de nombres de `it` que el de hoy.
+  - En cada framework se siguen viendo los tres pasos: falla con el módulo en la raíz, falla con el
+    módulo en el padre, y pasa al declararlo.
+  - Cada archivo tarda ≤ 40 s.
+  - Los dos frameworks trabajan en carpetas distintas de `cm-*-guard`, sin pisarse.
+  Inyección: declarar el módulo en el consumidor guardado, antes del primer build, pone en rojo el
+  primer paso en los dos frameworks.
+
+- [ ] **T-14 — `gallery-browser` partido por componente**
+  Cubre: NFR de objetivo
+  Archivos: `tests/lib/gallery-browser.ts` (el cuerpo de hoy), un archivo
+  `tests/gallery-browser-<componente>.test.ts` por contrato con historia React, y
+  `tests/gallery-browser-classes.test.ts` (el bloque de clases de ejemplo)
+  Hecho cuando:
+  - La misma lista de nombres de `it` que hoy, y el mismo número de tests.
+  - Un componente nuevo con contrato tiene que tener su archivo: un test como dato compara los
+    contratos con historia React con los archivos `gallery-browser-*.test.ts`, y falla si falta uno.
+  - Cada archivo tarda ≤ 30 s.
+  Inyección: quitar un archivo de componente pone en rojo el test como dato; romper el control de
+  una prop en la historia de Input pone en rojo su archivo.
+
+  Va en la ola 10 junto a la T-13: no comparten archivos.
+
+- [ ] **T-15 — `theme` por framework y `gallery-story-theme` por historia**
+  Cubre: NFR de objetivo
+  Archivos:
+  - `tests/lib/theme.ts`, `tests/theme-react.test.ts` y `tests/theme-astro.test.ts`, desde
+    `tests/theme.test.ts`;
+  - `tests/lib/story-theme.ts` y un archivo por historia, desde `tests/gallery-story-theme.test.ts`.
+  Hecho cuando:
+  - Cada par de archivos da la misma lista de nombres de `it` que su original, y el mismo número de
+    tests.
+  - Cada archivo tarda ≤ 35 s.
+  Inyección: la 011 RF-1 de la T-8 (oscuro del sistema en `:root`) pone en rojo los dos archivos de
+  `theme`; quitar `min-height: 100vh` de `preview-head.html` pone en rojo los de `story-theme`.
+
+- [ ] **T-16 — Volver a medir, como la T-8**
+  Cubre: NFR de objetivo, NFR de guardas
+  Archivos: `specs/017-tests-rapidos/notes.md` (sección «Después de la segunda ronda»)
+  Hecho cuando:
+  - Se anotan las series «sin cambios» y «un byte», con el mismo método que la T-8: sin otra carga,
+    calentamiento aparte, 3 pasadas por serie y mediana. Cada serie va con su % de la base
+    (174.3 s) y con si cumple el 50 % y el 70 %.
+  - Se anota la tabla de fases y los 6 archivos más lentos, con cuándo empiezan.
+  - La muestra de 6 inyecciones de la T-8 sigue en rojo con `npm test` completo.
+  - Si un objetivo no se cumple, se dice cuánto falta y dónde, sin tocar código.
+  Inyección: las 6 de la muestra.
+
 ## Grafo de olas
 
 | Ola | Tareas | Por qué esperan |
@@ -249,3 +377,8 @@ paralelo. Quién toca cada archivo compartido:
 | 5 | T-5 | `global-setup.ts` tras la T-4. |
 | 6 | T-7 | `global-setup.ts` tras la T-5. |
 | 7 | T-8 | Todo lo anterior, sin otra carga. |
+| 8 | T-9 ∥ T-10 | La T-8 y su hallazgo; no comparten archivos. |
+| 9 | T-11 ∥ T-12 | Tras la ola 8; no comparten archivos. |
+| 10 | T-13 ∥ T-14 | `consumer.ts` de la T-11 (para la T-13); no comparten archivos. |
+| 11 | T-15 | Sola, para no pasar de dos `npm test` a la vez. |
+| 12 | T-16 | Todo lo anterior, sin otra carga. |

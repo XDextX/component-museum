@@ -2,6 +2,7 @@
 
 **Status:** approved · **Approved:** 2026-10-23 · el dueño: entrega 4, tras la 012; consumidores guardados entre ejecuciones
 **Changed:** 2026-10-23 · RF-10 añadido (limpieza de %TEMP% de ejecuciones muertas) · coordinator en modo autónomo
+**Changed:** 2026-10-24 · segunda ronda de tareas por decisión del dueño («Arregla el fallo de astro-render y añade a la 017 tareas para bajar los tests de navegador y los builds de consumidores, hasta llegar al 50 %») · sin cambios en RF ni NFR · aprobada por el coordinator en modo autónomo, con una condición: cada archivo partido (T-12, T-14, T-15) sigue cayendo en `e2e`, porque llama a `need` él mismo o porque `splitTests` sigue sus imports, con un test que lo comprueba
 **Size:** L (10 RF) · **Entrega:** 4 (tras la 012, antes de la 013) · **Depende de:** 012
 
 ## Contexto y objetivo

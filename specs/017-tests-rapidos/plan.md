@@ -210,4 +210,76 @@ Windows.
   `npm test`. Las notas, en UTF-8 y CRLF.
 - **Sin carga ajena:** la T-1 y la T-8 miden con la máquina sin otras ejecuciones. El coordinator
   no lanza otras tareas mientras corren.
-- **Proporción:** 8 tareas para 10 RF.
+- **Proporción:** 8 tareas para 10 RF en la primera ronda, y 8 más en la segunda (abajo).
+
+## Segunda ronda (decisión del dueño, 2026-10-24)
+
+«Arregla el fallo de astro-render y añade a la 017 tareas para bajar los tests de navegador y los
+builds de consumidores, hasta llegar al 50 %.» Parte de la sección «Después» de `notes.md` (T-8):
+- la base es de 174.3 s, y el objetivo, ≤ 87.2 s sin cambios y ≤ 122.0 s tras un byte;
+- se midieron 125.3 s (72 %) y 133.9 s (77 %);
+- `vitest run` se lleva 110.6 s;
+- el `globalSetup` tarda unos 38 s, de los que 12.0 son builds de consumidores, 11.6 type checks y
+  9.2 restaurar consumidores;
+- después, tres archivos de unos 72 s (`field-a11y`, `consumer`, `gallery-browser`) marcan el final;
+- faltan 38 s.
+
+**Lo que hacen hoy los archivos largos** (leído en `c4721df`):
+- **`field-a11y.test.ts`** (73 s):
+  - un Edge para todo el archivo;
+  - `for kind × describe.each(frameworks) × describe.each(modes)`: 3 × 2 × 5 = 30 bloques en serie,
+    cada uno con su contexto en `beforeEach`;
+  - sin esperas fijas.
+- **`consumer.test.ts`** (72 s):
+  - no abre Edge;
+  - el bloque «undeclared module (RF-5)» hace, por framework y en serie, 3 `buildConsumer`
+    síncronos, 2 `packPackage` y un `installPackage` (unos 8 s por build de Astro).
+- **`gallery-browser.test.ts`** (72 s):
+  - `describe.each(components)`: un Edge por componente;
+  - por cada tema, un test recorre en serie cada caso del contrato con un `goto` por caso;
+  - más un bloque de clases de ejemplo con su propio Edge.
+- **`theme.test.ts`** (61 s): un Edge y dos servidores; sus 16 casos recorren
+  `frameworks × peticiones` en serie.
+- **`gallery-story-theme.test.ts`** (48 s): un Edge; 7 casos que recorren historias × temas, cada
+  uno con su contexto.
+- **El script `test`** ejecuta en serie los dos `tsc` y los tres `astro check`: unos 14 s, que no
+  dependen unos de otros.
+
+**Cuánto se espera ganar.** Son estimaciones sobre los números de la T-8, no medidas; las
+comprueba la T-16:
+
+| Tarea | Qué quita | De | A (estimado) |
+|---|---|---|---|
+| T-9 | El doble `astro build` tras tocar la hoja; deja de salir `npm test` en 1 | 2 s y un rojo falso | 0 |
+| T-10 | Los 5 pasos de tipos, en paralelo tras `gallery:astro` | 14.3 s | unos 4 s |
+| T-11 | Builds de consumidores guardados por clave (consumidor + hash de sus tarballs), y cada consumidor en su propia cadena build → type check, todas en paralelo | 12.0 + 11.6 s | unos 6 s (los type checks, en paralelo) |
+| T-12 | `field-a11y` partido en un archivo por `kind`, para que Vitest los reparta | 73 s | unos 25 s |
+| T-13 | El RF-5 de `consumer.test` en su propio archivo, con los dos frameworks en paralelo y los builds asíncronos | 72 s | unos 35 s |
+| T-14 | `gallery-browser` partido en un archivo por componente | 72 s | unos 25 s |
+| T-15 | `theme` partido por framework, y `gallery-story-theme` por historia | 61 y 48 s | unos 30 y 25 s |
+
+Con todo, el camino largo pasa a ser unos 4 s de tipos, unos 20 s de `globalSetup` y unos 35 s del
+archivo más largo, más unos 2 s de `gallery:astro` y del reparto: unos **60 a 85 s**, por debajo de
+los 87.2 s. El margen es pequeño, porque 12 núcleos tienen que repartirse más Edge a la vez. La
+T-16 mide.
+
+**Decisiones de la segunda ronda (opción conservadora):**
+- **Partir archivos, no hacer `describe.concurrent` dentro de ellos.** Los bloques comparten el
+  contexto de `beforeEach` (`field-a11y`) o el Edge de su `describe` (`gallery-browser`); hacerlos
+  concurrentes los haría pisarse. Un archivo por eje con el cuerpo en un módulo de `tests/lib/`
+  conserva cada caso y su nombre, y Vitest ya reparte archivos entre sus hilos.
+- **Los builds de consumidores se guardan; los type checks no.** Un build es un artefacto cuya
+  salida depende solo de sus entradas (el consumidor guardado y los bytes de los tarballs de la
+  ejecución). Los type checks son la guarda del 002 RF-5 y se ejecutan siempre, en paralelo.
+- **La T-9 copia las hojas antes de calcular la clave.** `ensureAstroRender` ejecuta primero
+  `scripts/sync-styles.mjs` de los dos paquetes (es atómico y barato). Así la clave y el build leen
+  la hoja de esta ejecución, y el `prepack` del `globalSetup` después escribe lo mismo: la clave no
+  cambia. Lo otro, quitar `packages/astro/styles.css` de la clave, dejaría construir con una copia
+  vieja.
+- **No más de dos tareas de la segunda ronda con `npm test` a la vez.** Tres a la vez tumbaron
+  archivos por carga el 2026-10-23. El coordinator escalona las olas.
+- **Ningún caso se quita ni se afloja.** Cada archivo partido da la misma lista de nombres de
+  `it`, comparada antes y después por la tarea, y cada uno conserva su inyección.
+
+**RF y NFR.** No cambia ninguno. La segunda ronda cumple el RF-3 (un solo build, con la T-9) y
+persigue el NFR de objetivo, que sigue igual (≤ 50 % y ≤ 70 % de la base).
