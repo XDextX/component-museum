@@ -63,3 +63,22 @@ describe('the unit and e2e projects of this repo (spec 017, RF-7, RF-8)', () => 
     expect(asking).toEqual([]);
   });
 });
+
+import { exportedContracts, packageExports, slug } from './lib/gallery-pages.ts';
+
+describe('the gallery-browser files (spec 017, T-14)', () => {
+  const { unit, e2e } = splitTests(root);
+  const files = e2e.filter((file) => file.startsWith('tests/gallery-browser-'));
+  const perComponent = files.filter((file) => file !== 'tests/gallery-browser-classes.test.ts');
+
+  it('are all in e2e, each asking for the gallery itself, and none is left in unit', () => {
+    expect(unit.filter((file) => file.includes('gallery-browser'))).toEqual([]);
+    expect(files.filter((file) => !preparations(readFileSync(join(root, file), 'utf8')).includes('gallery'))).toEqual([]);
+    expect(files).toContain('tests/gallery-browser-classes.test.ts');
+  });
+
+  it('have one file for each contract with a React story, so a new component cannot go untested in the browser', () => {
+    const wanted = exportedContracts(root).filter((c) => packageExports(root).React.includes(c.name)).map((c) => `tests/gallery-browser-${slug(c.name)}.test.ts`);
+    expect(perComponent.sort()).toEqual(wanted.sort());
+  });
+});
