@@ -1,10 +1,11 @@
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { cp } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
-import { cached, cacheDir, inputKey, recordPhase, toolVersions } from '../../scripts/cache.mjs';
+import { cached, cacheDir, inputKey, recordPhase, repoRoot, toolVersions } from '../../scripts/cache.mjs';
 import { loadContract } from './contract.ts';
 import { consumerDir, type Framework } from './paths.ts';
 import { run, type RunResult } from './run.ts';
@@ -155,6 +156,57 @@ export async function buildConsumerAsync(dir: string): Promise<RunResult> {
     const { code, stdout = '', stderr = '' } = error as { code?: number; stdout?: string; stderr?: string };
     return { code: typeof code === 'number' ? code : 1, output: `${stdout}${stderr}` };
   }
+}
+
+/**
+ * Key of a stored build (spec 017 RF-5, RF-6): the consumer's key plus the sha256 of the bytes of every tarball
+ * installed in it, by package name; where a tarball sits (the run's folder) is not an input.
+ */
+export function buildKey(consumer: string, tarballs: Tarball[]): string {
+  const hash = createHash('sha256').update(`consumer:${consumer}\0`);
+  for (const { name, path } of [...tarballs].sort((a, b) => a.name.localeCompare(b.name))) {
+    hash.update(`tarball:${name}=${createHash('sha256').update(readFileSync(path)).digest('hex')}\0`);
+  }
+  return hash.digest('hex');
+}
+
+/**
+ * The key of the build of the consumer `createConsumer` makes from these arguments. It also holds the files
+ * that write the consumer's sources (this one, the guard, the contract), so a change to how a consumer is
+ * assembled never reuses an old `dist/`.
+ */
+export function consumerBuildKey(framework: Framework, tarball: Tarball, options: ConsumerOptions): string {
+  const assembly = inputKey(repoRoot, ['tests/lib/consumer.ts', 'tests/lib/museum-guard.mjs', 'contracts/button.contract.json'], {
+    guard: String(Boolean(options.guardResolution)),
+    tailwind: String(Boolean(options.tailwind)),
+  });
+  return buildKey(`${consumerKey(options.starter!, framework, options.cache!, extraInstall(framework, options))} ${assembly}`, [tarball, ...(options.packages ?? [])]);
+}
+
+/**
+ * Builds the consumer in `dir`, or restores the `dist/` stored under `key` and its output (spec 017 RF-5): on a
+ * hit nothing is built and nothing is written to the cache; on a miss the build runs, and only a build that
+ * ends in 0 is stored. A failed build is a result, never a throw.
+ */
+export async function buildCached(dir: string, name: string, key: string, cache = cacheDir): Promise<{ result: RunResult; cache: 'hit' | 'built' }> {
+  const entry = join(cache, 'consumers', 'builds', name);
+  let failed: RunResult | undefined;
+  const status = await cached(`build-${name}`, key, [join(entry, 'dist'), join(entry, 'output.txt')], async () => {
+    rmSync(entry, { recursive: true, force: true });
+    const result = await buildConsumerAsync(dir);
+    if (result.code !== 0) {
+      failed = result;
+      throw new Error('build failed');
+    }
+    await copyTree(join(dir, 'dist'), join(entry, 'dist'), { recursive: true });
+    writeFileSync(join(entry, 'output.txt'), result.output);
+  }, cache).catch((error) => {
+    if (failed) return 'failed' as const;
+    throw error;
+  });
+  if (failed) return { result: failed, cache: 'built' };
+  if (status === 'hit') await copyTree(join(entry, 'dist'), join(dir, 'dist'), { recursive: true });
+  return { result: { code: 0, output: readFileSync(join(entry, 'output.txt'), 'utf8') }, cache: status === 'hit' ? 'hit' : 'built' };
 }
 
 function importPackage(framework: Framework, dir: string, name: string): void {
