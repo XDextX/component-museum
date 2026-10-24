@@ -188,7 +188,7 @@ paralelo. Quién toca cada archivo compartido:
   `shortcut` de `tests/phases.test.ts` pasa a una nota sin `shortcut`: ya se limpia, salvo en un `vitest`
   suelto. Desviación: el paso `gallery:astro` va como `npm run gallery:astro`, para conservar su salida.
 
-- [ ] **T-7 — Limpieza de `%TEMP%` y de los Edge huérfanos de ejecuciones muertas**
+- [x] **T-7 — Limpieza de `%TEMP%` y de los Edge huérfanos de ejecuciones muertas**
   Cubre: RF-10
   Archivos: `tests/global-setup.ts` (limpieza al empezar, y `owner.json` con `runId` y `pid` en
   sus carpetas `cm-<runId>*`), `tests/lib/cleanup.ts` (nuevo), `tests/cleanup.test.ts` (nuevo)
@@ -204,6 +204,18 @@ paralelo. Quién toca cada archivo compartido:
   - Una ejecución viva de otro worktree, en paralelo, termina en verde mientras esta limpia.
   Inyección: tratar como muerto un dueño ilegible pone en rojo el caso de la carpeta reciente sin
   dueño; cerrar Edge por nombre de proceso pone en rojo el caso del Edge del usuario.
+
+  Nota: hecha. `tests/lib/cleanup.ts` (`cleanup`, `writeOwner`, `userDataDir`, `parseProcesses`, `listProcesses`,
+  `killTree`) y `tests/cleanup.test.ts` (12 tests, como dato: carpeta temporal de prueba, dueños y procesos
+  falsos, nada real). El `globalSetup` limpia al empezar (fase `globalSetup: cleanup`, antes de crear nada) y
+  escribe `owner.json` (`runId` y `pid`) en sus 6 carpetas `cm-<runId>*`. Reglas: una `cm-*` directamente en
+  `%TEMP%` se borra si su dueño no vive, o si no tiene dueño legible y pasa de 24 h; un Edge se cierra, por pid
+  (`taskkill /PID n /T /F`), solo si es la raíz de un árbol con `--user-data-dir` =
+  `%TEMP%\\playwright_chromiumdev_profile-*` y su proceso padre (el lanzador) ya no vive; se borran los perfiles
+  que ningún Edge vivo usa (los del Edge recién cerrado, y los de más de 2 minutos). Inyecciones vistas en rojo y
+  revertidas: dueño ilegible tratado como muerto, 2 tests rojos (carpeta reciente sin dueño y la de 23 h); filtro
+  de Edge sin mirar el perfil, 1 test rojo (el Edge del usuario). Desviaciones: `playwright-artifacts-*` no se
+  toca (el plan no lo dice); el perfil sin Edge espera 2 minutos para no pisar al que está a punto de abrirse.
 
 - [ ] **T-8 — Medida final y muestra de inyecciones antiguas**
   Cubre: NFR de objetivo, NFR de guardas
