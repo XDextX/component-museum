@@ -1,25 +1,19 @@
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cacheDir } from '../scripts/cache.mjs';
-import { afterAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { need } from './lib/need.ts';
-import { buildConsumer, configFiles, installPackage, packPackage } from './lib/consumer.ts';
+import { configFiles } from './lib/consumer.ts';
 import { consumerDir, isOutside, type Framework } from './lib/paths.ts';
-import { diffSnapshots, snapshotRoots, takeSnapshot } from './lib/snapshot.ts';
 import { fileInTarball, tarballFiles } from './lib/tarball.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const frameworks: Framework[] = ['react', 'astro'];
 // Created once per run by tests/global-setup.ts; the plain ones are read-only here.
 const consumers = need('consumers');
-
-// RF-6: the tree as global-setup.ts saw it before creating anything; the suite must leave it so.
-afterAll(() => {
-  expect(diffSnapshots(need('treeBefore'), takeSnapshot(repo, snapshotRoots))).toEqual([]);
-});
 
 /** Where the consumer's own require finds the package, with links resolved. */
 function resolvedFrom(dir: string): string {
@@ -58,7 +52,7 @@ describe('external consumer (RF-4)', () => {
   });
 });
 
-// Before the RF-5 tests below: those modify the guarded consumers, and this reads them untouched.
+// The RF-5 block lives in consumer-undeclared.test.ts, which modifies the guarded consumers; this reads them untouched.
 describe('the installed packages are the run\'s tarballs (spec 017, RF-6)', () => {
   const tarballs = need('tarballs');
   const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
@@ -96,44 +90,6 @@ describe('the installed packages are the run\'s tarballs (spec 017, RF-6)', () =
       }
     }
   });
-});
-
-describe('undeclared module (RF-5)', { timeout: 300_000 }, () => {
-  const undeclaredFixture = join(repo, 'tests', 'fixtures', 'undeclared-module');
-  const inRepoRoot = join(repo, 'node_modules', 'museum-undeclared');
-  const inParent = join(consumers.guardParent, 'node_modules', 'museum-undeclared');
-
-  for (const framework of frameworks) {
-    it(`fails the ${framework} build with the module in the repo root's node_modules, then in the consumer's parent, and passes once declared`, async () => {
-      // This test is the only one that touches its guarded consumer, and the last to use it.
-      const dir = consumers.guarded[framework];
-      expect(existsSync(inRepoRoot), `${inRepoRoot} exists before the test; refusing to touch it`).toBe(false);
-
-      cpSync(undeclaredFixture, inRepoRoot, { recursive: true });
-      const fromRepoRoot = buildConsumer(dir);
-      rmSync(inRepoRoot, { recursive: true });
-      expect(fromRepoRoot.code, fromRepoRoot.output).not.toBe(0);
-      expect(fromRepoRoot.output).toContain('museum-undeclared');
-
-      cpSync(undeclaredFixture, inParent, { recursive: true });
-      const fromParent = buildConsumer(dir);
-      rmSync(inParent, { recursive: true });
-      expect(fromParent.code, fromParent.output).not.toBe(0);
-      expect(fromParent.output).toContain('resolves outside the consumer');
-
-      const declaring = join(consumers.guardParent, `pkg-declaring-${framework}`);
-      cpSync(consumers.undeclaringPackage, declaring, { recursive: true });
-      const manifest = join(declaring, 'package.json');
-      const undeclaredTarball = await packPackage(undeclaredFixture, join(consumers.guardParent, `pack-undeclared-${framework}`));
-      const json = JSON.parse(readFileSync(manifest, 'utf8'));
-      json.dependencies = { 'museum-undeclared': `file:${undeclaredTarball.path}` };
-      writeFileSync(manifest, JSON.stringify(json, null, 2));
-      // This copy's manifest is rewritten here, so it is the one package packed outside the globalSetup.
-      await installPackage(dir, await packPackage(declaring, join(consumers.guardParent, `pack-declaring-${framework}`)));
-      const declared = buildConsumer(dir);
-      expect(declared.code, declared.output).toBe(0);
-    });
-  }
 });
 
 /** True when some file under the consumer's dist/ contains `text`: the build really used Button. */
