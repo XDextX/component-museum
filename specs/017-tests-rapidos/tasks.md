@@ -103,7 +103,7 @@ paralelo. Quién toca cada archivo compartido:
   rojo: `tsconfig.build.json` en `files` de `packages/react` pone en rojo `packages.test.ts` (RF-2). El test de
   «clon limpio» de `packages.test.ts` conserva su `npm pack --dry-run` propio: prueba justo el pack sin `dist/`.
 
-- [ ] **T-4 — Consumidores guardados entre ejecuciones, con los tarballs nuevos**
+- [x] **T-4 — Consumidores guardados entre ejecuciones, con los tarballs nuevos**
   Cubre: RF-5, RF-6
   Archivos: `tests/lib/consumer.ts` (`createConsumer` desde la caché), `tests/global-setup.ts`,
   `tests/consumer.test.ts` (RF-6)
@@ -117,6 +117,23 @@ paralelo. Quién toca cada archivo compartido:
   - La caché no se modifica en una ejecución: se copia y se trabaja en `%TEMP%`.
   Inyección: reutilizar el `node_modules/@component-museum` guardado sin reinstalar el tarball pone
   en rojo RF-6 tras cambiar un componente.
+  Nota: hecha. Cada starter se guarda en `node_modules/.museum-cache/consumers/starters/<framework>` y cada
+  consumidor, con sus dependencias instaladas y sin tarballs, en `consumers/<forma>-<framework>` (8 entradas,
+  914 MB en total). Cada ejecución copia a `%TEMP%` y hace `npm install --offline` de los tarballs de la
+  ejecución; la caché solo se escribe en un fallo. La clave del consumidor es la forma, el framework, el pin del
+  starter, su `package.json` y lockfile, lo instalado encima y Node y npm. `phases.json` da una fase por starter
+  y por consumidor. Tests nuevos: `tests/consumer-cache.test.ts` (5), RF-6 en `consumer.test.ts` (10) y 1 en
+  `phases.test.ts`; de 857 a 873 con 1 saltado, ninguno borrado. Inyección vista en rojo: guardar en la caché
+  `@component-museum` y no reinstalarlo, y cambiar `Button.tsx`, pone en rojo RF-6 en los 3 consumidores React
+  que lo instalan. Desviaciones: el RF-6 compara todos los archivos del tarball, no solo `package.json` y
+  `dist/index.js` (`dist/index.js` es un barril y no cambia con un componente: con solo esos dos la inyección
+  salió verde); `@astrojs/check` y Tailwind se instalan al guardar el consumidor, no después; el filtro de
+  `phases.test.ts` pasa de `/pack/` a `globalSetup: pack ` porque `consumer package-*` lo cumplía.
+  Segunda vuelta (velocidad de la copia): con `cpSync` síncrono la fase `consumers` tardaba 28-35 s con la
+  caché llena; con `fs.promises.cp`, 22,3 s; con `robocopy /MT:16` (de Windows, solo lee la caché),
+  11,3 s. Medido a solas, un consumidor Astro: 8,3 s con `cp` y 2,4 s con `robocopy`; los 7 restantes en
+  paralelo, 15,0 s y 7,4 s. `copyTree` en `tests/lib/consumer.ts` usa `robocopy` y cae a `fs.promises.cp` si no
+  está. La inyección de RF-6 sigue en rojo con el cambio.
 
 - [ ] **T-5 — Subconjuntos sin preparación que no necesitan**
   Cubre: RF-7, RF-8

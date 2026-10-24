@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 import type { TestProject } from 'vitest/node';
 import { ensureAstroRender } from '../gallery/scripts/astro-cached.mjs';
 import { cached, inputKey, recordPhase, storybookInputs } from '../scripts/cache.mjs';
-import { buildConsumerAsync, createConsumer, npmCli, packPackage, scaffold, type Tarball } from './lib/consumer.ts';
+import { buildConsumerAsync, cachedStarter, createConsumer, npmCli, packPackage, type Tarball } from './lib/consumer.ts';
 import { acquireLock } from './lib/lock.ts';
 import { consumerDir, type Framework } from './lib/paths.ts';
 import type { RunResult } from './lib/run.ts';
@@ -101,11 +101,7 @@ async function buildGallery(): Promise<{ storybook: string; astroJson: string }>
 
 /** The consumer's type check, clean and then with a Button whose variant is not in the contract. */
 async function checkButtonTypes(framework: Framework, dir: string): Promise<{ clean: RunResult; nope: RunResult }> {
-  if (framework === 'astro') {
-    // The Astro starter has no type checker: only this consumer gets one (the untouched one never does).
-    const install = await npmRun(['install', '--no-audit', '--no-fund', '--save-dev', '@astrojs/check@^0.9.11', 'typescript@^6.0.3'], dir);
-    if (install.code !== 0) throw new Error(`npm install @astrojs/check failed in ${dir}\n${install.output}`);
-  }
+  // The Astro consumer's type checker (@astrojs/check) is installed with its stored dependencies (`typeCheck`).
   const check = () => npmRun(framework === 'react' ? ['exec', '--', 'tsc', '-b'] : ['exec', '--', 'astro', 'check'], dir);
   const clean = await check();
   const file = framework === 'react' ? join(dir, 'src', 'Nope.tsx') : join(dir, 'src', 'Nope.astro');
@@ -152,7 +148,7 @@ export default async function setup(project: TestProject): Promise<() => void> {
     // npm pack runs the prepack (dist/ and styles.css), so the gallery below can only start after it.
     const packDirs = { react: frameworkPackage('react'), astro: frameworkPackage('astro'), testPackage, undeclaring: undeclaringPackage };
     const [[reactStarter, astroStarter], ...packed] = await Promise.all([
-      phase('starters', () => Promise.all(frameworks.map((f) => scaffold(starterParent, f)))),
+      Promise.all(frameworks.map((f) => cachedStarter(starterParent, f))),
       ...Object.entries(packDirs).map(([name, dir]) => phase(`pack ${name}`, () => packPackage(dir, join(packParent, name)))),
     ]);
     const starters = { react: reactStarter, astro: astroStarter };
@@ -170,15 +166,15 @@ export default async function setup(project: TestProject): Promise<() => void> {
     galleryBuilt.catch(() => {});
 
     const [plainReact, plainAstro, guardedReact, guardedAstro, packageReact, packageAstro, tailwindReact, tailwindAstro] = await phase('consumers', () => Promise.all([
-      createConsumer(base, runId, 'react', tarballs.testPackage, { starter: starters.react, packages: [tarballs.react] }),
-      createConsumer(base, runId, 'astro', tarballs.testPackage, { starter: starters.astro, packages: [tarballs.astro] }),
-      createConsumer(base, guardRunId, 'react', tarballs.undeclaring, { starter: starters.react, guardResolution: true }),
-      createConsumer(base, guardRunId, 'astro', tarballs.undeclaring, { starter: starters.astro, guardResolution: true }),
-      createConsumer(base, packageRunId, 'react', tarballs.testPackage, { starter: starters.react, guardResolution: true, packages: [tarballs.react] }),
-      createConsumer(base, packageRunId, 'astro', tarballs.testPackage, { starter: starters.astro, guardResolution: true, packages: [tarballs.astro] }),
+      createConsumer(base, runId, 'react', tarballs.testPackage, { starter: starters.react, cache: 'plain', packages: [tarballs.react] }),
+      createConsumer(base, runId, 'astro', tarballs.testPackage, { starter: starters.astro, cache: 'plain', packages: [tarballs.astro] }),
+      createConsumer(base, guardRunId, 'react', tarballs.undeclaring, { starter: starters.react, cache: 'guarded', guardResolution: true }),
+      createConsumer(base, guardRunId, 'astro', tarballs.undeclaring, { starter: starters.astro, cache: 'guarded', guardResolution: true }),
+      createConsumer(base, packageRunId, 'react', tarballs.testPackage, { starter: starters.react, cache: 'package', typeCheck: true, guardResolution: true, packages: [tarballs.react] }),
+      createConsumer(base, packageRunId, 'astro', tarballs.testPackage, { starter: starters.astro, cache: 'package', typeCheck: true, guardResolution: true, packages: [tarballs.astro] }),
       // Spec 003 T-7: Tailwind v4 consumers (no guard), two pages each.
-      createConsumer(base, tailwindRunId, 'react', tarballs.testPackage, { starter: starters.react, packages: [tarballs.react], tailwind: true }),
-      createConsumer(base, tailwindRunId, 'astro', tarballs.testPackage, { starter: starters.astro, packages: [tarballs.astro], tailwind: true }),
+      createConsumer(base, tailwindRunId, 'react', tarballs.testPackage, { starter: starters.react, cache: 'tailwind', packages: [tarballs.react], tailwind: true }),
+      createConsumer(base, tailwindRunId, 'astro', tarballs.testPackage, { starter: starters.astro, cache: 'tailwind', packages: [tarballs.astro], tailwind: true }),
     ]));
 
     // Built here, not in a test: the shared consumers stay read-only for every test file.
