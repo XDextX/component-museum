@@ -2,20 +2,22 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { need } from './lib/need.ts';
-import { exampleText, type Contract } from '../gallery/lib/contract-args.ts';
-import { exampleClasses } from '../gallery/lib/example-classes.ts';
-import { closeBrowserAndServers } from './lib/browser.ts';
-import { exportedContracts, packageExports, slug, storyId } from './lib/gallery-pages.ts';
-import { serve, type Served } from './lib/serve.ts';
+import { exampleText, type Contract } from '../../gallery/lib/contract-args.ts';
+import { exampleClasses } from '../../gallery/lib/example-classes.ts';
+import { closeBrowserAndServers } from './browser.ts';
+import { exportedContracts, packageExports, slug, storyId } from './gallery-pages.ts';
+import { serve, type Served } from './serve.ts';
 
-const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
+// Spec 017 T-14: one test file per component (tests/gallery-browser-<component>.test.ts) plus one for the example
+// classes (tests/gallery-browser-classes.test.ts), so Vitest runs them in parallel. Each file calls need('gallery')
+// itself and passes the Storybook it serves; that call is what splitTests reads to send the file to the e2e project.
+const repo = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const themes = ['light', 'dark'] as const;
 
 type Rendered = { classes: string[]; attributes: Record<string, string>; text: string; shown: string; error: boolean };
 
 // Every component a package exports with a contract and a React story (spec 009, RF-10).
-const components = exportedContracts(repo).filter((c) => packageExports(repo).React.includes(c.name));
+export const components = exportedContracts(repo).filter((c) => packageExports(repo).React.includes(c.name));
 
 /**
  * One arg per contract prop, off its default, with how it must show on the component's root element
@@ -69,11 +71,13 @@ async function render(browser: Browser, url: string, contract: Contract, colorSc
   }
 }
 
-describe.each(components.map((c) => [c.name, c] as const))('the React story re-renders %s for each control (RF-4)', { timeout: 120_000 }, (_name, contract) => {
+/** The RF-4 block of one component: its story re-renders for each control, in each theme. */
+export function defineGalleryBrowser(component: string, storybook: string): void {
+describe.each(components.filter((c) => c.name === component).map((c) => [c.name, c] as const))('the React story re-renders %s for each control (RF-4)', { timeout: 120_000 }, (_name, contract) => {
   let served: Served;
   let browser: Browser;
   beforeAll(async () => {
-    served = await serve(need('gallery').storybook);
+    served = await serve(storybook);
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {
@@ -94,7 +98,10 @@ describe.each(components.map((c) => [c.name, c] as const))('the React story re-r
     });
   }
 });
+}
 
+/** The example-class blocks (RF-4 offers, RF-9 CSS beside its control and on the docs page). */
+export function defineExampleClasses(storybook: string): void {
 // Every component with a class prop has an example class for its className case to set.
 it.each(components.filter((c) => c.classProp).map((c) => [c.name] as const))('offers %s an example class for its className case', (name) => {
   expect(Object.keys(exampleClasses[name] ?? {})).not.toEqual([]);
@@ -107,7 +114,7 @@ describe('the example CSS is seen beside its control and on the docs page (RF-9)
   let served: Served;
   let browser: Browser;
   beforeAll(async () => {
-    served = await serve(need('gallery').storybook);
+    served = await serve(storybook);
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {
@@ -152,3 +159,4 @@ describe('the example CSS is seen beside its control and on the docs page (RF-9)
     }
   });
 });
+}
