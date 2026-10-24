@@ -297,7 +297,7 @@ arranque y de informe que arriba. Además:
   `tsc --noEmit (2)` y no llega a Vitest; revertida. Medida: el bloque tardó 6.6 s en una ejecución corta con otra tarea
   en marcha (objetivo ≤ 6 s); en el `npm test` completo, con dos `npm test` a la vez, 39.7 s: no es una medida fiable.
 
-- [ ] **T-11 — Builds de consumidores guardados, y cada consumidor en su cadena**
+- [x] **T-11 — Builds de consumidores guardados, y cada consumidor en su cadena**
   Cubre: RF-5, RF-6 (los builds), NFR de objetivo
   Archivos: `tests/global-setup.ts` (una cadena por consumidor: restaurar, instalar tarballs, build
   y type check; todas en paralelo), `tests/lib/consumer.ts` (build guardado por clave),
@@ -312,6 +312,19 @@ arranque y de informe que arriba. Además:
   - `consumer.test.ts` (RF-3 y RF-6) sigue en verde sin cambiar sus casos.
   Inyección: guardar el build con una clave sin los tarballs reutiliza un `dist/` viejo tras cambiar
   un componente, y pone en rojo el caso de `consumer-cache.test.ts` que lo comprueba.
+  Nota: hecha. `tests/lib/consumer.ts` añade `buildKey` (la clave del consumidor más el `sha256` de los bytes
+  de cada tarball instalado, por nombre de paquete), `consumerBuildKey` (le suma los archivos que escriben las
+  fuentes del consumidor: `consumer.ts`, `museum-guard.mjs` y el contrato de Button) y `buildCached` (acierto:
+  restaura `dist/` y la salida guardada, sin construir ni escribir; fallo: construye y solo guarda un build que
+  acaba en 0). Se guarda en `node_modules/.museum-cache/consumers/builds/<forma>-<framework>/`. `global-setup.ts`
+  pasa a una cadena por consumidor (crear, build guardado, type check), las 8 a la vez; los type checks
+  (`checkButtonTypes`) se ejecutan siempre. Fases nuevas en la tabla: `build`, `type check` y `chain` por consumidor.
+  Tests: 6 nuevos en `consumer-cache.test.ts` (11 en el archivo; `npm test` da 904 y 1 omitido). Inyección (la clave
+  sin los tarballs) en rojo: «changes with one byte of any tarball»
+  y «rebuilds once a tarball byte differs». Segunda ejecución de `npm test`: los 6 builds en acierto (0.0 a 0.2 s
+  cada uno, de 12.0 s) y la caché de builds ocupa 1.7 MB. Las cadenas tardan 5.8 a 13.7 s y la de package-astro
+  37.8 s (su `astro check`, 24.4 s, con otro `npm test` en paralelo). Con carga, el ≤ 20 s no se confirma por el
+  `astro check`; sin carga queda por medir (T-16).
 
 - [ ] **T-12 — `field-a11y` partido por `kind`**
   Cubre: NFR de objetivo
