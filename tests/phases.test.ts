@@ -6,8 +6,8 @@ import { astroRenderInputs, cacheDir, inputKey, repoRoot, storybookInputs } from
 type Phases = Record<string, { seconds: number; cache: 'hit' | 'built' | null }>;
 const phases = (): Phases => JSON.parse(readFileSync(join(cacheDir, 'phases.json'), 'utf8'));
 
-// shortcut: phases.json outlives a run, so a stale `gallery:astro` entry from an earlier npm test can
-// show beside this run's; scripts/test.mjs (spec 017, T-6) clears it first, a bare vitest run does not.
+// scripts/test.mjs clears phases.json before its first step; a bare vitest run does not, so it can see an
+// earlier run's entries beside this run's.
 describe('the run records its builds (spec 017, RF-2, RF-3)', () => {
   it('builds astro-render at most once, between gallery:astro and the globalSetup', () => {
     expect(inject('gallery').storybook).toBeTruthy();
