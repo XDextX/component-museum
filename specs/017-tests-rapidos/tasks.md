@@ -401,7 +401,7 @@ arranque y de informe que arriba. Además:
   ignora sus args (`render: () => <Input label="Email" />`) pone en rojo los dos `it` de `gallery-browser-input` y deja en
   verde el de Button; las dos revertidas por ruta.
 
-- [ ] **T-15 — `theme` por framework y `gallery-story-theme` por historia**
+- [x] **T-15 — `theme` por framework y `gallery-story-theme` por historia**
   Cubre: NFR de objetivo
   Archivos:
   - `tests/lib/theme.ts`, `tests/theme-react.test.ts` y `tests/theme-astro.test.ts`, desde
@@ -413,6 +413,22 @@ arranque y de informe que arriba. Además:
   - Cada archivo tarda ≤ 35 s.
   Inyección: la 011 RF-1 de la T-8 (oscuro del sistema en `:root`) pone en rojo los dos archivos de
   `theme`; quitar `min-height: 100vh` de `preview-head.html` pone en rojo los de `story-theme`.
+
+  Va en la ola 11, sola.
+  Nota: hecha. Los cuerpos viven en `tests/lib/theme.ts` (`defineTheme(framework, consumers)`) y `tests/lib/story-theme.ts`
+  (`defineStoryTheme(storyId, storybook)`), movidos con `git mv`; cada `tests/theme-{react,astro}.test.ts` y
+  `tests/gallery-story-theme-<id>.test.ts` llama a `need(...)` él mismo, así que `splitTests` los manda a `e2e` sin tocar
+  `projects.ts`. Se parte por id de historia (`button-react--default`, `button-astro--variants`, `button-documentation--docs`,
+  `matrix--docs`): 4 archivos. `tests/projects.test.ts` tiene dos tests nuevos al final: los archivos están en `e2e` y piden
+  `consumers` / `gallery`, y hay un archivo por id de `storyIds` (el test como dato). Nombres de `it` (JSON de Vitest) antes y
+  después: 68 y 68 en `theme`, 26 y 26 en `story-theme`, listas idénticas. Tiempos de archivo (JSON, `vitest run` completo,
+  segunda pasada): theme-astro 28.0 s, theme-react 27.6 s, story astro 16.8 s, story react 13.6 s, docs de Button 4.8 s,
+  matrix 2.7 s (≤ 35 s; los de hoy eran unos 61 y 48 s). La primera pasada, tras `npm test`, dio 43.3 y 39.9 s en `theme` y
+  2 rojos ajenos en `consumer.test.ts` (RF-5, tarballs de la guarda); la segunda, en verde.
+  Inyecciones: el oscuro del sistema también en `:root` (`styles/museum.css`) pone en rojo 14 tests en cada archivo de `theme`;
+  quitar `min-height: 100vh` de `preview-head.html` pone en rojo 4 `it` RF-1 de `gallery-story-theme-button-react--default` y
+  deja en verde los otros tres (la historia de Astro es más alta que el viewport y las de docs no usan el decorador; el
+  original ya solo caía ahí). Las dos revertidas por ruta.
 
 - [ ] **T-16 — Volver a medir, como la T-8**
   Cubre: NFR de objetivo, NFR de guardas
