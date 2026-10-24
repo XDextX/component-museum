@@ -217,7 +217,7 @@ paralelo. Quién toca cada archivo compartido:
   de Edge sin mirar el perfil, 1 test rojo (el Edge del usuario). Desviaciones: `playwright-artifacts-*` no se
   toca (el plan no lo dice); el perfil sin Edge espera 2 minutos para no pisar al que está a punto de abrirse.
 
-- [ ] **T-8 — Medida final y muestra de inyecciones antiguas**
+- [x] **T-8 — Medida final y muestra de inyecciones antiguas**
   Cubre: NFR de objetivo, NFR de guardas
   Archivos: `specs/017-tests-rapidos/notes.md` (sección «Después»)
   Hecho cuando:
@@ -228,6 +228,15 @@ paralelo. Quién toca cada archivo compartido:
   - El número de empaquetados, instalaciones, starters y builds de Storybook por ejecución es el
     mismo con y sin un componente de prueba añadido en la rama.
   Inyección: las 6 de la muestra.
+  Nota: hecha, sin código cambiado. **Los dos objetivos NO se cumplen.** Sin cambios: mediana 125.3 s
+  (126.2, 124.7, 125.3), 71.9 % de la base de 174.3 s, objetivo ≤ 50 %: no. Tras un byte de un componente:
+  mediana 133.9 s (134.9, 133.9, 127.5), 76.8 %, objetivo ≤ 70 %: no (con un cambio que sí altera `dist/`,
+  130.5 s, 74.9 %). El peso sigue en `vitest run` (110.6 s de 125.3): unos 35 s de `globalSetup` y tres archivos
+  de navegador de unos 72 s que corren tras él. Las 6 inyecciones se ven en rojo con el test que les toca. El
+  recuento (9 `npm pack`, 10 `npm install`, 0 starters) es el mismo con y sin un componente de prueba; Storybook
+  se construye 1 vez si cambia `dist/` y 0 si no. Hallazgo: `phases.test.ts` sale en rojo en la primera
+  ejecución tras cambiar `styles/museum.css` (doble build de `astro-render`). Las tablas, en la sección
+  «Después» de `notes.md`.
 
 ## Grafo de olas
 

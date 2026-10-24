@@ -252,3 +252,92 @@ Comprobado antes de tocar nada, con una configuración suelta de Vitest 5.0.5 co
 - `vitest run tests/phases.test.ts` (un archivo de `e2e`): se ejecuta.
 
 No hizo falta la alternativa de la variable de entorno: bastan los dos proyectos.
+
+## Después (T-8, 2026-10-24, sin otra carga)
+
+Worktree `.claude/worktrees/agent-a51f2bfeeb962eca8`, rama `spec/017-tests-rapidos-T-8` sobre `1012ced` (merge de la T-7), 12 núcleos, nada más corriendo. Mismas condiciones que la base: `npm ci`, `npm run build:packages` y `npm run gallery:astro` en el arranque, así que las cachés de tsc y de Astro están calientes. Sin código cambiado: el `git status` final solo muestra este archivo y `tasks.md`.
+
+**Calentamiento** (no cuenta): una primera ejecución llenó las cachés de Storybook, `astro-render`, starters y consumidores en este worktree. Total 176.5 s, todo en verde, con starters, consumidores y Storybook «construidos».
+
+**Resultado: los dos objetivos NO se cumplen.** La suite baja de 174.3 s a unos 125 s, pero no a la mitad.
+
+| Medida (total de `npm test`, segundos) | Pasada 1 | Pasada 2 | Pasada 3 | Mediana | % de la base (174.3 s) | Objetivo |
+|---|---|---|---|---|---|---|
+| Sin cambios | 126.2 | 124.7 | 125.3 | **125.3** | **71.9 %** | ≤ 50 % (87.2 s): NO |
+| Tras un byte de un componente (un comentario al final de `packages/react/src/Button/Button.tsx`, distinto cada vez) | 134.9 | 133.9 | 127.5 | **133.9** | **76.8 %** | ≤ 70 % (122.0 s): NO |
+| Complementaria: un cambio que sí altera `dist/` (`export const t8 = N;` en el mismo archivo) | 128.0 | 130.5 | 136.7 | 130.5 | 74.9 % | (no es un objetivo) |
+
+Las 9 ejecuciones en verde: 51 archivos, 892 tests pasan y 1 se omite. La base eran 44 archivos y 813 tests: la suite ha crecido desde la T-1, y los tiempos de hoy cargan con los tests nuevos. Ningún cierre de Edge por `hookTimeout` ni aviso `teardown` en ninguna.
+
+- El comentario no cambia `dist/` (la clave de Storybook y de los consumidores es de contenido): Storybook sale «acierto» en las tres pasadas. Por eso la serie complementaria, con un cambio que sí llega a `dist/` y reconstruye Storybook (14 a 16 s), da un total parecido: el ahorro de la caché de Storybook (unos 14 s) no es lo que decide el total. Los 8 s entre «sin cambios» y «un byte» están en el orden de la variación entre pasadas de una misma serie (hasta 7 s); no los atribuyo a nada.
+- Cada pasada empaqueta y reinstala los tarballs (RF-6), y se ve en el total.
+
+**Fases de la mediana sin cambios** (pasada 3, 125.3 s; la base, pasada 3 de la T-1, al lado):
+
+| Fase | Segundos | Caché | Base (T-1) |
+|---|---|---|---|
+| `gallery:astro` | 0.4 | acierto | 2.4 |
+| `tsc --noEmit` | 2.2 | — | 2.4 (más 0.6 del `tsc -p packages/react/tsconfig.build.json`, que ya no está) |
+| `tsc --noEmit -p gallery` | 1.4 | — | 1.5 |
+| `astro check` de `test-package` | 3.4 | — | 3.6 |
+| `astro check` de `packages/astro` | 3.5 | — | 3.7 |
+| `astro check` de `gallery/astro-render` | 3.7 | — | 3.7 |
+| `vitest run` | **110.6** | — | 156.8 |
+| de ello, `globalSetup: cleanup` | 0.6 | — | — |
+| de ello, 4 `pack` (en paralelo; React 1.3) | 1.3 | — | (20 `npm pack` en el `globalSetup`) |
+| de ello, 2 starters | 0.1 | acierto | 5.3 |
+| de ello, `astro-render` y Storybook | 0.0 y 0.0 | acierto | 18.6 (galería) |
+| de ello, 8 consumidores (React 1.5 a 2.1; Astro 7.3 a 8.2) | 9.2 | acierto | 35.8 |
+| de ello, builds de los 6 consumidores | 12.0 | — | 4.7 |
+| de ello, `type checks` (`checkButtonTypes`) | 11.6 | — | 16.3 |
+| **Total** | **125.3** | | **174.3** |
+
+- **`vitest run` es el 88 % del total** (110.6 de 125.3 s) y ahorra 46 s respecto de la base. El resto de pasos suma 14.7 s y apenas se mueve (ya estaban en su mínimo con las cachés calientes).
+- **Dentro de `vitest run`:** el `globalSetup` es de unos 35 s (las sumas de las filas de arriba, con los consumidores y los builds de ellos y los type checks uno tras otro), y quedan unos 75 s de tests. Una pasada extra solo para el diagnóstico (`vitest run --reporter=json`, fuera de las medianas) da el `globalSetup` en 38 s y los archivos largos empezando justo después:
+
+| Archivo | Segundos | Empieza en |
+|---|---|---|
+| `field-a11y.test.ts` | 72.9 | 41 s |
+| `consumer.test.ts` | 72.2 | 38 s |
+| `gallery-browser.test.ts` | 71.6 | 39 s |
+| `theme.test.ts` | 61.1 | 39 s |
+| `gallery-story-theme.test.ts` | 48.1 | 39 s |
+| `gallery-overflow.test.ts` | 33.3 | 39 s |
+
+  Los archivos corren en paralelo y el último acaba en el segundo 114. El total lo marca el `globalSetup` (38 s) más el archivo más largo (unos 73 s): son los tres de unos 72 s, que ya duraban 68 a 76 s en la base. La caché ha quitado el `globalSetup` de unos 62 s a unos 35 s, pero los archivos de test de navegador no han cambiado.
+- **Qué falta para el 50 % (87.2 s):** 38 s más. El `globalSetup` ya está en 35 a 38 s, de los que 24 s son builds y type checks de consumidores que ninguna caché evita en esta spec (RF-6: los tarballs se instalan siempre de nuevo), y los 72 s de los tres archivos más largos no dependen del `globalSetup`. No se ha tocado nada para llegar al objetivo.
+
+**Recuento por ejecución** (contado con un `--require` temporal fuera del repo que registra los procesos `node` de `npm-cli.js` y de `storybook`; no cambia código). Tres ejecuciones contadas: sin cambios, con un componente de prueba añadido (`packages/react/src/Probe/Probe.tsx`, sin exportar) y con un cambio de `dist/` sin componente nuevo:
+
+| Cuenta por ejecución | Sin cambios | Con componente de prueba | Con un cambio de `dist/` |
+|---|---|---|---|
+| `npm pack` | 9 | 9 | 9 |
+| `npm install` | 10 | 10 | 10 |
+| starters (`npm exec` de `create-*`) | 0 (acierto) | 0 | 0 |
+| `npm exec` (`tsc -b` y `astro check` de `checkButtonTypes`) | 4 | 4 | 4 |
+| `npm run build` (consumidores y Storybook) | 12 | 13 | 13 |
+| builds de Storybook | 0 (acierto) | 1 | 1 |
+
+Los empaquetados, las instalaciones y los starters son los mismos con y sin el componente. La única diferencia es Storybook, que se construye una vez cuando cambia `dist/` y ninguna cuando no cambia: no depende de si hay un componente más, sino de si cambia lo que publica (con y sin el componente de prueba, el mismo 1). Los 9 `npm pack` son 5 de rutas del repo (React, Astro y 3 de `test-package`), 3 de paquetes temporales en `cm-*-guard` y 1 `--dry-run`; los 10 `npm install` son todos `--offline` con los tarballs. No desgloso cuáles son del `globalSetup` y cuáles de los tests.
+
+El componente de prueba tumbó 2 tests, los esperados: `contract.test.ts` (RF-6 de la 002: «Probe has no contract») y `packages.test.ts` (RF-2 de la 006: «Probe has no export»). Se quitó al acabar.
+
+**Muestra de inyecciones**, cada una con `npm test` completo, restaurada por ruta con `git checkout -- <ruta>` y con el `git status` limpio al acabar:
+
+| Spec y RF | Inyección | Test que se puso en rojo | Fallos |
+|---|---|---|---|
+| 002, RF-5 | `variant?: string` en `packages/react/src/Button/Button.tsx` | `consumer.test.ts` «Button types in the consumers (002 RF-5) > passes the react consumer's type check, and fails it once a Button has variant="nope"» y `contract.test.ts` (RF-7, RF-10) | 2 |
+| 003, RF-7 | una regla `.museum-stray` fuera de la capa, al final de `styles/museum.css` | `styles.test.ts` «styles only museum elements ... all inside the museum layer (RF-7)» | 2 (más `phases.test.ts`, ver anomalías) |
+| 006, RF-2 | `"src"` en `files` de `packages/react/package.json` | `packages.test.ts` «packs nothing beyond the allowed list and everything required ... (spec 006 RF-2)» | 2 (más `phases.test.ts`) |
+| 009, RF-2 | sin `htmlFor` en la etiqueta de `packages/react/src/field.tsx` | `field-a11y.test.ts` «RF-2: each label finds its control and pressing it focuses it, twins included» (Input, Textarea y Checkbox, React, tres modos) y `field-markup.test.ts` (30) | 65 |
+| 011, RF-1 | el oscuro del sistema también en `:root` (sin atributo) en `styles/museum.css` | `theme.test.ts` «RF-1 (spec 011): with no data-theme, the package is light whatever the system prefers» (React y Astro, 4 casos) y `field-styles.test.ts` RF-5 | 24 |
+| 007, RF-7 | `<div style={{ width: 600, height: 10 }} />` al final de `gallery/stories/Button.mdx` | `gallery-overflow.test.ts` «Button docs page at 320 px» y «at 542 px: scrollWidth <= clientWidth» | 3 (una es `phases.test.ts`) |
+
+Las 6 se ven en rojo con el test que les toca. Ningún cierre de Edge.
+
+**Anomalías.**
+- **`phases.test.ts` («builds astro-render at most once») sale en rojo en la primera ejecución tras cambiar o restaurar `styles/museum.css`** o `packages/react/package.json`, aunque la inyección en curso no tenga que ver: salió en las 2 que tocan `styles/` (003 RF-7, 011 RF-1) y en las dos ejecuciones que siguieron a una restauración de `styles/` (006 y 007, cuya inyección no toca `astro-render`). En las 4 se ven `gallery:astro` y `globalSetup: astro-render` los dos «construido». Causa: `gallery:astro` (el primer paso) calcula la clave con el `packages/astro/styles.css` que dejó el `prepack` de la ejecución anterior; el `prepack` del `globalSetup` copia la hoja nueva, la clave cambia y `astro-render` se vuelve a construir (unos 2 s). El RF-3 («un solo build») no se cumple en esa ejecución, y `npm test` sale con 1 aunque nada esté roto; una segunda ejecución sale en verde. Sale tras editar `styles/` sin `npm run build:packages` antes, que es justo el caso de las inyecciones 003 y 011. No lo arreglé: esta tarea mide. Lo anoto como hallazgo sobre la T-2/T-7 (por ejemplo, `gallery:astro` podría copiar las hojas antes de calcular la clave).
+- Los dos objetivos no se cumplen, ver las tablas.
+- Las 9 ejecuciones de tiempo, las de recuento y las de calentamiento terminaron sin `hookTimeout` ni aviso `teardown`; la base tenía un aviso de cierre de Edge en la pasada 1.
+- El comentario de la serie «un byte» no llega a `dist/`; las dos series se anotan por eso.
+- No comprobé `%TEMP%` ni los `msedge` en esta tarea y no toqué el Edge del usuario.
