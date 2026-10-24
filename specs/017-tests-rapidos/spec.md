@@ -1,6 +1,7 @@
 # Spec 017 — tests-rapidos
 
-**Status:** approved · **Approved:** 2026-10-23 · el dueño: entrega 4, tras la 012; consumidores guardados entre ejecuciones
+**Status:** implemented · **Approved:** 2026-10-23 · el dueño: entrega 4, tras la 012; consumidores guardados entre ejecuciones
+**Implemented:** 2026-10-24 · 16 tareas en 12 olas y 4 arreglos; tests 813 → 913; validada por el reviewer en 1 vuelta (10 RF implementados); el objetivo ≤ 75 % se da por cumplido con la T-16 sin carga (72.7 % y 73.4 %), por decisión del dueño («da por buena la medida de la T-16»)
 **Changed:** 2026-10-23 · RF-10 añadido (limpieza de %TEMP% de ejecuciones muertas) · coordinator en modo autónomo
 **Changed:** 2026-10-24 · segunda ronda de tareas por decisión del dueño («Arregla el fallo de astro-render y añade a la 017 tareas para bajar los tests de navegador y los builds de consumidores, hasta llegar al 50 %») · sin cambios en RF ni NFR · aprobada por el coordinator en modo autónomo, con una condición: cada archivo partido (T-12, T-14, T-15) sigue cayendo en `e2e`, porque llama a `need` él mismo o porque `splitTests` sigue sus imports, con un test que lo comprueba
 **Changed:** 2026-10-24 · NFR de objetivo de ≤ 50 % / ≤ 70 % a ≤ 75 % / ≤ 75 % por decisión del dueño («Acepta lo medido: cambia en la spec los objetivos a ≤ 75 % sin cambios y tras un byte»), tras medir 72.7 % y 73.4 % en la T-16
@@ -82,7 +83,8 @@ hace, se hace una vez.
 
 ## Fuera de alcance
 
-- Paralelizar o fragmentar los tests de Edge, y cambiar `hookTimeout` o `testTimeout`.
+- Cambiar los `hookTimeout` y `testTimeout` globales de `vitest.config.ts`. Partir archivos de Edge
+  sí entra (segunda ronda), con un timeout propio en el `beforeAll` que lo necesite.
 - Reescribir tests para que midan menos.
 - Integración continua.
 

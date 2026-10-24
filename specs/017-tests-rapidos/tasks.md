@@ -412,7 +412,8 @@ arranque y de informe que arriba. Además:
     tests.
   - Cada archivo tarda ≤ 35 s.
   Inyección: la 011 RF-1 de la T-8 (oscuro del sistema en `:root`) pone en rojo los dos archivos de
-  `theme`; quitar `min-height: 100vh` de `preview-head.html` pone en rojo los de `story-theme`.
+  `theme`; quitar `min-height: 100vh` de `preview-head.html` pone en rojo
+  `gallery-story-theme-button-react--default`, como en el original.
 
   Va en la ola 11, sola.
   Nota: hecha. Los cuerpos viven en `tests/lib/theme.ts` (`defineTheme(framework, consumers)`) y `tests/lib/story-theme.ts`
