@@ -265,7 +265,7 @@ arranque y de informe que arriba. Además:
   Inyección: quitar la llamada a `sync-styles` vuelve a dar dos builds tras tocar la hoja y pone en
   rojo `phases.test.ts`, y el test nuevo.
 
-- [ ] **T-10 — Los pasos de tipos de `npm test`, en paralelo**
+- [x] **T-10 — Los pasos de tipos de `npm test`, en paralelo**
   Cubre: NFR de objetivo
   Archivos: `scripts/test.mjs` (`gallery:astro` primero; luego los dos `tsc` y los tres
   `astro check` a la vez; luego `vitest`), `tests/test-runner.test.ts`
@@ -280,6 +280,15 @@ arranque y de informe que arriba. Además:
   sin llegar a Vitest.
 
   Va en la ola 8 junto a la T-9: no comparten archivos.
+  Nota: hecha. `scripts/test.mjs` da a los cinco pasos de tipos `group: 'tipos'`; `runTests` espera (`await`) a cada
+  etapa: `gallery:astro` sola, el grupo con `Promise.all`, y `vitest`. En un grupo todos acaban, el código es el del
+  primer fallo (en el orden de la lista) y se imprime `fallaron: <paso> (<código>), ...`. `runStep` pasa a `spawn`
+  asíncrono con la salida guardada y volcada al acabar el paso, para que no se entrelace. La tabla da cada paso con
+  sangría y su tiempo, y una fila `tipos` con el del bloque; el total no cuenta los pasos anidados. Tests: de 10 a 14 en
+  `test-runner.test.ts` (grupo, concurrencia, un fallo con su código, varios fallos nombrados, total sin doble cuenta),
+  vistos en rojo antes. Inyección vista en rojo: `tests/zz-inject.ts` con `const bad: number = "x"` da salida 2, nombra
+  `tsc --noEmit (2)` y no llega a Vitest; revertida. Medida: el bloque tardó 6.6 s en una ejecución corta con otra tarea
+  en marcha (objetivo ≤ 6 s); en el `npm test` completo, con dos `npm test` a la vez, 39.7 s: no es una medida fiable.
 
 - [ ] **T-11 — Builds de consumidores guardados, y cada consumidor en su cadena**
   Cubre: RF-5, RF-6 (los builds), NFR de objetivo
