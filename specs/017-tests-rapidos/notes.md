@@ -242,3 +242,13 @@ Los archivos corren en paralelo, así que sus tiempos no suman al total. `packag
 - Una ejecución cortada deja el lock, y hay que borrarlo a mano antes de la siguiente.
 - Las cachés de herramientas (tsc incremental, Astro) estaban calientes porque `build:packages` y `gallery:astro` corrieron en el arranque. La medida de la T-8 debe hacerse en las mismas condiciones.
 - Ninguna pasada falló.
+
+## T-5: el globalSetup de un proyecto sin archivos (2026-10-23)
+
+Comprobado antes de tocar nada, con una configuración suelta de Vitest 5.0.5 con dos proyectos (`unit` sin
+`globalSetup`, `e2e` con un `globalSetup` que escribe un archivo):
+- `vitest run tests/contract.test.ts` (un archivo de `unit`) y `--project unit`: **el `globalSetup` de `e2e` no se
+  ejecuta**; el archivo no se escribió.
+- `vitest run tests/phases.test.ts` (un archivo de `e2e`): se ejecuta.
+
+No hizo falta la alternativa de la variable de entorno: bastan los dos proyectos.
