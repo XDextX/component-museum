@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 import type { TestProject } from 'vitest/node';
 import { ensureAstroRender } from '../gallery/scripts/astro-cached.mjs';
 import { cached, inputKey, recordPhase, storybookInputs } from '../scripts/cache.mjs';
-import { buildConsumerAsync, cachedStarter, createConsumer, npmCli, packPackage, type Tarball } from './lib/consumer.ts';
+import { buildCached, cachedStarter, consumerBuildKey, createConsumer, npmCli, packPackage, type ConsumerOptions, type Tarball } from './lib/consumer.ts';
 import { cleanup, isAlive, killTree, listProcesses, writeOwner } from './lib/cleanup.ts';
 import { acquireLock } from './lib/lock.ts';
 import { consumerDir, type Framework } from './lib/paths.ts';
@@ -120,6 +120,38 @@ async function checkButtonTypes(framework: Framework, dir: string): Promise<{ cl
 }
 
 /**
+ * One consumer's chain (spec 017 T-11): restore and install its tarballs, build it (or restore its stored build),
+ * and type check it. Each step records its own phase; the type check runs every time, never from the cache.
+ */
+async function chain(
+  base: string,
+  runId: string,
+  framework: Framework,
+  tarball: Tarball,
+  options: ConsumerOptions,
+  steps: { build?: boolean; check?: boolean },
+): Promise<{ dir: string; build?: RunResult; check?: { clean: RunResult; nope: RunResult } }> {
+  const name = `${options.cache}-${framework}`;
+  const started = performance.now();
+  const dir = await createConsumer(base, runId, framework, tarball, options);
+  let build: RunResult | undefined;
+  let check: { clean: RunResult; nope: RunResult } | undefined;
+  if (steps.build) {
+    const buildStarted = performance.now();
+    const built = await buildCached(dir, name, consumerBuildKey(framework, tarball, options));
+    recordPhase(`globalSetup: build ${name}`, (performance.now() - buildStarted) / 1000, built.cache);
+    build = built.result;
+  }
+  if (steps.check) {
+    const checkStarted = performance.now();
+    check = await checkButtonTypes(framework, dir);
+    recordPhase(`globalSetup: type check ${name}`, (performance.now() - checkStarted) / 1000);
+  }
+  recordPhase(`globalSetup: chain ${name}`, (performance.now() - started) / 1000);
+  return { dir, build, check };
+}
+
+/**
  * Creates every consumer once per run, in parallel, and removes them all when the run ends. Only the e2e
  * project has it (vitest.config.ts): a run of unit files alone never gets here (spec 017, RF-7).
  */
@@ -178,47 +210,39 @@ export default async function setup(project: TestProject): Promise<() => void> {
     // Awaited after the consumers; this keeps an early failure from being an unhandled rejection meanwhile.
     galleryBuilt.catch(() => {});
 
-    const [plainReact, plainAstro, guardedReact, guardedAstro, packageReact, packageAstro, tailwindReact, tailwindAstro] = await phase('consumers', () => Promise.all([
-      createConsumer(base, runId, 'react', tarballs.testPackage, { starter: starters.react, cache: 'plain', packages: [tarballs.react] }),
-      createConsumer(base, runId, 'astro', tarballs.testPackage, { starter: starters.astro, cache: 'plain', packages: [tarballs.astro] }),
-      createConsumer(base, guardRunId, 'react', tarballs.undeclaring, { starter: starters.react, cache: 'guarded', guardResolution: true }),
-      createConsumer(base, guardRunId, 'astro', tarballs.undeclaring, { starter: starters.astro, cache: 'guarded', guardResolution: true }),
-      createConsumer(base, packageRunId, 'react', tarballs.testPackage, { starter: starters.react, cache: 'package', typeCheck: true, guardResolution: true, packages: [tarballs.react] }),
-      createConsumer(base, packageRunId, 'astro', tarballs.testPackage, { starter: starters.astro, cache: 'package', typeCheck: true, guardResolution: true, packages: [tarballs.astro] }),
-      // Spec 003 T-7: Tailwind v4 consumers (no guard), two pages each.
-      createConsumer(base, tailwindRunId, 'react', tarballs.testPackage, { starter: starters.react, cache: 'tailwind', packages: [tarballs.react], tailwind: true }),
-      createConsumer(base, tailwindRunId, 'astro', tarballs.testPackage, { starter: starters.astro, cache: 'tailwind', packages: [tarballs.astro], tailwind: true }),
-    ]));
-
-    // Built here, not in a test: the shared consumers stay read-only for every test file.
-    const [buildPlainReact, buildPlainAstro, buildPackageReact, buildPackageAstro, buildTailwindReact, buildTailwindAstro] = await phase('consumer builds', () =>
-      Promise.all([plainReact, plainAstro, packageReact, packageAstro, tailwindReact, tailwindAstro].map(buildConsumerAsync)),
+    // Spec 017 T-11: each consumer is its own chain (restore, install tarballs, build or restore the stored build,
+    // type check), and all the chains run side by side. The builds are stored by key; the type checks (002 RF-5) never are.
+    const chains = await phase('consumer chains', () =>
+      Promise.all([
+        chain(base, runId, 'react', tarballs.testPackage, { starter: starters.react, cache: 'plain', packages: [tarballs.react] }, { build: true }),
+        chain(base, runId, 'astro', tarballs.testPackage, { starter: starters.astro, cache: 'plain', packages: [tarballs.astro] }, { build: true }),
+        chain(base, guardRunId, 'react', tarballs.undeclaring, { starter: starters.react, cache: 'guarded', guardResolution: true }, {}),
+        chain(base, guardRunId, 'astro', tarballs.undeclaring, { starter: starters.astro, cache: 'guarded', guardResolution: true }, {}),
+        chain(base, packageRunId, 'react', tarballs.testPackage, { starter: starters.react, cache: 'package', typeCheck: true, guardResolution: true, packages: [tarballs.react] }, { build: true, check: true }),
+        chain(base, packageRunId, 'astro', tarballs.testPackage, { starter: starters.astro, cache: 'package', typeCheck: true, guardResolution: true, packages: [tarballs.astro] }, { build: true, check: true }),
+        // Spec 003 T-7: Tailwind v4 consumers (no guard), two pages each.
+        chain(base, tailwindRunId, 'react', tarballs.testPackage, { starter: starters.react, cache: 'tailwind', packages: [tarballs.react], tailwind: true }, { build: true }),
+        chain(base, tailwindRunId, 'astro', tarballs.testPackage, { starter: starters.astro, cache: 'tailwind', packages: [tarballs.astro], tailwind: true }, { build: true }),
+      ]),
     );
+    const [plainReact, plainAstro, guardedReact, guardedAstro, packageReact, packageAstro, tailwindReact, tailwindAstro] = chains;
+    // Built in the chains, not in a test: the shared consumers stay read-only for every test file.
     project.provide('builds', {
-      plain: { react: buildPlainReact, astro: buildPlainAstro },
-      packageGuarded: { react: buildPackageReact, astro: buildPackageAstro },
-      tailwind: { react: buildTailwindReact, astro: buildTailwindAstro },
+      plain: { react: plainReact.build!, astro: plainAstro.build! },
+      packageGuarded: { react: packageReact.build!, astro: packageAstro.build! },
+      tailwind: { react: tailwindReact.build!, astro: tailwindAstro.build! },
     });
-
-    // 002 RF-5, after the builds: a wrong variant must break each guarded consumer's own type check.
-    const typeChecks = Object.fromEntries(
-      await phase('type checks', () =>
-        Promise.all(
-          frameworks.map(async (framework) => [framework, await checkButtonTypes(framework, framework === 'react' ? packageReact : packageAstro)] as const),
-        ),
-      ),
-    ) as Record<Framework, { clean: RunResult; nope: RunResult }>;
-    project.provide('typeChecks', typeChecks);
+    project.provide('typeChecks', { react: packageReact.check!, astro: packageAstro.check! });
     project.provide('gallery', await galleryBuilt);
 
     project.provide('consumers', {
       base,
       runId,
-      plain: { react: plainReact, astro: plainAstro },
-      guarded: { react: guardedReact, astro: guardedAstro },
-      packageGuarded: { react: packageReact, astro: packageAstro },
+      plain: { react: plainReact.dir, astro: plainAstro.dir },
+      guarded: { react: guardedReact.dir, astro: guardedAstro.dir },
+      packageGuarded: { react: packageReact.dir, astro: packageAstro.dir },
       starters,
-      tailwind: { react: tailwindReact, astro: tailwindAstro },
+      tailwind: { react: tailwindReact.dir, astro: tailwindAstro.dir },
       guardParent,
       undeclaringPackage,
     });
