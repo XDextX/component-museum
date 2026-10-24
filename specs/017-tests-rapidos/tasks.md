@@ -127,7 +127,7 @@ paralelo. Quién toca cada archivo compartido:
   Inyección: poner un archivo con `inject` en la lista de `unit` pone en rojo RF-8 con el nombre de
   su preparación.
 
-- [ ] **T-6 — `npm test` con su tabla de fases**
+- [x] **T-6 — `npm test` con su tabla de fases**
   Cubre: RF-9
   Archivos: `scripts/test.mjs`, `tests/test-runner.test.ts`, `package.json` (solo `test`, sin el
   `tsc -p packages/react/tsconfig.build.json`)
@@ -140,6 +140,15 @@ paralelo. Quién toca cada archivo compartido:
   - Un error de tipos sigue cortando la cadena con distinto de 0 (`AGENTS.md`).
   Inyección: un error de tipos en un archivo de `tests/` pone `npm test` en distinto de 0 sin llegar
   a Vitest.
+
+  Nota: hecha. `scripts/test.mjs` (`testSteps`, `formatTable`, `runTests`; `scripts/test.d.mts` para
+  importarlo desde TypeScript) ejecuta los pasos en el orden de siempre sin el `tsc -p …
+  tsconfig.build.json`, vacía `phases.json` al empezar, para en el primer error con su código y pinta la
+  tabla con las fases del `globalSetup` antes de `vitest`. `package.json`: solo `test`. Tests nuevos:
+  `tests/test-runner.test.ts` (9); de 845 a 854, ninguno borrado. Inyección vista en rojo: un error de tipos
+  en `tests/` dio `npm test` = 2 tras `tsc --noEmit`, sin llegar a Vitest, y se revirtió. El comentario
+  `shortcut` de `tests/phases.test.ts` pasa a una nota sin `shortcut`: ya se limpia, salvo en un `vitest`
+  suelto. Desviación: el paso `gallery:astro` va como `npm run gallery:astro`, para conservar su salida.
 
 - [ ] **T-7 — Limpieza de `%TEMP%` y de los Edge huérfanos de ejecuciones muertas**
   Cubre: RF-10
