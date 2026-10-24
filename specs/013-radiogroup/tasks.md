@@ -67,7 +67,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Nota: `Field` gana `group?: { name, size, disabled, className?, attrs? }`; con él pinta el `fieldset` y da a los hijos solo `id` y `name` (sin `aria-describedby`: va en el grupo). `attrs` se esparce primero en el `fieldset`. Inyecciones vistas en rojo: `aria-describedby` en los hijos (2 tests de `field-ids`) y orden hint/error en el modo por defecto (6 de `field-markup`; hay que reconstruir `packages/react` porque lee `dist`). Tests: +4 (`field-ids`), el resto sin cambios.
 
-- [ ] **T-3 — Hoja del grupo, el círculo y el punto**
+- [x] **T-3 — Hoja del grupo, el círculo y el punto**
   Cubre: RF-10 a RF-15 (sobre la página fija)
   Archivos: `styles/museum.css` (tokens `--museum-radio-*` en los tres bloques,
   `.museum-radiogroup*`, `.museum-radio*`, colores forzados), `tests/fixtures/field.html`,
@@ -86,6 +86,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - el coordinator aprueba las capturas (dos temas y colores forzados) antes del commit.
   Inyección: un `--museum-radio-mark` igual a `--museum-radio-checked-bg` pone en rojo RF-11; quitar
   `.museum-radio` del bloque de colores forzados pone en rojo RF-15.
+
+  Nota: tokens `--museum-radio-checked-bg` y `--museum-radio-mark` en los tres bloques (valen los de Checkbox por `var()`); las medidas del círculo reutilizan `--museum-checkbox-size-*` y `--museum-checkbox-target`, sin tokens nuevos. El marcado de la página fija es el canónico (`fieldset role="radiogroup"`, `legend`, `.museum-radiogroup__option`, `label` sin clase), con las clases `--sm/--md/--lg` en el grupo y no en el radio. Tests: +38 en `field-styles.test.ts` (112 en total, 74 antes), el resto sin cambios. El hueco entre el anillo de foco y la etiqueta es de 2 px, el mismo del Checkbox de la 012, y ahora tiene su test (también sobre el Checkbox). Inyecciones vistas en rojo: `--museum-radio-mark` igual a `--museum-radio-checked-bg` (3 tests de RF-11, los modos claros) y quitar las reglas `.museum-radio` del bloque de colores forzados (RF-15 de colores forzados y el test de reglas). Capturas en el scratchpad de la sesión, pendientes del coordinator.
 
   Va en la ola 2: con la T-1 y la T-2 serían tres `npm test` a la vez.
 
