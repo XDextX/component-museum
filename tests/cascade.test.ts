@@ -1,13 +1,14 @@
 import { join } from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright-core';
-import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { tailwindPages } from './lib/consumer.ts';
 import type { Framework } from './lib/paths.ts';
 import { closeBrowserAndServers } from './lib/browser.ts';
 import { serve, type Served } from './lib/serve.ts';
 
 const frameworks: Framework[] = ['react', 'astro'];
-const consumers = inject('consumers');
+const consumers = need('consumers');
 
 let browser: Browser;
 const servers: Served[] = [];

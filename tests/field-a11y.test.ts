@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { chromium, type Browser, type BrowserContext, type CDPSession, type Page } from 'playwright-core';
-import { afterAll, beforeAll, beforeEach, describe, expect, inject, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { closeBrowserAndServers } from './lib/browser.ts';
 import { visibleTexts } from './lib/contrast.ts';
 import { contrastRatio, parseRgb } from './lib/css.ts';
@@ -11,7 +12,7 @@ import { serve, type Served } from './lib/serve.ts';
 // Spec 009 T-6, spec 010 T-4 and spec 012 T-4: Input, Textarea and Checkbox as a consumer gets them, built from the
 // packed package, in real Edge (RF-2 to RF-8, the focus rules, for Textarea RF-9 to RF-11, and Checkbox's own RF-2 to
 // RF-13 block at the end). The instances come from tests/lib/consumer.ts.
-const consumers = inject('consumers');
+const consumers = need('consumers');
 const frameworks: Framework[] = ['react', 'astro'];
 // How the page gets its theme (spec 011): dark is asked for with data-theme under a light system; light is what a
 // page that asks for nothing gets under a dark system; "system" follows the dark system.

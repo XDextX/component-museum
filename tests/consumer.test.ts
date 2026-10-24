@@ -4,7 +4,8 @@ import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cacheDir } from '../scripts/cache.mjs';
-import { afterAll, describe, expect, inject, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { buildConsumer, configFiles, installPackage, packPackage } from './lib/consumer.ts';
 import { consumerDir, isOutside, type Framework } from './lib/paths.ts';
 import { diffSnapshots, snapshotRoots, takeSnapshot } from './lib/snapshot.ts';
@@ -13,11 +14,11 @@ import { fileInTarball, tarballFiles } from './lib/tarball.ts';
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const frameworks: Framework[] = ['react', 'astro'];
 // Created once per run by tests/global-setup.ts; the plain ones are read-only here.
-const consumers = inject('consumers');
+const consumers = need('consumers');
 
 // RF-6: the tree as global-setup.ts saw it before creating anything; the suite must leave it so.
 afterAll(() => {
-  expect(diffSnapshots(inject('treeBefore'), takeSnapshot(repo, snapshotRoots))).toEqual([]);
+  expect(diffSnapshots(need('treeBefore'), takeSnapshot(repo, snapshotRoots))).toEqual([]);
 });
 
 /** Where the consumer's own require finds the package, with links resolved. */
@@ -59,7 +60,7 @@ describe('external consumer (RF-4)', () => {
 
 // Before the RF-5 tests below: those modify the guarded consumers, and this reads them untouched.
 describe('the installed packages are the run\'s tarballs (spec 017, RF-6)', () => {
-  const tarballs = inject('tarballs');
+  const tarballs = need('tarballs');
   const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
   /** Each consumer with the packages the run installs in it: the test package and the framework package, or the undeclaring one. */
   const installs = frameworks.flatMap((framework) => [
@@ -145,7 +146,7 @@ function builtWith(dir: string, text: string): boolean {
 
 describe('framework packages in the consumers (RF-3)', () => {
   // Built once by global-setup.ts, so the shared consumers stay read-only here.
-  const builds = inject('builds');
+  const builds = need('builds');
 
   for (const framework of frameworks) {
     for (const [kind, dirs] of [['untouched', consumers.plain], ['guarded 002', consumers.packageGuarded]] as const) {
@@ -164,7 +165,7 @@ describe('framework packages in the consumers (RF-3)', () => {
 
 describe('Button types in the consumers (002 RF-5)', () => {
   // Checked once by global-setup.ts in the 002 guarded consumers: tsc -b (React), astro check (Astro).
-  const typeChecks = inject('typeChecks');
+  const typeChecks = need('typeChecks');
 
   for (const framework of frameworks) {
     it(`passes the ${framework} consumer's type check, and fails it once a Button has variant="nope"`, () => {

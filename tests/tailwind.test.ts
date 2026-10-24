@@ -1,12 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it, inject } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { tailwindPages } from './lib/consumer.ts';
 import type { Framework } from './lib/paths.ts';
 
 const frameworks: Framework[] = ['react', 'astro'];
-const consumers = inject('consumers');
-const builds = inject('builds');
+const consumers = need('consumers');
+const builds = need('builds');
 
 /** Every stylesheet the built page links, as one string; absent for a page that was not built. */
 function pageCss(dist: string, page: string): string | undefined {

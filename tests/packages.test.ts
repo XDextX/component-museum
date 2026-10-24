@@ -3,7 +3,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
-import { describe, expect, inject, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { findContractFiles, loadContract } from './lib/contract.ts';
 import { npmCli } from './lib/consumer.ts';
 import { entryExports } from '../gallery/lib/matrix.ts';
@@ -41,7 +42,7 @@ function packedFiles(dir: string): { name: string; files: string[] } {
 
 /** Spec 017 RF-1: what the run's own tarball of `framework` holds; the globalSetup packed it once. */
 function tarballOf(framework: Framework): { name: string; files: string[] } {
-  const { name, path } = inject('tarballs')[framework];
+  const { name, path } = need('tarballs')[framework];
   return { name, files: tarballFiles(readFileSync(path)).map((file) => file.replace(/^package\//, '')) };
 }
 

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { describe, expect, inject, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { argTypesFromContract, astroCases, usageSnippet, type ArgTypes, type Contract } from '../gallery/lib/contract-args.ts';
 import { loadContract } from './lib/contract.ts';
 import { declaredTitles, exportedContracts, packageExports, slug, storyFile, storyProblems } from './lib/gallery-pages.ts';
@@ -104,7 +105,7 @@ describe('RF-1: a story per framework for every exported component', () => {
   });
 
   it('is built into Storybook under the same name', () => {
-    const index = JSON.parse(readFileSync(resolve(inject('gallery').storybook, 'index.json'), 'utf8')) as {
+    const index = JSON.parse(readFileSync(resolve(need('gallery').storybook, 'index.json'), 'utf8')) as {
       entries: Record<string, { title: string; type: string }>;
     };
     const built = Object.values(index.entries).filter((e) => e.type === 'story').map((e) => e.title);
@@ -158,7 +159,7 @@ describe('RF-3: the controls check bites', () => {
 
 describe('RF-5 and RF-6: every state of every Astro component is prerendered with its usage code', () => {
   const casesOf = (name: string) =>
-    JSON.parse(readFileSync(join(dirname(inject('gallery').astroJson), `astro-${slug(name)}.json`), 'utf8')) as AstroCase[];
+    JSON.parse(readFileSync(join(dirname(need('gallery').astroJson), `astro-${slug(name)}.json`), 'utf8')) as AstroCase[];
   const astroComponents = components.filter((c) => exports.Astro.includes(c.name));
 
   it.each(astroComponents.map((c) => [c.name, c] as const))('%s has every case, with museum-%s, a name and its own usage code', (name, c) => {

@@ -135,7 +135,7 @@ paralelo. Quién toca cada archivo compartido:
   paralelo, 15,0 s y 7,4 s. `copyTree` en `tests/lib/consumer.ts` usa `robocopy` y cae a `fs.promises.cp` si no
   está. La inyección de RF-6 sigue en rojo con el cambio.
 
-- [ ] **T-5 — Subconjuntos sin preparación que no necesitan**
+- [x] **T-5 — Subconjuntos sin preparación que no necesitan**
   Cubre: RF-7, RF-8
   Archivos: `vitest.config.ts` (proyectos `unit` y `e2e`), `tests/global-setup.ts`,
   `tests/lib/need.ts`
@@ -150,6 +150,20 @@ paralelo. Quién toca cada archivo compartido:
   - `npm test` corre los dos proyectos y da el mismo número de tests que antes.
   Inyección: poner un archivo con `inject` en la lista de `unit` pone en rojo RF-8 con el nombre de
   su preparación.
+
+  Nota: hecha. Vitest no ejecuta el `globalSetup` de un proyecto sin archivos que correr (comprobado antes de
+  tocar nada, anotado en `notes.md`), así que no hizo falta la variable de entorno. `vitest.config.ts` define
+  `unit` (26 archivos, sin `globalSetup`) y `e2e` (24, con él); las listas salen de `splitTests`
+  (`tests/lib/projects.ts`), que lee las llamadas `need('x')` o `inject('x')` de cada archivo, así que un archivo
+  nuevo con `inject` cae solo en `e2e`. `tests/lib/need.ts` (`need(name)`) falla con «falta la preparación
+  `<name>`: ejecuta el proyecto e2e o npm test»; los 24 archivos con `inject` pasan a `need` (cambio mecánico).
+  `vitest run tests/contract.test.ts`: 3,3 s, sin `globalSetup`. Tests nuevos: `tests/need.test.ts` (1, con el
+  fixture `tests/fixtures/missing-preparation`) y `tests/projects.test.ts` (7); de 873 a 881 (880 pasan y 1 se
+  salta), ninguno borrado. Inyección vista en rojo: sacar `tests/gallery.test.ts` de la detección (queda en `unit`)
+  pone en rojo `projects.test.ts` con «tests/gallery.test.ts asks for the preparation gallery». Desviaciones: `unit`
+  tiene 26 archivos y no 22 (los 2 tests nuevos de esta tarea y los de las tareas anteriores); `projects` con `extends: true` y los
+  tiempos de espera en la raíz; el recorrido de `tests/` es a mano, porque `readdirSync` recursivo sobre
+  `fixtures` tardaba un minuto.
 
 - [x] **T-6 — `npm test` con su tabla de fases**
   Cubre: RF-9

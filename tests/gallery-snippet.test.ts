@@ -1,5 +1,6 @@
 import { chromium, type Browser, type Page } from 'playwright-core';
-import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { closeBrowserAndServers } from './lib/browser.ts';
 import { serve, type Served } from './lib/serve.ts';
 
@@ -22,7 +23,7 @@ describe('the usage code follows the controls on the docs page (spec 005, RF-2)'
   let browser: Browser;
   let page: Page;
   beforeAll(async () => {
-    served = await serve(inject('gallery').storybook);
+    served = await serve(need('gallery').storybook);
     browser = await chromium.launch({ channel: 'msedge' });
     page = await browser.newPage({ viewport: { width: 1300, height: 1000 } });
     await page.goto(`${served.url}iframe.html?id=button-documentation--docs&viewMode=docs`);
