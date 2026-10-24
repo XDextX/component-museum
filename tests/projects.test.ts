@@ -46,6 +46,11 @@ describe('the unit and e2e projects of this repo (spec 017, RF-7, RF-8)', () => 
     expect(e2e).toContain('tests/gallery.test.ts');
   });
 
+  it('sends the three field-a11y files to e2e, each asking for the consumers itself (spec 017, T-12)', () => {
+    for (const kind of ['input', 'textarea', 'checkbox']) expect(e2e).toContain(`tests/field-a11y-${kind}.test.ts`);
+    expect(unit.filter((file) => file.includes('field-a11y'))).toEqual([]);
+  });
+
   it('keeps in e2e only files that import a preparation, so none pays for the globalSetup for nothing', () => {
     expect(e2e.filter((file) => !importsPreparation(readFileSync(join(root, file), 'utf8')))).toEqual([]);
   });
