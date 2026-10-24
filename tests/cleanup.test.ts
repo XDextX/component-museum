@@ -108,6 +108,25 @@ describe('RF-10: the Edge of the tests', () => {
     expect(killed).toEqual([500]);
   });
 
+  it('a kill that throws does not stop the cleanup, and that Edge does not count as closed', () => {
+    const dead = owned('cm-dead', 999);
+    const stuck = folder(`${PROFILE}stuck`);
+    const closed = folder(`${PROFILE}closed`);
+    processes = [edge(800, 999, stuck), edge(801, 999, closed)];
+    alive.add(800).add(801);
+    const result = cleanup({
+      temp,
+      isAlive: (pid) => alive.has(pid),
+      processes: () => processes,
+      kill: (pid) => {
+        if (pid === 800) throw new Error('taskkill failed');
+        alive.delete(pid);
+      },
+    });
+    expect(result.edges).toEqual([801]);
+    expect([dead, stuck, closed].map(existsSync)).toEqual([false, true, false]);
+  });
+
   it('keeps the Edge whose launcher lives, and its profile', () => {
     const profile = folder(`${PROFILE}running`, 5);
     processes = [edge(500, 100, profile)];

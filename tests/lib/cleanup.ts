@@ -126,8 +126,18 @@ export function cleanup(options: CleanupOptions): { folders: string[]; edges: nu
       if (!dir || !basename(dir).startsWith(PROFILE) || !same(real(dirname(dir)), tempReal)) return [];
       return [{ ...p, profile: basename(dir) }];
     });
-  const orphans = ofTests.filter((p) => !isAlive(p.parentPid));
-  orphans.forEach((p) => options.kill(p.pid));
+  // A failed kill (the process is already gone, access denied) never stops the cleanup or the run: that Edge
+  // does not count as closed, and its profile is not removed on the spot.
+  const orphans = ofTests
+    .filter((p) => !isAlive(p.parentPid))
+    .filter((p) => {
+      try {
+        options.kill(p.pid);
+        return true;
+      } catch {
+        return false;
+      }
+    });
   const closed = new Set(orphans.map((p) => p.profile.toLowerCase()));
   const used = new Set(ofTests.filter((p) => !orphans.includes(p)).map((p) => p.profile.toLowerCase()));
 
