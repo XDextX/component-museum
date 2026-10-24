@@ -4,7 +4,7 @@
  * Astro has no module scope in a component, so the counts live on globalThis, one per prefix.
  */
 export function fieldIds(
-  prefix: 'museum-input' | 'museum-textarea' | 'museum-checkbox',
+  prefix: 'museum-input' | 'museum-textarea' | 'museum-checkbox' | 'museum-radiogroup',
   id: string | null | undefined,
   hint: string,
   error: string,

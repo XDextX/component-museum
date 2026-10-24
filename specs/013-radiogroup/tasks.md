@@ -42,7 +42,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   Inyección: declarar `options?: …` en una copia en memoria pone en rojo la comprobación de la
   obligatoria; quitar la rama `options` de `astroCases` pone en rojo los 8 casos.
 
-- [ ] **T-2 — El ayudante de campo, también como grupo**
+- [x] **T-2 — El ayudante de campo, también como grupo**
   Cubre: RF-2, RF-4 a RF-7 (la lógica)
   Archivos: `packages/react/src/field.tsx` (modo `group`: `fieldset role="radiogroup"`, `legend`, la
   descripción, `aria-invalid` y `aria-required` en el grupo), `packages/astro/src/field.ts` (prefijo
@@ -58,6 +58,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   `group` de `field-ids.test.ts`; romper el modo por defecto pone en rojo `field-markup.test.ts`.
 
   Va en la ola 1 junto a la T-1: no comparten archivos.
+
+  Nota: `Field` gana `group?: { name, size, disabled, className?, attrs? }`; con él pinta el `fieldset` y da a los hijos solo `id` y `name` (sin `aria-describedby`: va en el grupo). `attrs` se esparce primero en el `fieldset`. Inyecciones vistas en rojo: `aria-describedby` en los hijos (2 tests de `field-ids`) y orden hint/error en el modo por defecto (6 de `field-markup`; hay que reconstruir `packages/react` porque lee `dist`). Tests: +4 (`field-ids`), el resto sin cambios.
 
 - [ ] **T-3 — Hoja del grupo, el círculo y el punto**
   Cubre: RF-10 a RF-15 (sobre la página fija)
