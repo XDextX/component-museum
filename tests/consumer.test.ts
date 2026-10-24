@@ -1,11 +1,14 @@
+import { createHash } from 'node:crypto';
 import { cpSync, existsSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { cacheDir } from '../scripts/cache.mjs';
 import { afterAll, describe, expect, inject, it } from 'vitest';
 import { buildConsumer, configFiles, installPackage, packPackage } from './lib/consumer.ts';
 import { consumerDir, isOutside, type Framework } from './lib/paths.ts';
 import { diffSnapshots, snapshotRoots, takeSnapshot } from './lib/snapshot.ts';
+import { fileInTarball, tarballFiles } from './lib/tarball.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const frameworks: Framework[] = ['react', 'astro'];
@@ -51,6 +54,46 @@ describe('external consumer (RF-4)', () => {
     const dir = consumers.plain.react;
     expect(existsSync(join(dir, 'leftover.txt'))).toBe(false);
     expect(existsSync(join(dir, 'node_modules', 'museum-test-package', 'package.json'))).toBe(true);
+  });
+});
+
+// Before the RF-5 tests below: those modify the guarded consumers, and this reads them untouched.
+describe('the installed packages are the run\'s tarballs (spec 017, RF-6)', () => {
+  const tarballs = inject('tarballs');
+  const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
+  /** Each consumer with the packages the run installs in it: the test package and the framework package, or the undeclaring one. */
+  const installs = frameworks.flatMap((framework) => [
+    { label: `plain ${framework}`, dir: consumers.plain[framework], packed: [tarballs.testPackage, tarballs[framework]] },
+    { label: `002 guarded ${framework}`, dir: consumers.packageGuarded[framework], packed: [tarballs.testPackage, tarballs[framework]] },
+    { label: `tailwind ${framework}`, dir: consumers.tailwind[framework], packed: [tarballs.testPackage, tarballs[framework]] },
+    { label: `RF-5 guarded ${framework}`, dir: consumers.guarded[framework], packed: [tarballs.undeclaring] },
+  ]);
+
+  it('covers the 8 consumers', () => expect(installs).toHaveLength(8));
+
+  for (const { label, dir, packed } of installs) {
+    // Every file, not only package.json and dist/index.js: the barrel does not change when a component does.
+    it(`holds in the ${label} consumer every file of the run's tarballs, byte for byte`, () => {
+      for (const { name, path } of packed) {
+        const tgz = readFileSync(path);
+        const files = tarballFiles(tgz);
+        expect(files, `${name} has no package.json in its tarball`).toContain('package/package.json');
+        for (const file of files) {
+          const installed = join(dir, 'node_modules', name, file.slice('package/'.length));
+          expect(existsSync(installed), `${installed} is not installed`).toBe(true);
+          expect(sha256(readFileSync(installed)), `${installed} is not the run's tarball`).toBe(sha256(fileInTarball(tgz, file)!));
+        }
+      }
+    });
+  }
+
+  it('keeps the packages under test out of the stored consumers', () => {
+    const stored = join(cacheDir, 'consumers');
+    for (const entry of readdirSync(stored, { withFileTypes: true }).filter((e) => e.isDirectory() && e.name !== 'starters')) {
+      for (const name of ['@component-museum', 'museum-test-package']) {
+        expect(existsSync(join(stored, entry.name, 'node_modules', name)), `${entry.name} stores ${name}`).toBe(false);
+      }
+    }
   });
 });
 

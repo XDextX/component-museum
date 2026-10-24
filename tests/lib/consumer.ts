@@ -1,8 +1,10 @@
 import { execFile } from 'node:child_process';
-import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cp } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { cached, cacheDir, inputKey, recordPhase, toolVersions } from '../../scripts/cache.mjs';
 import { loadContract } from './contract.ts';
 import { consumerDir, type Framework } from './paths.ts';
 import { run, type RunResult } from './run.ts';
@@ -12,11 +14,43 @@ const execFileAsync = promisify(execFile);
 // shortcut: npm-cli.js next to node.exe is the Windows layout; under `npm test` npm_execpath wins.
 export const npmCli = process.env.npm_execpath ?? join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js');
 
+/**
+ * Copies a folder tree, reading `from` and never writing to it. robocopy (in Windows) copies with 16 threads, about
+ * 3 times faster than fs.cp on a node_modules; where it is missing, fs.cp does the same, slower.
+ */
+async function copyTree(from: string, to: string, options: { recursive: true }): Promise<void> {
+  try {
+    await execFileAsync('robocopy', [from, to, '/E', '/MT:16', '/NFL', '/NDL', '/NJH', '/NJS', '/NP'], { maxBuffer: 64 * 1024 * 1024 });
+  } catch (error) {
+    const { code } = error as { code?: number | string };
+    // robocopy exits 0 to 7 when it copied; 8 and up is a failure.
+    if (typeof code === 'number' && code < 8) return;
+    if (code !== 'ENOENT') throw new Error(`robocopy failed copying ${from} to ${to} (exit ${code})`, { cause: error });
+    await cp(from, to, options);
+  }
+}
+
 /** Pinned starters (plan 001, block 6): a new starter release never changes the suite. */
 const starters: Record<Framework, string[]> = {
   react: ['--package=create-vite@9.3.0', '--', 'create-vite', '<dir>', '--template', 'react-ts', '--no-interactive', '--no-immediate'],
   astro: ['--package=create-astro@5.3.0', '--', 'create-astro', '<dir>', '--template', 'minimal', '--no-install', '--no-git', '--no-ai', '--skip-houston', '--yes'],
 };
+
+/** The pinned starters, as scaffolded and stored (spec 017 RF-5): the reference for the untouched config. */
+const storedStarters = join(cacheDir, 'consumers', 'starters');
+
+/** Key of a stored starter: its pin and the tools; the registry is never an input. */
+export function starterKey(framework: Framework, pin: string[] = starters[framework]): string {
+  return inputKey(cacheDir, [], { framework, pin: pin.join(' '), ...toolVersions() });
+}
+
+/**
+ * Key of a stored consumer (spec 017 RF-5): its shape and framework, the pinned starter, the starter's
+ * package.json and lockfile (never the run's tarballs), what is installed on top, and Node and npm.
+ */
+export function consumerKey(starter: string, framework: Framework, shape: string, install: string[], pin: string[] = starters[framework]): string {
+  return inputKey(starter, ['package.json', 'package-lock.json'], { framework, shape, install: install.join(' '), pin: pin.join(' '), ...toolVersions() });
+}
 
 /** The file each starter builds from, where the package import goes. */
 const entries: Record<Framework, string> = {
@@ -35,6 +69,10 @@ export type ConsumerOptions = {
   guardResolution?: boolean;
   /** A starter already scaffolded by `scaffold`, copied instead of running the starter again. */
   starter?: string;
+  /** With `starter`: the shape (plain, guarded, package, tailwind) under which its installed dependencies are stored between runs. */
+  cache?: string;
+  /** Astro only: the type checker, which the starter lacks, installed with the dependencies. */
+  typeCheck?: boolean;
   /** Framework package tarballs installed with the test package; the entry then renders Button from them. */
   packages?: Tarball[];
   /** Spec 003 T-7: Tailwind v4 in the consumer, with one page per import order (see `tailwindPages`). */
@@ -64,6 +102,18 @@ function patch(file: string, edit: (source: string) => string): void {
   writeFileSync(file, updated);
 }
 
+/** The starter scaffolded once and stored; a copy of it is made in `parent/<framework>` on every run. */
+export async function cachedStarter(parent: string, framework: Framework): Promise<string> {
+  const started = performance.now();
+  const result = await cached(`starter-${framework}`, starterKey(framework), [join(storedStarters, framework, 'package.json')], async () => {
+    await scaffold(storedStarters, framework);
+  });
+  const dir = join(parent, framework);
+  await copyTree(join(storedStarters, framework), dir, { recursive: true });
+  recordPhase(`globalSetup: starter ${framework}`, (performance.now() - started) / 1000, result);
+  return dir;
+}
+
 /** Runs the pinned starter into `<parent>/<framework>`, from scratch, and returns that folder. */
 export async function scaffold(parent: string, framework: Framework): Promise<string> {
   const dir = join(parent, framework);
@@ -86,8 +136,8 @@ export async function packPackage(packageDir: string, destination: string): Prom
 
 /** Installs already packed tarballs at once (spec 017 RF-1: the run packs each package once, never here). */
 export async function installPackage(dir: string, ...tarballs: Tarball[]): Promise<string[]> {
-  // No --prefer-offline: with it npm trusts stale cached metadata and misses the starter's versions.
-  await npm(['install', '--no-audit', '--no-fund', ...tarballs.map((t) => t.path)], dir, `npm install failed in ${dir}`);
+  // --offline: the dependencies are already in the consumer, so a run never needs the registry for a tarball.
+  await npm(['install', '--offline', '--no-audit', '--no-fund', ...tarballs.map((t) => t.path)], dir, `npm install failed in ${dir}`);
   return tarballs.map((t) => t.name);
 }
 
@@ -275,16 +325,42 @@ function guardResolution(framework: Framework, dir: string, names: string[]): vo
   }
 }
 
+/** What goes on top of the starter's own dependencies, installed once and stored with them. */
+function extraInstall(framework: Framework, options: ConsumerOptions): string[] {
+  // Pinned (plan 003): a new Tailwind release never changes the suite.
+  if (options.tailwind) return ['tailwindcss@4.3.3', '@tailwindcss/vite@4.3.3'];
+  if (options.typeCheck && framework === 'astro') return ['--save-dev', '@astrojs/check@^0.9.11', 'typescript@^6.0.3'];
+  return [];
+}
+
 /**
- * Creates `<base>/cm-<runId>/<framework>` from its pinned starter, from scratch, and installs the
- * package from `tarball`, the way a consumer outside the repo gets it. The
+ * Copies the starter with its dependencies installed into `dir`. The stored copy (spec 017 RF-5) is only
+ * read on a hit; on a miss it is made from the starter and the registry, and stored without any tarball.
+ */
+async function restoreDependencies(dir: string, framework: Framework, shape: string, starter: string, install: string[]): Promise<void> {
+  const started = performance.now();
+  const entry = join(cacheDir, 'consumers', `${shape}-${framework}`);
+  const result = await cached(`consumer-${shape}-${framework}`, consumerKey(starter, framework, shape, install), [join(entry, 'node_modules')], async () => {
+    rmSync(entry, { recursive: true, force: true });
+    await copyTree(starter, entry, { recursive: true });
+    await npm(['install', '--no-audit', '--no-fund', ...install], entry, `npm install failed in ${entry}`);
+  });
+  await copyTree(entry, dir, { recursive: true });
+  recordPhase(`globalSetup: consumer ${shape}-${framework}`, (performance.now() - started) / 1000, result);
+}
+
+/**
+ * Creates `<base>/cm-<runId>/<framework>` from its pinned starter and installs the
+ * package from `tarball`, the way a consumer outside the repo gets it. The starter's dependencies come
+ * from the stored copy when `cache` is given. The
  * starter's config stays untouched unless `guardResolution` adds the RF-5 resolution guard.
  */
 export async function createConsumer(base: string, runId: string, framework: Framework, tarball: Tarball, options: ConsumerOptions = {}): Promise<string> {
   const dir = consumerDir(base, runId, framework);
   if (options.starter) {
     if (existsSync(dir)) rmSync(dir, { recursive: true });
-    cpSync(options.starter, dir, { recursive: true });
+    if (options.cache) await restoreDependencies(dir, framework, options.cache, options.starter, extraInstall(framework, options));
+    else await copyTree(options.starter, dir, { recursive: true });
   } else {
     await scaffold(dirname(dir), framework);
   }
@@ -292,8 +368,6 @@ export async function createConsumer(base: string, runId: string, framework: Fra
   const [name, ...frameworkPackages] = await installPackage(dir, tarball, ...packages);
   importPackage(framework, dir, name);
   if (options.tailwind) {
-    // Pinned (plan 003): a new Tailwind release never changes the suite.
-    await npm(['install', '--no-audit', '--no-fund', 'tailwindcss@4.3.3', '@tailwindcss/vite@4.3.3'], dir, `npm install tailwindcss failed in ${dir}`);
     useTailwind(framework, dir, frameworkPackages[0]);
   } else {
     for (const frameworkPackage of frameworkPackages) useButtons(framework, dir, frameworkPackage);

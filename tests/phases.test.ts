@@ -13,7 +13,7 @@ describe('the run packs each package once and installs that tarball everywhere (
   const packs = ['react', 'astro', 'testPackage', 'undeclaring'] as const;
 
   it('records exactly one pack, and so one prepack, per package, and no other prepack of the run', () => {
-    const recorded = Object.keys(phases()).filter((name) => /pack/.test(name));
+    const recorded = Object.keys(phases()).filter((name) => name.startsWith('globalSetup: pack '));
     expect(recorded.sort()).toEqual(packs.map((name) => `globalSetup: pack ${name}`).sort());
     for (const name of packs) expect(existsSync(inject('tarballs')[name].path), `${name} has no tarball`).toBe(true);
   });
@@ -27,6 +27,14 @@ describe('the run packs each package once and installs that tarball everywhere (
         expect(installed(dirs[framework], framework).equals(shipped!), `${dirs[framework]} does not hold the run tarball`).toBe(true);
       }
     }
+  });
+});
+
+describe('the run reuses its consumers (spec 017, RF-5)', () => {
+  it('records each starter and each of the 8 consumers as a hit or a build', () => {
+    const shapes = ['plain', 'guarded', 'package', 'tailwind'];
+    const names = ['react', 'astro'].flatMap((framework) => [`starter ${framework}`, ...shapes.map((shape) => `consumer ${shape}-${framework}`)]);
+    for (const name of names) expect(phases()[`globalSetup: ${name}`]?.cache, name).toMatch(/^(hit|built)$/);
   });
 });
 
