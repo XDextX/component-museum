@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Browser } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { exampleText, type Contract } from '../../gallery/lib/contract-args.ts';
+import { exampleOptions, exampleText, type Contract } from '../../gallery/lib/contract-args.ts';
 import { exampleClasses } from '../../gallery/lib/example-classes.ts';
 import { closeBrowserAndServers } from './browser.ts';
 import { exportedContracts, packageExports, slug, storyId } from './gallery-pages.ts';
@@ -14,7 +14,8 @@ import { serve, type Served } from './serve.ts';
 const repo = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const themes = ['light', 'dark'] as const;
 
-type Rendered = { classes: string[]; attributes: Record<string, string>; text: string; shown: string; error: boolean };
+// `checked` and `names`: the value and the name of each radio inside the root (a group has them; others, none).
+type Rendered = { classes: string[]; attributes: Record<string, string>; text: string; shown: string; error: boolean; checked: string[]; names: string[] };
 
 // Every component a package exports with a contract and a React story (spec 009, RF-10).
 export const components = exportedContracts(repo).filter((c) => packageExports(repo).React.includes(c.name));
@@ -25,12 +26,25 @@ export const components = exportedContracts(repo).filter((c) => packageExports(r
  * `<prop>="<value>"`, a boolean as its attribute (`defaultChecked` as `checked`), a text as part of what the story shows. Then the
  * content and the class controls (RF-4). Button's own cases come out exactly as they always did.
  */
-function casesOf(contract: Contract): { arg: string; shows: (b: Rendered) => boolean }[] {
+export function casesOf(contract: Contract): { arg: string; shows: (b: Rendered) => boolean }[] {
   const name = slug(contract.name);
   // The component's own example class, from the one source its story offers it from.
   const exampleClass = Object.keys(exampleClasses[contract.name] ?? {})[0];
   return [
     ...Object.entries(contract.props).flatMap(([prop, spec]) => {
+      // A list the example options do not have: its first label must show (spec 013). Storybook reads `options[0].label` as a path in the args.
+      if (spec.type === 'options') {
+        const other = exampleOptions().every((o) => o.label !== 'Other') ? 'Other' : 'Another';
+        return [{ arg: `${prop}[0].value:x;${prop}[0].label:${other}`, shows: (b: Rendered) => b.shown.includes(other) }];
+      }
+      // A group's name and its default value land on its radios, not in the text (spec 013, RF-3, RF-9).
+      if (spec.type === 'string' && 'options' in contract.props && prop === 'name') {
+        return [{ arg: `${prop}:Name`, shows: (b: Rendered) => b.names.includes('Name') }];
+      }
+      if (spec.type === 'string' && 'options' in contract.props && prop === 'defaultValue') {
+        const value = exampleOptions()[1].value;
+        return [{ arg: `${prop}:${value}`, shows: (b: Rendered) => b.checked.includes(value) }];
+      }
       if (spec.type === 'string') {
         const text = exampleText(prop);
         return [{ arg: `${prop}:${text}`, shows: (b: Rendered) => b.shown.includes(text) }];
@@ -65,6 +79,8 @@ async function render(browser: Browser, url: string, contract: Contract, colorSc
       shown: document.getElementById('storybook-root')?.textContent ?? '',
       // Storybook shows a story that throws in its own error display on <body>.
       error: document.body.classList.contains('sb-show-errordisplay'),
+      checked: [...b.querySelectorAll<HTMLInputElement>('input[type=radio]:checked')].map((i) => i.value),
+      names: [...b.querySelectorAll<HTMLInputElement>('input[type=radio]')].map((i) => i.name),
     }));
   } finally {
     await page.context().close();

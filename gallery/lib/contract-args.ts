@@ -4,7 +4,8 @@ type PropSpec =
   | { type: 'enum'; values: string[]; default: string }
   | { type: 'boolean'; default: boolean }
   | { type: 'string'; default: string }
-  | { type: 'string'; required: true };
+  | { type: 'string'; required: true }
+  | { type: 'options'; required: true };
 
 /** The part of a component contract this module reads (structurally the repo's `Contract`). */
 export type Contract = {
@@ -16,7 +17,7 @@ export type Contract = {
 };
 
 export type ArgType = {
-  control: { type: 'select' | 'boolean' | 'text'; labels?: Record<string, string> };
+  control: { type: 'select' | 'boolean' | 'text' | 'object'; labels?: Record<string, string> };
   options?: string[];
   description?: string;
   table?: { defaultValue: { summary: string } };
@@ -29,6 +30,18 @@ type Framework = 'react' | 'astro';
 export function defaultSummary(spec: PropSpec): string | undefined {
   if (!('default' in spec)) return undefined;
   return spec.type === 'string' ? JSON.stringify(spec.default) : String(spec.default);
+}
+
+export type Option = { value: string; label: string; disabled?: boolean };
+
+/** The example options of an `options` prop: three, none disabled. */
+export function exampleOptions(): Option[] {
+  return [{ value: 'a', label: 'Option A' }, { value: 'b', label: 'Option B' }, { value: 'c', label: 'Option C' }];
+}
+
+/** An options list as the usage writes it: `[{ value: 'a', label: 'Option A' }, …]`. */
+function optionsSource(list: Option[]): string {
+  return `[${list.map((o) => `{ value: '${o.value}', label: '${o.label}'${o.disabled ? ', disabled: true' : ''} }`).join(', ')}]`;
 }
 
 /** The example text of a text prop: its name capitalised (`label` gives `Label`). */
@@ -50,7 +63,7 @@ export function argTypesFromContract(contract: Contract, exampleClasses: Record<
     types[name] =
       spec.type === 'enum'
         ? { control: { type: 'select' }, options: spec.values, table }
-        : { control: { type: spec.type === 'string' ? 'text' : 'boolean' }, table };
+        : { control: { type: spec.type === 'options' ? 'object' : spec.type === 'string' ? 'text' : 'boolean' }, table };
   }
   if (contract.content) types.children = { control: { type: 'text' } };
   if (contract.classProp) {
@@ -74,7 +87,7 @@ export function usageSnippet(framework: Framework, args: Record<string, unknown>
   for (const [name, spec] of Object.entries(contract.props)) {
     const value = args[name];
     if (value === undefined || ('default' in spec && value === spec.default)) continue;
-    attrs.push(spec.type === 'boolean' ? name : `${name}="${value}"`);
+    attrs.push(spec.type === 'boolean' ? name : spec.type === 'options' ? `${name}={${optionsSource(value as Option[])}}` : `${name}="${value}"`);
   }
   const cls = args.className;
   if (contract.classProp && typeof cls === 'string' && cls !== '') {
@@ -106,13 +119,15 @@ export function astroCases(contract: Contract): { id: string; props: Record<stri
   const base: Record<string, unknown> = contract.content ? { children: contract.name } : {};
   for (const [name, spec] of Object.entries(contract.props)) {
     if (spec.type === 'string' && 'required' in spec) base[name] = exampleText(name);
+    else if (spec.type === 'options') base[name] = exampleOptions();
   }
   const cases = [{ id: 'default', props: base }];
   for (const [name, spec] of Object.entries(contract.props)) {
     if (spec.type === 'enum') {
       for (const v of spec.values.filter((x) => x !== spec.default)) cases.push({ id: `${name}-${v}`, props: { ...base, [name]: v } });
     } else if (spec.type === 'boolean') cases.push({ id: name, props: { ...base, [name]: true } });
-    else if ('default' in spec) cases.push({ id: name, props: { ...base, [name]: exampleText(name) } });
+    // With options, a text default (`defaultValue`) must name one of them (spec 013, RF-9).
+    else if ('default' in spec) cases.push({ id: name, props: { ...base, [name]: 'options' in contract.props ? exampleOptions()[1].value : exampleText(name) } });
   }
   // A field with both texts gets one case that has them together, so the error-hint order is compared (spec 010).
   const { hint, error } = contract.props;

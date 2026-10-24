@@ -6,7 +6,8 @@ export type PropSpec =
   | { type: 'enum'; values: string[]; default: string }
   | { type: 'boolean'; default: boolean }
   | { type: 'string'; default: string }
-  | { type: 'string'; required: true };
+  | { type: 'string'; required: true }
+  | { type: 'options'; required: true }; // a { value, label, disabled? }[] list
 
 export type Contract = {
   name: string;
@@ -16,8 +17,8 @@ export type Contract = {
   classProp: boolean;
 };
 
-/** What an implementation must declare per prop: its literal values, 'boolean', 'string' ('string!' when required), or 'any'. */
-export type Api = Record<string, string[] | 'boolean' | 'string' | 'string!' | 'any'>;
+/** What an implementation must declare per prop: its literal values, 'boolean', 'string' ('string!' when required), 'options' ('options!' when required) or 'any'. */
+export type Api = Record<string, string[] | 'boolean' | 'string' | 'string!' | 'options' | 'options!' | 'any'>;
 
 /** `museum:<component>:<event>` (DOM event) in Astro, `on<Event>` in React. */
 export function eventName(framework: Framework, component: string, event: string): string {
@@ -41,7 +42,7 @@ export function expectedApi(contract: Contract, framework: Framework): Api {
   const api: Api = {};
   for (const [name, spec] of Object.entries(contract.props)) {
     api[name] =
-      spec.type === 'enum' ? spec.values : spec.type === 'boolean' ? 'boolean' : 'required' in spec ? 'string!' : 'string';
+      spec.type === 'enum' ? spec.values : spec.type === 'boolean' ? 'boolean' : spec.type === 'options' ? 'options!' : 'required' in spec ? 'string!' : 'string';
   }
   if (contract.classProp) api[classProp(framework)] = 'any';
   const content = contentProp(framework);

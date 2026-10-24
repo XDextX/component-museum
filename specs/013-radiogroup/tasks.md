@@ -25,7 +25,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   T-4;
 - `tests/lib/consumer.ts` y `tests/lib/field-a11y.ts`: la T-5.
 
-- [ ] **T-1 — `options` en el formato de contrato**
+- [x] **T-1 — `options` en el formato de contrato**
   Cubre: RF-1 (formato)
   Archivos: `tests/lib/contract.ts`, `tests/lib/api.ts`, `tests/contract.test.ts`,
   `gallery/lib/contract-args.ts`, `tests/contract-args.test.ts`, `tests/lib/gallery-browser.ts`
@@ -41,6 +41,12 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - Los tests de los demás contratos siguen iguales: da el número antes y después.
   Inyección: declarar `options?: …` en una copia en memoria pone en rojo la comprobación de la
   obligatoria; quitar la rama `options` de `astroCases` pone en rojo los 8 casos.
+  Hecha: 912 tests antes, 923 después (más 1 omitido, como antes). Los casos de `astroCases` son 9
+  y no 8: la regla de la 010 añade `hint-error` al último lugar (como en Checkbox, 9 con
+  `defaultChecked`), y el plan contó 8 sin él; el caso `defaultValue` da la opción `b`, no un
+  texto. `casesOf` pide `name` y `defaultValue` en los radios (`checked`, `names`), y el
+  caso de `options` usa `options[0].value:x;options[0].label:Other`: sin historia RadioGroup
+  todavía, el navegador no lo ha visto (T-4).
 
 - [x] **T-2 — El ayudante de campo, también como grupo**
   Cubre: RF-2, RF-4 a RF-7 (la lógica)
