@@ -87,3 +87,24 @@ describe('the gallery-browser files (spec 017, T-14)', () => {
     expect(perComponent.sort()).toEqual(wanted.sort());
   });
 });
+
+import { storyIds } from './lib/story-theme.ts';
+
+describe('the theme and story-theme files (spec 017, T-15)', () => {
+  const { unit, e2e } = splitTests(root);
+
+  it('are all in e2e, each asking for its own preparation, and none is left in unit', () => {
+    expect(unit.filter((file) => /\/(theme-(react|astro)|gallery-story-theme-)/.test(file))).toEqual([]);
+    const lacking = (prefix: string, name: string) =>
+      e2e.filter((file) => file.startsWith(prefix) && !preparations(readFileSync(join(root, file), 'utf8')).includes(name));
+    expect(e2e.filter((file) => /^tests\/theme-(react|astro)\./.test(file))).toHaveLength(2);
+    expect(lacking('tests/theme-react', 'consumers')).toEqual([]);
+    expect(lacking('tests/theme-astro', 'consumers')).toEqual([]);
+    expect(lacking('tests/gallery-story-theme-', 'gallery')).toEqual([]);
+  });
+
+  it('have one story-theme file for each story id the suite covers, so a new story cannot go untested', () => {
+    const wanted = storyIds.map((id) => `tests/gallery-story-theme-${id}.test.ts`);
+    expect(e2e.filter((file) => file.startsWith('tests/gallery-story-theme-')).sort()).toEqual(wanted.sort());
+  });
+});
