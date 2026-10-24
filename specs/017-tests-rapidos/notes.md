@@ -341,3 +341,79 @@ Las 6 se ven en rojo con el test que les toca. Ningún cierre de Edge.
 - Las 9 ejecuciones de tiempo, las de recuento y las de calentamiento terminaron sin `hookTimeout` ni aviso `teardown`; la base tenía un aviso de cierre de Edge en la pasada 1.
 - El comentario de la serie «un byte» no llega a `dist/`; las dos series se anotan por eso.
 - No comprobé `%TEMP%` ni los `msedge` en esta tarea y no toqué el Edge del usuario.
+
+## Después de la segunda ronda (T-16, 2026-10-24, sin otra carga)
+
+Worktree `.claude/worktrees/agent-a6a1e688cc426941b`, rama `spec/017-tests-rapidos-T-16` sobre `eb62f69`, 12 núcleos, nada más corriendo. Mismo método que la T-8: `npm ci`, `npm run build:packages` y `npm run gallery:astro` al arrancar, calentamiento aparte, 3 pasadas por serie. Sin código cambiado. Todas las pasadas de las series en verde: 63 archivos, 912 tests pasan y 1 se omite (la T-8: 51 archivos, 892).
+
+**Calentamiento** (no cuenta): 181.1 s, todo «construido».
+
+**Resultado: los dos objetivos siguen sin cumplirse.**
+
+| Medida (total de `npm test`, s) | P1 | P2 | P3 | Mediana | % de 174.3 s | Objetivo |
+|---|---|---|---|---|---|---|
+| Sin cambios | 125.3 | 128.0 | 126.7 | **126.7** | **72.7 %** | ≤ 50 % (87.2 s): NO, faltan 39.5 s |
+| Un byte (`export const t16 = N;` al final de `packages/react/src/Button/Button.tsx`, N distinto; sí altera `dist/`: Storybook «construido», 15.5 a 16.8 s) | 131.4 | 127.9 | 124.2 | **127.9** | **73.4 %** | ≤ 70 % (122.0 s): NO, faltan 5.9 s |
+
+T-8 para comparar: 125.3 s (71.9 %) y 133.9 s (76.8 %, con un comentario que no tocaba `dist/`; con `dist/`, 130.5 s). «Sin cambios» no ha bajado; «un byte» queda un poco mejor.
+
+**Fases de la mediana sin cambios** (P3, 126.7 s):
+
+| Fase | s | Caché |
+|---|---|---|
+| `build react` | 0.5 | — |
+| `gallery:astro` | 0.5 | acierto |
+| bloque `tipos` (5 pasos a la vez; `tsc` 3.0, `tsc -p gallery` 2.0, `astro check` test-package 4.5, packages/astro 4.7, astro-render 4.9) | 4.9 | — |
+| `globalSetup`: cleanup 0.6; 4 `pack` 0.6 a 1.3; starters 0.1; `astro-render` 0.1; Storybook 0.0 | | acierto |
+| `globalSetup`: 8 consumidores | 1.5 a 8.4 | acierto |
+| `globalSetup`: 6 builds de consumidores | 0.0 a 0.2 | acierto |
+| `globalSetup`: type check package-react / package-astro | 4.1 / 19.0 | — |
+| `globalSetup`: cadena más larga (package-astro) | 28.5 | — |
+| `vitest` (incluye el `globalSetup`) | 120.8 | — |
+| **Total** | **126.7** | |
+
+`vitest` es el 95 % del total; el resto suma 5.9 s. El `globalSetup` está en unos 31 s (35 a 38 en la T-8) y lo manda la cadena de package-astro (28.5 s), de la que 19.0 s son el `astro check` de `checkButtonTypes` con las ocho cadenas en marcha (4 a 5 s solo).
+
+**Los 6 archivos más lentos** (pasada `vitest run --reporter=json` aparte, fuera de la mediana; el `globalSetup` termina hacia el segundo 31 y el último archivo acaba en el 108):
+
+| Archivo | Segundos | Empieza en |
+|---|---|---|
+| `consumer-undeclared.test.ts` | 71.4 | 31 s |
+| `field-a11y-checkbox.test.ts` | 55.8 | 34 s |
+| `a11y.test.ts` | 32.4 | 32 s |
+| `theme-astro.test.ts` | 32.2 | 32 s |
+| `theme-react.test.ts` | 31.6 | 32 s |
+| `gallery-docs-theme.test.ts` | 31.2 | 32 s |
+
+Los tres archivos de unos 72 s de la T-8 ya no están; `consumer-undeclared.test.ts` queda en 71.4 s y, con el `globalSetup`, marca el total (31 + 71 = 103 s de 108).
+
+**Qué falta para el 50 %:** 39.5 s. Se lo llevan `consumer-undeclared.test.ts` (71 s, sin partir, tras un `globalSetup` de 31 s) y, en el `globalSetup`, el type check de package-astro (19 s).
+
+**Muestra de 6 inyecciones**, cada una con `npm test` completo y restaurada por ruta (`git checkout -- <ruta>`):
+
+| Spec, RF | Inyección | Archivo y test en rojo | Fallos |
+|---|---|---|---|
+| 002 RF-5 | `variant?: string` en `Button.tsx` | `consumer.test.ts` «passes the react consumer's type check, and fails it once a Button has variant="nope"»; `contract.test.ts` «Button react: own props match the translated contract (RF-7, RF-10)» | 2 |
+| 003 RF-7 | `.museum-stray` al final de `styles/museum.css` | `styles.test.ts` «styles only museum elements ... all inside the museum layer (RF-7)» | 1 |
+| 006 RF-2 | `"src"` en `files` de `packages/react/package.json` | `packages.test.ts` «packs nothing beyond the allowed list ... (spec 006 RF-2)» | 1 |
+| 009 RF-2 | sin `htmlFor` en `field.tsx` | `field-a11y-checkbox.test.ts` (21), `field-a11y-input.test.ts` (6), `field-a11y-textarea.test.ts` (6), `field-ids.test.ts` (2), `field-markup.test.ts` (30); RF-2 en los tres `field-a11y-*` | 65 |
+| 011 RF-1 | `:root,` delante de `[data-theme="system"]` en el bloque oscuro de `styles/museum.css` | `theme-react.test.ts` (6) y `theme-astro.test.ts` (8) «RF-1: Button wears the package styles», `a11y.test.ts` (2), `field-a11y-*` (2 cada uno), `field-styles.test.ts` (1) | 23 |
+| 007 RF-7 | `<div style={{ width: 600, height: 10 }} />` al final de `gallery/stories/Button.mdx` | `gallery-overflow.test.ts` «Button docs page at 320 px» y «at 542 px: scrollWidth <= clientWidth» | 2 |
+
+`phases.test.ts` ya no sale en rojo tras tocar `styles/` (el hallazgo de la T-8 está arreglado).
+
+**Tipos en serie frente a en paralelo** (a mano, fuera de `npm test`, con `node_modules/.bin` en el PATH, los cinco pasos):
+
+| | P1 | P2 | P3 | Mediana |
+|---|---|---|---|---|
+| En serie | 15.7 | 15.6 | 15.4 | **15.6 s** |
+| A la vez | 5.6 | 5.3 | 5.3 | **5.3 s** |
+
+En serie: `tsc` 2.4, `tsc -p gallery` 1.6, cada `astro check` 3.6 a 4.1 s. A la vez, cada `astro check` tarda 4.9 a 5.6 s, no 14 s: el paralelo ahorra unos 10 s con la máquina libre. El 14 s por `astro check` solo se da con otro `npm test` en marcha.
+
+**Anomalías.**
+- Una ejecución de re-calentamiento (tras restaurar `Button.tsx`, fuera de las series) salió con código 1 con los 912 tests en verde: un `Unhandled Error` `route.fetch: read ECONNRESET` (`/favicon.svg`) en `field-a11y-checkbox.test.ts`. No se repitió en ninguna otra pasada.
+- La inyección 011 mostró `[museum] teardown: closing Edge still running after 10000 ms`; falló igualmente con sus tests.
+- Ningún `hookTimeout` en ninguna pasada.
+- El proceso de la sesión se cerró a mitad de la inyección 003: `styles/museum.css` quedó modificado y `node_modules/.museum-test-lock` con el pid 52232 ya muerto. Restauré por ruta, borré el lock y repetí esa inyección entera; la pasada cortada no cuenta.
+- No toqué el Edge del usuario.

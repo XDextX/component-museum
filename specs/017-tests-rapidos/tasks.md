@@ -430,7 +430,7 @@ arranque y de informe que arriba. Además:
   deja en verde los otros tres (la historia de Astro es más alta que el viewport y las de docs no usan el decorador; el
   original ya solo caía ahí). Las dos revertidas por ruta.
 
-- [ ] **T-16 — Volver a medir, como la T-8**
+- [x] **T-16 — Volver a medir, como la T-8**
   Cubre: NFR de objetivo, NFR de guardas
   Archivos: `specs/017-tests-rapidos/notes.md` (sección «Después de la segunda ronda»)
   Hecho cuando:
@@ -441,6 +441,7 @@ arranque y de informe que arriba. Además:
   - La muestra de 6 inyecciones de la T-8 sigue en rojo con `npm test` completo.
   - Si un objetivo no se cumple, se dice cuánto falta y dónde, sin tocar código.
   Inyección: las 6 de la muestra.
+  Nota: hecha, sin código cambiado. **Los dos objetivos NO se cumplen.** Sin cambios: mediana 126.7 s (125.3, 128.0, 126.7), 72.7 % de 174.3 s, objetivo ≤ 50 %: no, faltan 39.5 s. Un byte (cambio que altera `dist/`): mediana 127.9 s (131.4, 127.9, 124.2), 73.4 %, objetivo ≤ 70 %: no, faltan 5.9 s. Se lo llevan `consumer-undeclared.test.ts` (71 s tras un `globalSetup` de 31 s) y el type check de package-astro en el `globalSetup` (19 s). Las 6 inyecciones, en rojo con `npm test` completo. Tipos: 15.6 s en serie, 5.3 s a la vez. Tablas en «Después de la segunda ronda» de `notes.md`.
 
 ## Grafo de olas
 
