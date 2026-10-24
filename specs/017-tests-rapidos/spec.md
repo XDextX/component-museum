@@ -3,6 +3,7 @@
 **Status:** approved · **Approved:** 2026-10-23 · el dueño: entrega 4, tras la 012; consumidores guardados entre ejecuciones
 **Changed:** 2026-10-23 · RF-10 añadido (limpieza de %TEMP% de ejecuciones muertas) · coordinator en modo autónomo
 **Changed:** 2026-10-24 · segunda ronda de tareas por decisión del dueño («Arregla el fallo de astro-render y añade a la 017 tareas para bajar los tests de navegador y los builds de consumidores, hasta llegar al 50 %») · sin cambios en RF ni NFR · aprobada por el coordinator en modo autónomo, con una condición: cada archivo partido (T-12, T-14, T-15) sigue cayendo en `e2e`, porque llama a `need` él mismo o porque `splitTests` sigue sus imports, con un test que lo comprueba
+**Changed:** 2026-10-24 · NFR de objetivo de ≤ 50 % / ≤ 70 % a ≤ 75 % / ≤ 75 % por decisión del dueño («Acepta lo medido: cambia en la spec los objetivos a ≤ 75 % sin cambios y tras un byte»), tras medir 72.7 % y 73.4 % en la T-16
 **Size:** L (10 RF) · **Entrega:** 4 (tras la 012, antes de la 013) · **Depende de:** 012
 
 ## Contexto y objetivo
@@ -58,8 +59,8 @@ hace, se hace una vez.
 
 ## Requisitos no funcionales
 
-- **Objetivo.** Sin cambios desde la ejecución anterior, `npm test` ≤ 50 % de la base; tras un
-  cambio en un componente, ≤ 70 %. Cada cifra es la mediana de 3 ejecuciones.
+- **Objetivo.** Sin cambios desde la ejecución anterior, `npm test` ≤ 75 % de la base; tras un
+  cambio en un componente, ≤ 75 %. Cada cifra es la mediana de 3 ejecuciones.
 - **Crecer menos que lineal.** El número de empaquetados, instalaciones, starters y builds de
   Storybook por ejecución no depende del número de componentes (RF-1 a RF-5).
 - **Ninguna guarda se afloja (regla 8).** Una muestra de inyecciones de specs anteriores se vuelve a
