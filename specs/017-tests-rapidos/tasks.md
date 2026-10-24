@@ -313,7 +313,7 @@ arranque y de informe que arriba. Además:
   Inyección: guardar el build con una clave sin los tarballs reutiliza un `dist/` viejo tras cambiar
   un componente, y pone en rojo el caso de `consumer-cache.test.ts` que lo comprueba.
 
-- [ ] **T-12 — `field-a11y` partido por `kind`**
+- [x] **T-12 — `field-a11y` partido por `kind`**
   Cubre: NFR de objetivo
   Archivos: `tests/lib/field-a11y.ts` (el cuerpo de hoy, como `defineFieldA11y(kind)`);
   `tests/field-a11y.test.ts` pasa a `tests/field-a11y-input.test.ts`,
@@ -327,6 +327,14 @@ arranque y de informe que arriba. Además:
   archivos.
 
   Va en la ola 9 junto a la T-11: no comparten archivos.
+  Nota: hecha. El cuerpo vive en `tests/lib/field-a11y.ts` como `defineFieldA11y(kind, consumers)` (su Edge y su
+  `afterAll` dentro de la función); cada `tests/field-a11y-{input,textarea,checkbox}.test.ts` llama a
+  `need('consumers')` él mismo y se lo pasa, así que `splitTests` los manda a `e2e` sin tocar `projects.ts`;
+  `tests/projects.test.ts` lo comprueba (un test nuevo). Nombres de `it` expandidos (JSON de Vitest) antes y
+  después: 210 y 210, listas idénticas (54 Input, 66 Textarea, 90 Checkbox). Tiempos de archivo (junit, con otro
+  `npm test` en paralelo): Checkbox 17.9 s, Textarea 8.6 s, Input 7.3 s (≤ 30 s; el de hoy eran unos 73 s).
+  Inyección (sin `htmlFor` en `field.tsx`): RF-2 en rojo en los tres archivos (React, tres modos cada uno; también
+  caen RF-6, RF-9, RF-10 y RF-12 de Checkbox/Input/Textarea que dependen de la etiqueta), revertida por ruta.
 
 - [ ] **T-13 — El RF-5 de los consumidores, en su archivo y en paralelo**
   Cubre: NFR de objetivo
