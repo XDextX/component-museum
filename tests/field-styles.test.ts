@@ -645,6 +645,25 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
         await page.context().close();
       });
 
+      it('the open list: options paint the control colors, a disabled one reads as placeholder, an empty-value one is normal', async () => {
+        const page = await open(mode);
+        const r = await page.evaluate(() => {
+          const c = (q: string) => { const s = getComputedStyle(document.querySelector(q)!); return { fg: s.color, bg: s.backgroundColor }; };
+          return { select: c('#sel-empty'), normal: c('#sel-md'), on: c('#sel-empty option[value="a"]'), off: c('#sel-empty option:disabled'), empty: c('#sel-empty option[value=""]') };
+        });
+        expect(r.on.bg).not.toBe('rgba(0, 0, 0, 0)');
+        expect(r.on.bg).toBe(r.select.bg);
+        expect(r.on.fg).toBe(r.select.fg);
+        expect(r.off.fg).not.toBe(r.on.fg);
+        expect(r.off.bg).toBe(r.select.bg);
+        expect(r.select.fg).toBe(r.normal.fg);
+        expect(r.empty.fg).toBe(r.normal.fg);
+        const ratio = contrastRatio(parseRgb(r.off.fg), parseRgb(r.off.bg));
+        console.log('SELECT option:disabled', mode.name, +ratio.toFixed(2), 'active', +contrastRatio(parseRgb(r.on.fg), parseRgb(r.on.bg)).toFixed(2));
+        expect(ratio).toBeGreaterThanOrEqual(4.5);
+        await page.context().close();
+      });
+
       it('RF-14: the focus ring is 3:1 around the control, and in error the border stays the error one and the ring stands off it', async () => {
         const page = await open(mode);
         const ratios: number[] = [];
@@ -706,6 +725,19 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
     }
     console.log('SELECT RF-15 forced', JSON.stringify(report));
     expect(report.flatMap((r) => Object.entries(r)).filter(([, ratio]) => ratio < 3), JSON.stringify(report)).toEqual([]);
+  });
+
+  it('forced colors: a disabled option is GrayText, an active one CanvasText', async () => {
+    const page = await (await browser.newContext({ forcedColors: 'active', viewport: { width: 1024, height: 900 } })).newPage();
+    await page.setContent(html);
+    const r = await page.evaluate(() => {
+      const probe = (v: string) => { const d = document.createElement('i'); d.style.color = v; document.body.append(d); return getComputedStyle(d).color; };
+      const fg = (q: string) => getComputedStyle(document.querySelector(q)!).color;
+      return { off: fg('#sel-empty option:disabled'), on: fg('#sel-empty option[value="a"]'), gray: probe('GrayText'), text: probe('CanvasText') };
+    });
+    expect(r.off).toBe(r.gray);
+    expect(r.on).toBe(r.text);
+    await page.context().close();
   });
 
   it('a 200-character option does not widen a 320 px Select field', async () => {

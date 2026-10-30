@@ -121,7 +121,7 @@ Ninguna nueva: `options` y `astroCases` ya están (013); `fieldIds` gana el pref
 **Galería (T-3):**
 - La historia React usa `argTypesFromContract` (`options` como control JSON, `placeholder` como
   texto), `label: 'Country'` y `exampleClasses.Select`, con `key` sobre `defaultValue`.
-- La historia Astro tiene 9 casos. `Select.mdx` va en las dos lenguas.
+- La historia Astro tiene 10 casos. `Select.mdx` va en las dos lenguas.
 - `tests/gallery-browser-select.test.ts` llama a
   `defineGalleryBrowser('Select', need('gallery').storybook)`.
 
@@ -147,7 +147,7 @@ Ninguna nueva: `options` y `astroCases` ya están (013); `fieldIds` gana el pref
 - **Error, obligatorio, `disabled` y temas:** como en la 009. Con colores forzados, borde y flecha
   en colores de sistema.
 - **Lista desplegada:** la del navegador (escritorio y móvil).
-- **Galería:** `Select/React`, `Select/Astro` (9 casos) y `Select/Documentation`; la matriz lo
+- **Galería:** `Select/React`, `Select/Astro` (10 casos) y `Select/Documentation`; la matriz lo
   muestra en los dos frameworks.
 
 ## 6. Decisiones

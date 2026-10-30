@@ -342,14 +342,19 @@
     padding-right: calc(var(--museum-space-lg-x) + 1.25em);
   }
 
-  /* The indication is the disabled empty option while it is the chosen one; the list keeps the control colors. */
-  .museum-select:has(option[value=""]:checked) {
+  /* The indication is the disabled empty option while it is the chosen one; a normal option with an empty value
+     keeps the control colors. In the open list a disabled option reads as the placeholder. */
+  .museum-select:has(option[value=""][disabled]:checked) {
     color: var(--museum-control-placeholder);
   }
 
   .museum-select option {
     background-color: var(--museum-control-bg);
     color: var(--museum-control-fg);
+  }
+
+  .museum-select option:disabled {
+    color: var(--museum-control-placeholder);
   }
 
   /* Checkbox: a drawn square on the native input; the label comes after it, so the field is two columns
@@ -627,13 +632,17 @@
       color: CanvasText;
     }
 
-    .museum-select:has(option[value=""]:checked),
+    .museum-select:has(option[value=""][disabled]:checked),
     .museum-select option {
       color: CanvasText;
     }
 
     .museum-select option {
       background-color: Canvas;
+    }
+
+    .museum-select option:disabled {
+      color: GrayText;
     }
 
     .museum-select[aria-invalid="true"] {

@@ -87,7 +87,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
     - `id` y `aria-describedby` del consumidor;
     - atributos libres (`name`) y la clase en el `<select>`;
     - `options` vacío.
-  - En Astro, los 9 casos dan el mismo marcado que React, sin `<script>` y con ids reproducibles.
+  - En Astro, los 10 casos dan el mismo marcado que React, sin `<script>` y con ids reproducibles.
   - Los tests de galería generalizados dan verde con Select, y la matriz lo muestra en los dos
     frameworks.
   - Cuatro commits: el contrato (`feat:`), `feat(packages/react)`, `feat(packages/astro)` y la
@@ -105,8 +105,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   Cubre: RF-2 a RF-16 (en el navegador), NFR de accesibilidad y regla 2
   Archivos: `tests/lib/consumer.ts` (`selectInstances`, plan, bloque 4), `tests/lib/field-a11y.ts`
   (`kind` Select), `tests/field-a11y-select.test.ts` (con `need('consumers')`)
-  Hecho cuando: en Edge, sobre los consumidores construidos de React y de Astro, en los cinco modos
-  de tema:
+  Hecho cuando: en Edge, sobre los consumidores construidos de React y de Astro, en tres modos de tema más colores
+  forzados:
   - RF-2 a RF-6, como Input;
   - RF-7: las opciones uno a uno, y la `disabled` no se elige;
   - RF-8 y RF-9: el valor inicial de `selected` y de `placeholder`;
@@ -117,6 +117,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   `disabled` del `<option>` en Astro pone en rojo RF-7 y RF-16.
 
   Nota: hecha. `selectInstances` crea 15 controles (`sm`/`md`/`lg`, `hint`, `error`, `both`, `required` y `placeholder` con la indicación, `disabled` con error, `selected` con indicación y `defaultValue="b"`, `partial` con la C `disabled`, `own`, `long` con una opción de 200 caracteres y dos gemelos «Chooser»). El `kind` Select entra en la tabla de `kinds` de `field-a11y.ts` y reutiliza RF-2 a RF-6, el borde (RF-10), los textos (RF-12) y el foco con `Tab` (RF-14); lleva aparte RF-6 (envío), RF-7, RF-8 y RF-9, RF-11 (la flecha, leída del `background-image` calculado), RF-13 (altura contra Input), el borde de error con foco, RF-15 (colores forzados), RF-16 y la opción larga a 320 px. Se prueba en los tres modos de tema y, dentro de cada uno, los colores forzados, no como cinco modos aparte. Ajustes: en Edge un `select` obligatorio sobre la indicación sale inválido en el árbol sin `aria-invalid` y sin propiedad `required` (como el checkbox), así que RF-5 y RF-6 lo exentan y leen el DOM; teclear «Option C» no elige la `disabled` pero sí mueve a A, así que el test exige solo que no sea C. `tests/a11y.test.ts` no necesitó ajuste: su selector de paradas de `Tab` ya cuenta `select:not(:disabled)`. Tests: 102 nuevos (2 frameworks por 3 modos por 17): 1178 antes, 1280 después (más 1 omitido, como antes). Inyecciones vistas en rojo y revertidas por ruta: sin `htmlFor` en `packages/react/src/field.tsx` (RF-2 y RF-6 de React, 6 tests; Astro en verde) y sin `disabled` en el `<option>` de `Select.astro` (RF-7 y RF-16 de Astro, 6 tests; React en verde).
+
+  Nota (ronda de correcciones tras la validación): `option:disabled` se pinta con el color de la indicación (4,83:1 en claro y 6,99:1 en oscuro contra el fondo de la opción; `GrayText` con colores forzados); la indicación se restringe a `option[value=""][disabled]:checked`, así que una opción normal con valor vacío conserva el color normal; `.museum-select option` queda guardada por un test (fondo igual al del control, no transparente, y su color). La página fija gana `sel-empty`. Tests: 1280 antes, 1286 después (más 1 omitido). Inyecciones en rojo y revertidas: sin la regla `option:disabled`, sin `.museum-select option` y con el `:has` sin `[disabled]` (5 tests cada una). Corregida la errata de 9 a 10 casos Astro y de «cinco modos de tema» en T-4.
 
 ## Grafo de olas
 
