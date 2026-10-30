@@ -101,7 +101,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va sola en la ola 2: necesita el prefijo (T-2), y sus capturas, la hoja (T-1).
 
-- [ ] **T-4 — Select en los consumidores: accesibilidad en Edge**
+- [x] **T-4 — Select en los consumidores: accesibilidad en Edge**
   Cubre: RF-2 a RF-16 (en el navegador), NFR de accesibilidad y regla 2
   Archivos: `tests/lib/consumer.ts` (`selectInstances`, plan, bloque 4), `tests/lib/field-a11y.ts`
   (`kind` Select), `tests/field-a11y-select.test.ts` (con `need('consumers')`)
@@ -115,6 +115,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - los demás componentes siguen con sus casos: da el número antes y después.
   Inyección: quitar `htmlFor` del ayudante de React en la rama pone en rojo RF-2 de Select; quitar
   `disabled` del `<option>` en Astro pone en rojo RF-7 y RF-16.
+
+  Nota: hecha. `selectInstances` crea 15 controles (`sm`/`md`/`lg`, `hint`, `error`, `both`, `required` y `placeholder` con la indicación, `disabled` con error, `selected` con indicación y `defaultValue="b"`, `partial` con la C `disabled`, `own`, `long` con una opción de 200 caracteres y dos gemelos «Chooser»). El `kind` Select entra en la tabla de `kinds` de `field-a11y.ts` y reutiliza RF-2 a RF-6, el borde (RF-10), los textos (RF-12) y el foco con `Tab` (RF-14); lleva aparte RF-6 (envío), RF-7, RF-8 y RF-9, RF-11 (la flecha, leída del `background-image` calculado), RF-13 (altura contra Input), el borde de error con foco, RF-15 (colores forzados), RF-16 y la opción larga a 320 px. Se prueba en los tres modos de tema y, dentro de cada uno, los colores forzados, no como cinco modos aparte. Ajustes: en Edge un `select` obligatorio sobre la indicación sale inválido en el árbol sin `aria-invalid` y sin propiedad `required` (como el checkbox), así que RF-5 y RF-6 lo exentan y leen el DOM; teclear «Option C» no elige la `disabled` pero sí mueve a A, así que el test exige solo que no sea C. `tests/a11y.test.ts` no necesitó ajuste: su selector de paradas de `Tab` ya cuenta `select:not(:disabled)`. Tests: 102 nuevos (2 frameworks por 3 modos por 17): 1178 antes, 1280 después (más 1 omitido, como antes). Inyecciones vistas en rojo y revertidas por ruta: sin `htmlFor` en `packages/react/src/field.tsx` (RF-2 y RF-6 de React, 6 tests; Astro en verde) y sin `disabled` en el `<option>` de `Select.astro` (RF-7 y RF-16 de Astro, 6 tests; React en verde).
 
 ## Grafo de olas
 
