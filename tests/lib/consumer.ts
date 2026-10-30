@@ -306,12 +306,37 @@ function checkboxInstances(framework: Framework): string {
   ].join(framework === 'react' ? '\n      ' : '\n\t\t');
 }
 
-/** Makes the consumer's entry import Button, Input, Textarea, Checkbox and the stylesheet once, and render every instance. */
+/**
+ * Spec 013 T-5: the RadioGroup instances `field-a11y-radiogroup.test.ts` measures. Legends start with "Pick" and
+ * the options are "Choice A", "Choice B" and "Choice C" in every group (found inside their group). `radiogroup-selected`
+ * starts on B, `radiogroup-partial` has C disabled, `radiogroup-disabled` is disabled whole with an error, and
+ * `radiogroup-long` carries a 200-character option label with an 80-character word in it.
+ */
+export const radiogroupLongLabel = `Choice long ${'lorem ipsum dolor sit amet '.repeat(3)}${'x'.repeat(80)} end`;
+function radiogroupInstances(): string {
+  const options = (third = '') => `options={[{ value: 'a', label: 'Choice A' }, { value: 'b', label: 'Choice B' }, { value: 'c', label: 'Choice C'${third} }]}`;
+  const group = (key: string, legend: string, extra = '') => `<RadioGroup id="radiogroup-${key}" name="rg-${key}" label="${legend}" ${options()} ${extra}/>`;
+  return [
+    ...['sm', 'md', 'lg'].map((s) => group(s, `Pick ${s}`, `size="${s}" `)),
+    group('hint', 'Pick hint', 'hint="Pick hint text" '),
+    group('error', 'Pick error', 'error="Pick error text" '),
+    group('both', 'Pick both', 'hint="Pick hint text" error="Pick error text" '),
+    group('required', 'Pick required', 'required '),
+    group('disabled', 'Pick disabled', 'error="Pick disabled error" disabled '),
+    `<RadioGroup id="radiogroup-partial" name="rg-partial" label="Pick partial" ${options(', disabled: true')} />`,
+    group('selected', 'Pick selected', 'defaultValue="b" '),
+    '<p id="radiogroup-own-note">Pick own note</p>',
+    group('own', 'Pick own', 'hint="Pick own hint" aria-describedby="radiogroup-own-note" '),
+    `<RadioGroup id="radiogroup-long" name="rg-long" label="Pick long" options={[{ value: 'a', label: 'Choice A' }, { value: 'l', label: "${radiogroupLongLabel}" }]} />`,
+  ].join('\n');
+}
+
+/** Makes the consumer's entry import Button, Input, Textarea, Checkbox, RadioGroup and the stylesheet once, and render every instance. */
 function useButtons(framework: Framework, dir: string, name: string): void {
   if (framework === 'react') {
     writeFileSync(
       join(dir, 'src', 'MuseumButtons.tsx'),
-      `import { Button, Checkbox, Input, Textarea } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n      ${inputInstances(framework)}\n      ${textareaInstances(framework)}\n      ${checkboxInstances(framework)}\n    </>\n  )\n}\n`,
+      `import { Button, Checkbox, Input, RadioGroup, Textarea } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n      ${inputInstances(framework)}\n      ${textareaInstances(framework)}\n      ${checkboxInstances(framework)}\n      ${radiogroupInstances()}\n    </>\n  )\n}\n`,
     );
     patch(join(dir, entries.react), (source) =>
       `import MuseumButtons from './MuseumButtons.tsx'\n${source.replace('<App />', '<App />\n    <MuseumButtons />')}`,
@@ -319,8 +344,8 @@ function useButtons(framework: Framework, dir: string, name: string): void {
   } else {
     patch(join(dir, entries.astro), (source) =>
       source
-        .replace(/^---\r?\n/, `---\nimport { Button, Checkbox, Input, Textarea } from '${name}';\nimport '${name}/styles.css';\n`)
-        .replace('</body>', `\t${buttonInstances(framework)}\n\t\t${inputInstances(framework)}\n\t\t${textareaInstances(framework)}\n\t\t${checkboxInstances(framework)}\n\t</body>`),
+        .replace(/^---\r?\n/, `---\nimport { Button, Checkbox, Input, RadioGroup, Textarea } from '${name}';\nimport '${name}/styles.css';\n`)
+        .replace('</body>', `\t${buttonInstances(framework)}\n\t\t${inputInstances(framework)}\n\t\t${textareaInstances(framework)}\n\t\t${checkboxInstances(framework)}\n\t\t${radiogroupInstances()}\n\t</body>`),
     );
   }
 }
