@@ -16,6 +16,9 @@ export const exampleClasses: Record<string, Record<string, string>> = {
   RadioGroup: {
     'my-radiogroup': '.my-radiogroup {\n  letter-spacing: 0.05em;\n}',
   },
+  Select: {
+    'my-select': '.my-select {\n  border-radius: 999px;\n  letter-spacing: 0.05em;\n}',
+  },
   Textarea: {
     'my-textarea': '.my-textarea {\n  border-radius: 0.25rem;\n  letter-spacing: 0.05em;\n}',
   },

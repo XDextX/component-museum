@@ -1,0 +1,234 @@
+import { Canvas, Controls, Meta, Source } from '@storybook/addon-docs/blocks';
+import * as ReactStories from './Select.react.stories.tsx';
+import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
+import { exampleClasses } from '../lib/example-classes.ts';
+
+<Meta title="Select/Documentation" />
+
+# Select
+
+<LanguageSwitch />
+
+<Canvas of={ReactStories.Default} sourceState="shown" />
+
+<Controls of={ReactStories.Default} />
+
+<Lang lang="es">
+
+## Uso
+
+Select sirve para elegir un valor de una lista cerrada: un país, una categoría. Trae su etiqueta, su ayuda y su error ya cableados: no hay que escribir ningún `id` ni atributo ARIA. Las opciones se pasan como dato, en `options`, una lista de `{ value, label, disabled? }`; no son hijos. `label` y `options` son obligatorias; `hint` (ayuda) y `error` son textos opcionales; `placeholder` es la indicación que se ve mientras no hay nada elegido; `size` es `sm`, `md` o `lg`; `disabled`, `required` y `defaultValue` son estados. Se instala desde el paquete de tu framework y se importa siempre por su nombre de paquete, junto con su hoja de estilos.
+
+En React:
+
+```tsx
+import { Select } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Select
+  label="País"
+  options={[
+    { value: 'es', label: 'España' },
+    { value: 'pt', label: 'Portugal' },
+  ]}
+  placeholder="Elige uno"
+  hint="Donde envías el pedido"
+  required
+/>
+```
+
+En Astro:
+
+```astro
+---
+import { Select } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Select
+  label="País"
+  options={[
+    { value: 'es', label: 'España' },
+    { value: 'pt', label: 'Portugal' },
+  ]}
+  placeholder="Elige uno"
+  hint="Donde envías el pedido"
+  required
+/>
+```
+
+Solo se escriben las props que no tienen su valor por defecto (`md`, sin indicación, sin ayuda, sin error, sin `disabled`, sin `required` y sin opción elegida). Cualquier otro atributo HTML (`name`, eventos como `onChange`, `data-*`) llega al `<select>`. El evento `change` es el nativo del navegador. El componente muestra el `error` que recibe; quién valida es tu código. Una opción con `disabled: true` no se elige.
+
+**Estado inicial: `defaultValue` y `placeholder`.** Con `defaultValue` empieza elegida la opción con ese `value`, y el usuario cambia después; si ese valor no está en `options`, se ignora. Con `placeholder`, el texto es una primera opción deshabilitada que sale elegida mientras no haya un `defaultValue`; con `required`, el formulario no se envía con ella. Se llaman igual en React y en Astro. Si quieres controlarlo desde React, pasa `value` y tu `onChange`: entonces el componente no envía `defaultValue`, para que React no avise de un control a la vez controlado y no controlado.
+
+## Construcción
+
+Select son dos implementaciones de un mismo contrato (`contracts/select.contract.json`) que comparten una sola hoja de estilos con Input, Textarea, Checkbox y RadioGroup. Las dos emiten el mismo marcado:
+
+- **Campo:** un `<div class="museum-field">` con una `<label for>` **antes** del control, que da su nombre accesible al `<select>`. Con `required`, la etiqueta añade un `*` oculto a los lectores de pantalla y el `<select>` lleva el `required` nativo.
+- **Control:** un `<select>` nativo con las clases `museum-select`, `museum-select--<size>` y la que pases, y `data-museum-select`. Se dibuja con `appearance: none` y una flecha a la derecha: la lista desplegada, el teclado, el lector de pantalla y el selector del móvil siguen siendo los del navegador. No hay JavaScript.
+- **Opciones:** un `<option>` por opción, con su `value` y su texto; `disabled` va en su `<option>`. La indicación, si existe, es el primero, con `value=""` y `disabled`.
+- **Ayuda y error:** dos `<p>` bajo el control, que solo existen si hay texto. `aria-describedby` los enlaza, el error primero y después la ayuda, y detrás los `id` que tú pases. Con error, el control lleva `aria-invalid="true"`; sin error, no lleva ni ese atributo ni el nodo.
+- **`id`:** en React, `useId()`; en Astro, un contador, sin `Math.random()`, así que dos Select con la misma etiqueta no chocan y el marcado se repite build a build. Si pasas tu propio `id`, ese es el del `<select>`.
+- **Flecha y tamaño:** la flecha se pinta con una variable, así que sigue al tema, y da al menos 3:1 contra el fondo del control. El control mide lo mismo de alto que un Input del mismo `size`. Una opción larga se corta con puntos suspensivos en el control cerrado, y la lista la enseña entera.
+- **Colores forzados:** cuando el sistema fuerza los colores (alto contraste de Windows), el borde y la flecha usan colores de sistema, también en error.
+- **CSS:** vive en la capa `components.museum`. Cada color, tamaño y fuente sale de una variable `--museum-*`.
+- **Temas:** el claro es el de por defecto; el oscuro se pide con `data-theme="dark"` en cualquier contenedor, y `data-theme="system"` sigue la preferencia del sistema. Sin atributo, el paquete no mira el sistema. El error no depende solo del color: su texto siempre está.
+
+## Cómo alterarlo
+
+Como el CSS del paquete está en una capa, **tu CSS siempre gana**: no hace falta subir la especificidad ni usar `!important`.
+
+**1. Tokens.** Redefine una variable `--museum-*` en un contenedor o en `:root`:
+
+- Control: `--museum-control-bg`, `--museum-control-fg`, `--museum-control-border`, y la de Select `--museum-select-arrow` (la flecha, por defecto el color del texto).
+- Texto: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (que también es el borde en error).
+- Forma y tamaño: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity` y la escala `--museum-space-*`.
+- Foco: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-select-arrow: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+Si cambias la flecha, comprueba que sigue dando 3:1 contra el fondo del control.
+
+**2. Una regla sobre la clase.** Pasa tu propia clase (`className` en React, `class` en Astro): va al `<select>`, se añade a las del componente y, al estar fuera de la capa, gana sin más. Esta historia define y muestra `my-select`, que es también la opción del control de clase:
+
+<Source language="css" code={exampleClasses.Select['my-select']} />
+
+En React:
+
+```tsx
+import { Select } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Select label="País" options={[{ value: 'es', label: 'España' }]} className="my-select" />
+```
+
+En Astro:
+
+```astro
+---
+import { Select } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Select label="País" options={[{ value: 'es', label: 'España' }]} class="my-select" />
+```
+
+**3. Utilidades.** Si tu proyecto usa Tailwind, sus utilidades también ganan a la capa del paquete. Se usan igual, como clase de tu proyecto.
+
+</Lang>
+
+<Lang lang="en">
+
+## Usage
+
+Select is for choosing one value from a closed list: a country, a category. It comes with its label, hint and error already wired: you never write an `id` or an ARIA attribute. The options are data, in `options`, a list of `{ value, label, disabled? }`; they are not children. `label` and `options` are required; `hint` and `error` are optional texts; `placeholder` is the prompt shown while nothing is chosen; `size` is `sm`, `md` or `lg`; `disabled`, `required` and `defaultValue` are states. Install it from your framework's package and always import it by package name, together with its stylesheet.
+
+In React:
+
+```tsx
+import { Select } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Select
+  label="Country"
+  options={[
+    { value: 'es', label: 'Spain' },
+    { value: 'pt', label: 'Portugal' },
+  ]}
+  placeholder="Choose one"
+  hint="Where the order ships"
+  required
+/>
+```
+
+In Astro:
+
+```astro
+---
+import { Select } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Select
+  label="Country"
+  options={[
+    { value: 'es', label: 'Spain' },
+    { value: 'pt', label: 'Portugal' },
+  ]}
+  placeholder="Choose one"
+  hint="Where the order ships"
+  required
+/>
+```
+
+Only write the props that are off their default (`md`, no placeholder, no hint, no error, not `disabled`, not `required`, nothing chosen). Any other HTML attribute (`name`, events such as `onChange`, `data-*`) reaches the `<select>`. The `change` event is the browser's own. The component shows the `error` it receives; validating is your code's job. An option with `disabled: true` cannot be chosen.
+
+**Initial state: `defaultValue` and `placeholder`.** With `defaultValue` the option with that `value` starts chosen, and the user changes it later; a value that is not in `options` is ignored. With `placeholder`, the text is a first, disabled option that starts chosen while there is no `defaultValue`; with `required`, the form does not submit with it. They have the same names in React and Astro. To control it from React, pass `value` and your own `onChange`: the component then does not send `defaultValue`, so React never warns about a control that is both controlled and uncontrolled.
+
+## How it is built
+
+Select is two implementations of one contract (`contracts/select.contract.json`) sharing a single stylesheet with Input, Textarea, Checkbox and RadioGroup. Both emit the same markup:
+
+- **Field:** a `<div class="museum-field">` with a `<label for>` **before** the control, which names the `<select>` for assistive technology. With `required`, the label adds a `*` hidden from screen readers and the `<select>` carries the native `required`.
+- **Control:** a native `<select>` with the classes `museum-select`, `museum-select--<size>` and the class you pass, plus `data-museum-select`. It is drawn with `appearance: none` and an arrow on the right: the dropdown list, the keyboard, the screen reader and the phone's picker stay the browser's. There is no JavaScript.
+- **Options:** one `<option>` per option, with its `value` and text; `disabled` goes on its `<option>`. The placeholder, if any, is the first, with `value=""` and `disabled`.
+- **Hint and error:** two `<p>` below the control, which exist only when there is text. `aria-describedby` links them, error first and then hint, followed by any `id` you pass. With an error the control carries `aria-invalid="true"`; without one, neither that attribute nor the node exists.
+- **`id`:** in React, `useId()`; in Astro, a counter, never `Math.random()`, so two Select with the same label never clash and the markup repeats build to build. If you pass your own `id`, that is the `<select>`'s.
+- **Arrow and size:** the arrow is painted with a variable, so it follows the theme, and gives at least 3:1 against the control's background. The control is as tall as an Input of the same `size`. A long option is cut with an ellipsis in the closed control, and the list shows it whole.
+- **Forced colors:** when the system forces colors (Windows high contrast), the border and the arrow use system colors, also in error.
+- **CSS:** it lives in the `components.museum` layer. Every color, size and font comes from a `--museum-*` variable.
+- **Themes:** light is the default; dark is requested with `data-theme="dark"` on any container, and `data-theme="system"` follows the system preference. Without the attribute, the package does not look at the system. The error does not rely on color alone: its text is always there.
+
+## How to alter it
+
+Because the package CSS sits in a layer, **your CSS always wins**: no need to raise specificity or use `!important`.
+
+**1. Tokens.** Redefine a `--museum-*` variable on a container or on `:root`:
+
+- Control: `--museum-control-bg`, `--museum-control-fg`, `--museum-control-border`, and Select's own `--museum-select-arrow` (the arrow, the text color by default).
+- Text: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (also the border in error).
+- Shape and size: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity` and the `--museum-space-*` scale.
+- Focus: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-select-arrow: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+If you change the arrow, check that it still gives 3:1 against the control's background.
+
+**2. A rule on the class.** Pass your own class (`className` in React, `class` in Astro): it goes to the `<select>`, is added to the component's and, being outside the layer, wins outright. This story defines and shows `my-select`, which is also the class control's option:
+
+<Source language="css" code={exampleClasses.Select['my-select']} />
+
+In React:
+
+```tsx
+import { Select } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Select label="Country" options={[{ value: 'es', label: 'Spain' }]} className="my-select" />
+```
+
+In Astro:
+
+```astro
+---
+import { Select } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Select label="Country" options={[{ value: 'es', label: 'Spain' }]} class="my-select" />
+```
+
+**3. Utilities.** If your project uses Tailwind, its utilities also beat the package layer. Use them the same way, as a class from your project.
+
+</Lang>
