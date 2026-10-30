@@ -121,7 +121,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va sola en la ola 3: necesita la T-1 y la T-2, y sus capturas, la hoja (T-3).
 
-- [ ] **T-5 — RadioGroup en los consumidores: accesibilidad en Edge**
+- [x] **T-5 — RadioGroup en los consumidores: accesibilidad en Edge**
   Cubre: RF-2 a RF-16 (en el navegador), NFR de accesibilidad y regla 2
   Archivos: `tests/lib/consumer.ts` (`radiogroupInstances`, plan, bloque 4),
   `tests/lib/field-a11y.ts` (`kind` RadioGroup), `tests/field-a11y-radiogroup.test.ts`
@@ -139,6 +139,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - Input, Textarea y Checkbox siguen con sus casos: da el número antes y después.
   Inyección: quitar `role="radiogroup"` del ayudante en la rama pone en rojo RF-2; dar un `name`
   distinto a cada opción pone en rojo RF-3 y RF-8.
+  Nota: `radiogroupInstances` crea 12 grupos (`sm`/`md`/`lg`, `hint`, `error`, `both`, `required`, `disabled`, `partial` con la opción C `disabled`, `selected`, `own`, `long`), con leyendas «Pick …» y opciones «Choice A/B/C» que el test halla dentro de su grupo. El `kind` RadioGroup no entra en la tabla de `kinds` (sus tests no se parecen a los de los campos de una sola pieza): `defineFieldA11y('RadioGroup', …)` llama a `defineRadioGroupA11y`, en el mismo archivo. Se prueba en los tres modos de tema de los consumidores (claro, oscuro, sistema) y, dentro de cada uno, los colores forzados (RF-15), no como cinco modos aparte; el envío con `required` (RF-7) se comprueba con un `form` creado en la página y unido a los radios por su atributo `form`. Tests: 96 nuevos (2 frameworks por 3 modos por 16): 1008 antes, 1104 después (más 1 omitido, como antes). Un ajuste que la tarea destapó: `tests/a11y.test.ts` (Button) contaba una parada de `Tab` por radio y daba la vuelta a la página; ahora cuenta un grupo de radios como una sola parada. Inyecciones vistas en rojo (una vez, en React; se revirtieron por ruta): sin `role="radiogroup"` en `field.tsx` y con un `name` distinto por opción en `RadioGroup.tsx` pusieron en rojo 18 tests (RF-2, RF-3, RF-7, RF-8, RF-14 y RF-16, en los tres modos); Astro siguió en verde. La primera ejecución del archivo, con 31 carpetas `cm-*` por limpiar, falló por `hookTimeout` en el `afterAll` (cierre de Edge, 96 tests en verde); repetido solo, verde.
 
 ## Grafo de olas
 

@@ -42,8 +42,8 @@ async function measure(url: string, colorScheme: 'light' | 'dark', attribute?: s
     const page = await context.newPage();
     await page.goto(url);
     await page.waitForSelector('#button-primary-md');
-    // One press per element Tab can reach: disabled controls and tabindex=-1 are not on its path.
-    const total = await page.locator('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])').count();
+    // One press per element Tab can reach: disabled controls and tabindex=-1 are not on its path, and a radio group is one stop (spec 013).
+    const total = await page.locator('button:not(:disabled), a[href], input:not(:disabled):not([type="radio"]), [role="radiogroup"]:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])').count();
     const out: Measured[] = [];
     for (let i = 0; i < total; i++) {
       await page.keyboard.press('Tab');
