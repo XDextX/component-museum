@@ -23,7 +23,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   T-3;
 - `tests/lib/consumer.ts` y `tests/lib/field-a11y.ts`: la T-4.
 
-- [ ] **T-1 — Hoja de Select, agrupada con Input, y su flecha**
+- [x] **T-1 — Hoja de Select, agrupada con Input, y su flecha**
   Cubre: RF-10 a RF-15 (sobre la página fija)
   Archivos: `styles/museum.css` (selectores de Select en las reglas de Input,
   `--museum-select-arrow` en los tres bloques, `appearance: none`, flecha, elipsis, colores
@@ -44,6 +44,15 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - el coordinator aprueba las capturas (dos temas y colores forzados) antes del commit.
   Inyección: un `--museum-select-arrow` igual a `--museum-control-bg` pone en rojo RF-11; quitar
   `.museum-select--md` del selector de `padding` pone en rojo RF-13 en `md`.
+
+  Nota (hecha): ambas inyecciones vistas en rojo y revertidas por ruta.
+  - `--museum-select-arrow` = `--museum-control-bg`: RF-11 en rojo en los cinco modos, y el test del token.
+  - Sin `.museum-select--md` en el `padding`: RF-13 en rojo (18,66 contra 38 px en `md`) y el test de agrupado.
+  - La flecha son dos triángulos que se solapan 0,03 em (sin solape, la unión dejaba una muesca).
+  - En colores forzados, `--museum-select-arrow` se redefine como `CanvasText`: la cuenta del token es 3 en los
+    temas y 1 en colores forzados, por eso su test va aparte del de los demás tokens.
+  - Las reglas de Select leen solo `var(--museum-*)` y colores de sistema; la geometría de la flecha y el
+    `padding` derecho van en `em`, así que su test prohíbe colores literales, no longitudes.
 
 - [ ] **T-2 — El prefijo `museum-select` en el ayudante de Astro**
   Cubre: RF-2 a RF-6 (la lógica, en Astro)
