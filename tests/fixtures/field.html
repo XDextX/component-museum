@@ -86,6 +86,59 @@
       <textarea id="ta-disabled" class="museum-textarea museum-textarea--md" aria-describedby="ta-disabled-error" aria-invalid="true" disabled data-museum-textarea>Value</textarea>
       <p id="ta-disabled-error" class="museum-field__error">Error</p>
     </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="sel-sm">Small</label>
+        <select id="sel-sm" class="museum-select museum-select--sm" data-museum-select>
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="sel-md">Medium</label>
+        <select id="sel-md" class="museum-select museum-select--md" data-museum-select>
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="sel-lg">Large</label>
+        <select id="sel-lg" class="museum-select museum-select--lg" data-museum-select>
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+        </select>
+      </div>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="sel-placeholder">Placeholder</label>
+      <select id="sel-placeholder" class="museum-select museum-select--md" aria-describedby="sel-placeholder-hint" data-museum-select>
+        <option value="" disabled selected>Choose one</option>
+        <option value="a">Option A</option>
+        <option value="b">Option B</option>
+      </select>
+      <p id="sel-placeholder-hint" class="museum-field__hint">Hint</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="sel-error">Error<span class="museum-field__required" aria-hidden="true">*</span></label>
+      <select id="sel-error" class="museum-select museum-select--md" aria-describedby="sel-error-error sel-error-hint" aria-invalid="true" required data-museum-select>
+        <option value="a" selected>Option A</option>
+        <option value="b">Option B</option>
+      </select>
+      <p id="sel-error-hint" class="museum-field__hint">Hint</p>
+      <p id="sel-error-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="sel-disabled">Disabled</label>
+      <select id="sel-disabled" class="museum-select museum-select--md" aria-describedby="sel-disabled-error" aria-invalid="true" disabled data-museum-select>
+        <option value="a" selected>Option A</option>
+        <option value="b">Option B</option>
+      </select>
+      <p id="sel-disabled-error" class="museum-field__error">Error</p>
+    </div>
     <div class="museum-field museum-field--inline">
       <input id="cb-sm" type="checkbox" class="museum-checkbox museum-checkbox--sm" data-museum-checkbox />
       <label class="museum-field__label" for="cb-sm">Small</label>
@@ -237,6 +290,15 @@
         <label class="museum-field__label" for="ta-long">Long</label>
         <textarea id="ta-long" class="museum-textarea museum-textarea--md" aria-describedby="ta-long-error" aria-invalid="true" data-museum-textarea></textarea>
         <p id="ta-long-error" class="museum-field__error">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+      </div>
+    </div>
+    <div class="narrow">
+      <div class="museum-field" id="long-field-sel">
+        <label class="museum-field__label" for="sel-long">Long</label>
+        <select id="sel-long" class="museum-select museum-select--md" data-museum-select>
+          <option value="a">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</option>
+          <option value="b">Option B</option>
+        </select>
       </div>
     </div>
   </body>

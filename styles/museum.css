@@ -58,6 +58,7 @@
     --museum-checkbox-mark: #ffffff;
     --museum-radio-checked-bg: var(--museum-checkbox-checked-bg);
     --museum-radio-mark: var(--museum-checkbox-mark);
+    --museum-select-arrow: var(--museum-control-fg);
 
     --museum-button-primary-bg: #1d4ed8;
     --museum-button-primary-fg: #ffffff;
@@ -89,6 +90,7 @@
       --museum-checkbox-mark: #111827;
       --museum-radio-checked-bg: var(--museum-checkbox-checked-bg);
       --museum-radio-mark: var(--museum-checkbox-mark);
+      --museum-select-arrow: var(--museum-control-fg);
 
       --museum-button-primary-bg: #2563eb;
       --museum-button-primary-fg: #ffffff;
@@ -120,6 +122,7 @@
     --museum-checkbox-mark: #111827;
     --museum-radio-checked-bg: var(--museum-checkbox-checked-bg);
     --museum-radio-mark: var(--museum-checkbox-mark);
+    --museum-select-arrow: var(--museum-control-fg);
 
     --museum-button-primary-bg: #2563eb;
     --museum-button-primary-fg: #ffffff;
@@ -238,10 +241,11 @@
     color: var(--museum-field-error);
   }
 
-  /* Textarea shares every rule of Input (grouped selectors, no copied declarations).
+  /* Textarea and Select share every rule of Input (grouped selectors, no copied declarations).
      Input matches Button's vertical padding, font size, line height and border, so both stand equally tall. */
   .museum-input,
-  .museum-textarea {
+  .museum-textarea,
+  .museum-select {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
@@ -264,31 +268,36 @@
   }
 
   .museum-input--sm,
-  .museum-textarea--sm {
+  .museum-textarea--sm,
+  .museum-select--sm {
     padding: var(--museum-space-sm-y) var(--museum-space-sm-x);
     font-size: var(--museum-font-size-sm);
   }
 
   .museum-input--md,
-  .museum-textarea--md {
+  .museum-textarea--md,
+  .museum-select--md {
     padding: var(--museum-space-md-y) var(--museum-space-md-x);
     font-size: var(--museum-font-size-md);
   }
 
   .museum-input--lg,
-  .museum-textarea--lg {
+  .museum-textarea--lg,
+  .museum-select--lg {
     padding: var(--museum-space-lg-y) var(--museum-space-lg-x);
     font-size: var(--museum-font-size-lg);
   }
 
   .museum-input[aria-invalid="true"],
-  .museum-textarea[aria-invalid="true"] {
+  .museum-textarea[aria-invalid="true"],
+  .museum-select[aria-invalid="true"] {
     border-color: var(--museum-field-error);
   }
 
   /* The same two-tone keyboard ring as Button. */
   .museum-input:focus-visible,
-  .museum-textarea:focus-visible {
+  .museum-textarea:focus-visible,
+  .museum-select:focus-visible {
     outline: var(--museum-focus-width) solid var(--museum-focus-ring);
     outline-offset: var(--museum-focus-offset);
     box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) var(--museum-surface);
@@ -302,9 +311,45 @@
 
   /* Only the control is dimmed: the label, hint and error keep their contrast. */
   .museum-input:disabled,
-  .museum-textarea:disabled {
+  .museum-textarea:disabled,
+  .museum-select:disabled {
     opacity: var(--museum-disabled-opacity);
     cursor: not-allowed;
+  }
+
+  /* Select: the native control with its own arrow removed and redrawn from a token (two triangles, the second
+     mirrored, make a down arrow). The right padding makes room for it; a long option is cut with an ellipsis. */
+  .museum-select {
+    appearance: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background-image: linear-gradient(45deg, transparent 50%, var(--museum-select-arrow) 50%), linear-gradient(135deg, var(--museum-select-arrow) 50%, transparent 50%);
+    background-repeat: no-repeat;
+    background-size: 0.4em 0.4em, 0.4em 0.4em;
+    background-position: calc(100% - 1.15em) 50%, calc(100% - 0.78em) 50%;
+  }
+
+  .museum-select--sm {
+    padding-right: calc(var(--museum-space-sm-x) + 1.25em);
+  }
+
+  .museum-select--md {
+    padding-right: calc(var(--museum-space-md-x) + 1.25em);
+  }
+
+  .museum-select--lg {
+    padding-right: calc(var(--museum-space-lg-x) + 1.25em);
+  }
+
+  /* The indication is the disabled empty option while it is the chosen one; the list keeps the control colors. */
+  .museum-select:has(option[value=""]:checked) {
+    color: var(--museum-control-placeholder);
+  }
+
+  .museum-select option {
+    background-color: var(--museum-control-bg);
+    color: var(--museum-control-fg);
   }
 
   /* Checkbox: a drawn square on the native input; the label comes after it, so the field is two columns
@@ -569,6 +614,38 @@
     }
 
     .museum-radio:disabled {
+      border-color: GrayText;
+    }
+
+    /* As the Checkbox: forced colors repaint backgrounds and would drop the arrow, so the Select keeps its own,
+       in system colours; the error border is the resting one, and the error text says what is wrong. */
+    .museum-select {
+      forced-color-adjust: none;
+      --museum-select-arrow: CanvasText;
+      border-color: CanvasText;
+      background-color: Canvas;
+      color: CanvasText;
+    }
+
+    .museum-select:has(option[value=""]:checked),
+    .museum-select option {
+      color: CanvasText;
+    }
+
+    .museum-select option {
+      background-color: Canvas;
+    }
+
+    .museum-select[aria-invalid="true"] {
+      border-color: CanvasText;
+    }
+
+    .museum-select:focus-visible {
+      outline-color: CanvasText;
+      box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) Canvas;
+    }
+
+    .museum-select:disabled {
       border-color: GrayText;
     }
   }
