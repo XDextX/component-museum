@@ -130,7 +130,7 @@ exampleOptions(): { value: string; label: string; disabled?: boolean }[]
 **Galería (T-4):**
 - La historia React usa `argTypesFromContract` (`options` como control JSON), `label: 'Plan'` y
   `exampleClasses.RadioGroup`. Lleva `key` sobre `defaultValue`.
-- La historia Astro tiene 8 casos. `RadioGroup.mdx` va en las dos lenguas.
+- La historia Astro tiene 9 casos. `RadioGroup.mdx` va en las dos lenguas.
 - `tests/gallery-browser-radiogroup.test.ts` llama a `defineGalleryBrowser('RadioGroup',
   need('gallery').storybook)`.
 
@@ -144,7 +144,7 @@ exampleOptions(): { value: string; label: string; disabled?: boolean }[]
 - **RF-2:** el grupo por su rol y su nombre.
 - **RF-3:** pulsar cada etiqueta.
 - **RF-8:** con `Tab` se entra una vez, y con `ArrowDown` se selecciona la siguiente.
-- **RF-10 a RF-15:** en los cinco modos de tema, más los colores forzados.
+- **RF-10 a RF-15:** en los tres modos de tema, más los colores forzados.
 - **RF-16:** `Tab`, las flechas y la pulsación se saltan lo `disabled`.
 
 ## 5. Interfaz
@@ -155,7 +155,7 @@ exampleOptions(): { value: string; label: string; disabled?: boolean }[]
 - **Error:** el borde de cada círculo y el texto de error.
 - **`disabled`:** atenuado y fuera del orden de `Tab`.
 - **Colores forzados:** colores de sistema.
-- **Galería:** `RadioGroup/React`, `RadioGroup/Astro` (8 casos) y `RadioGroup/Documentation`; la
+- **Galería:** `RadioGroup/React`, `RadioGroup/Astro` (9 casos) y `RadioGroup/Documentation`; la
   matriz lo muestra en los dos frameworks.
 
 ## 6. Decisiones

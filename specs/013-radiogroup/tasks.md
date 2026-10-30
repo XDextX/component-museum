@@ -35,12 +35,12 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
     lista opcional, o de otro tipo, falla.
   - `argTypesFromContract` da un control `object`.
   - `usageSnippet` escribe `options={[…]}` con las opciones de ejemplo, en React y en Astro.
-  - `astroCases` da los 8 casos de un contrato como el de RadioGroup, y los de Button, Input,
+  - `astroCases` da los 9 casos de un contrato como el de RadioGroup, y los de Button, Input,
     Textarea y Checkbox no cambian.
   - `casesOf` da un valor de `options` distinto del de ejemplo y comprueba que la historia lo pinta.
   - Los tests de los demás contratos siguen iguales: da el número antes y después.
   Inyección: declarar `options?: …` en una copia en memoria pone en rojo la comprobación de la
-  obligatoria; quitar la rama `options` de `astroCases` pone en rojo los 8 casos.
+  obligatoria; quitar la rama `options` de `astroCases` pone en rojo los 9 casos.
   Hecha: 912 tests antes, 923 después (más 1 omitido, como antes). Los casos de `astroCases` son 9
   y no 8: la regla de la 010 añade `hint-error` al último lugar (como en Checkbox, 9 con
   `defaultChecked`), y el plan contó 8 sin él; el caso `defaultValue` da la opción `b`, no un
@@ -126,8 +126,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   Archivos: `tests/lib/consumer.ts` (`radiogroupInstances`, plan, bloque 4),
   `tests/lib/field-a11y.ts` (`kind` RadioGroup), `tests/field-a11y-radiogroup.test.ts`
   (con `need('consumers')`)
-  Hecho cuando: en Edge, sobre los consumidores construidos de React y de Astro, en los cinco modos
-  de tema:
+  Hecho cuando: en Edge, sobre los consumidores construidos de React y de Astro, en los tres modos
+  de tema, más colores forzados:
   - RF-2: el grupo se halla por su rol y su nombre;
   - RF-3: pulsar cada etiqueta selecciona su opción y desmarca la anterior;
   - RF-4 a RF-7, como en Checkbox, en el grupo;

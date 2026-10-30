@@ -60,8 +60,11 @@
 - `options` vacío pinta la leyenda sin opciones; un `defaultValue` que no está en `options` no marca
   ninguna; dos grupos con el mismo `name` son cosa del consumidor (casos límite).
 - Fuera de alcance: una ayuda por opción, la disposición horizontal y el grupo controlado en Astro.
-- Casos Astro, con unas opciones de ejemplo fijas (3, la segunda `disabled` en su propio caso):
-  `default`, 2 de `size`, `hint`, `error`, `disabled`, `required` y `defaultValue` (8).
+- Casos Astro, con unas opciones de ejemplo fijas (3): `default`, 2 de `size`, `hint`, `error`,
+  `hint-error`, `disabled`, `required` y `defaultValue` (9). La opción `disabled` se prueba en los
+  consumidores (grupo `partial`).
+- Una opción con `value: ''` empieza marcada si no se pasa `defaultValue`, porque su valor por
+  defecto también es `""`; es conocido y no se trata en esta spec.
 - La historia React ofrece `options` como control JSON (de `argTypesFromContract`) y monta de nuevo
   el grupo al cambiar `defaultValue`, como la 012 con `defaultChecked`.
 

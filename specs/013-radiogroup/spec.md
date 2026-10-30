@@ -1,6 +1,7 @@
 # Spec 013 — radiogroup
 
-**Status:** approved · **Approved:** 2026-10-24 · el coordinator en modo autónomo, con las 7 decisiones recomendadas del clarify (`notes.md`)
+**Status:** implemented · **Approved:** 2026-10-24 · el coordinator en modo autónomo, con las 7 decisiones recomendadas del clarify (`notes.md`)
+**Implemented:** 2026-10-30 · 5 tareas en 4 olas; tests 913 → 1104; validada por el reviewer en 1 vuelta; cierre aprobado por el dueño («Sí, ciérrala y sigue»)
 **Size:** L (16 RF) · **Entrega:** 4 (009–014) · **Depende de:** 017
 
 ## Contexto y objetivo
@@ -83,6 +84,8 @@ Lo propio de RadioGroup:
 - **`hint` y `error` a la vez:** el error va primero (RF-4, RF-5).
 - **Etiqueta larga:** se parte en líneas junto al círculo (RF-13).
 - **Atributos HTML:** van al grupo; `className`, al grupo (RF-1).
+- **Opción con `value: ''`:** empieza marcada si no se pasa `defaultValue`, porque su valor por
+  defecto también es `""`; es conocido y no se trata en esta spec (RF-9).
 
 ## Fuera de alcance
 
