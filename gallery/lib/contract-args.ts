@@ -126,8 +126,8 @@ export function astroCases(contract: Contract): { id: string; props: Record<stri
     if (spec.type === 'enum') {
       for (const v of spec.values.filter((x) => x !== spec.default)) cases.push({ id: `${name}-${v}`, props: { ...base, [name]: v } });
     } else if (spec.type === 'boolean') cases.push({ id: name, props: { ...base, [name]: true } });
-    // With options, a text default (`defaultValue`) must name one of them (spec 013, RF-9).
-    else if ('default' in spec) cases.push({ id: name, props: { ...base, [name]: 'options' in contract.props ? exampleOptions()[1].value : exampleText(name) } });
+    // With options, the `defaultValue` text (and only it) must name one of them (spec 013, RF-9).
+    else if ('default' in spec) cases.push({ id: name, props: { ...base, [name]: 'options' in contract.props && name === 'defaultValue' ? exampleOptions()[1].value : exampleText(name) } });
   }
   // A field with both texts gets one case that has them together, so the error-hint order is compared (spec 010).
   const { hint, error } = contract.props;

@@ -32,6 +32,8 @@ function argTypeProblems(c: Contract, argTypes: ArgTypes, exampleClasses: string
       if (JSON.stringify(got.options) !== JSON.stringify(spec.values)) out.push(`${name} options differ from the contract`);
     } else if (spec.type === 'string') {
       if (got.control.type !== 'text') out.push(`${name} is not a text field`);
+    } else if (spec.type === 'options') {
+      if (got.control.type !== 'object') out.push(`${name} is not a JSON object control`);
     } else if (got.control.type !== 'boolean') out.push(`${name} is not a switch`);
   }
   if (c.content && !argTypes.children) out.push('missing control children');

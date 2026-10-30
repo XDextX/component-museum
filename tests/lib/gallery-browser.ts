@@ -49,8 +49,11 @@ export function casesOf(contract: Contract): { arg: string; shows: (b: Rendered)
         const text = exampleText(prop);
         return [{ arg: `${prop}:${text}`, shows: (b: Rendered) => b.shown.includes(text) }];
       }
-      // `defaultChecked` is the HTML attribute `checked` (spec 012); every other boolean is its own name.
-      if (spec.type === 'boolean') return [{ arg: `${prop}:!${!spec.default}`, shows: (b: Rendered) => (prop === 'defaultChecked' ? 'checked' : prop) in b.attributes }];
+      // `defaultChecked` is the HTML attribute `checked` (spec 012); on a group (a fieldset) `required` is `aria-required` (spec 013); every other boolean is its own name.
+      if (spec.type === 'boolean') {
+        const attribute = prop === 'defaultChecked' ? 'checked' : prop === 'required' && 'options' in contract.props ? 'aria-required' : prop;
+        return [{ arg: `${prop}:!${!spec.default}`, shows: (b: Rendered) => attribute in b.attributes }];
+      }
       const value = spec.values.find((v) => v !== spec.default)!;
       return [{
         arg: `${prop}:${value}`,
