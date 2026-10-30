@@ -8,3 +8,5 @@ export { Checkbox } from './Checkbox/Checkbox.js';
 export type { CheckboxOwnProps, CheckboxProps } from './Checkbox/Checkbox.js';
 export { RadioGroup } from './RadioGroup/RadioGroup.js';
 export type { RadioGroupOption, RadioGroupOwnProps, RadioGroupProps } from './RadioGroup/RadioGroup.js';
+export { Select } from './Select/Select.js';
+export type { SelectOption, SelectOwnProps, SelectProps } from './Select/Select.js';
