@@ -331,12 +331,40 @@ function radiogroupInstances(): string {
   ].join('\n');
 }
 
-/** Makes the consumer's entry import Button, Input, Textarea, Checkbox, RadioGroup and the stylesheet once, and render every instance. */
+/**
+ * Spec 014 T-4: the Select instances `field-a11y-select.test.ts` measures. Labels start with "Menu"; every list is
+ * "Option A", "Option B", "Option C". `select-placeholder` and `select-required` open on the "Choose one" indication,
+ * `select-selected` has both that and `defaultValue="b"`, `select-partial` has C disabled, `select-disabled` is
+ * disabled whole with an error, and `select-long` carries a 200-character option with an 80-character word in it.
+ */
+export const selectLongOption = `Option long ${'lorem ipsum dolor sit amet '.repeat(3)}${'x'.repeat(80)} end`;
+function selectInstances(framework: Framework): string {
+  const options = (third = '') => `options={[{ value: 'a', label: 'Option A' }, { value: 'b', label: 'Option B' }, { value: 'c', label: 'Option C'${third} }]}`;
+  const select = (key: string, label: string, extra = '') => `<Select id="select-${key}" label="${label}" ${options()} ${extra}/>`;
+  return [
+    ...['sm', 'md', 'lg'].map((s) => select(s, `Menu ${s}`, `size="${s}" `)),
+    select('hint', 'Menu hint', 'hint="Menu hint text" '),
+    select('error', 'Menu error', 'error="Menu error text" '),
+    select('both', 'Menu both', 'hint="Menu hint text" error="Menu error text" '),
+    select('required', 'Menu required', 'placeholder="Choose one" required '),
+    select('disabled', 'Menu disabled', 'error="Menu disabled error" disabled '),
+    select('placeholder', 'Menu placeholder', 'placeholder="Choose one" '),
+    select('selected', 'Menu selected', 'placeholder="Choose one" defaultValue="b" '),
+    `<Select id="select-partial" label="Menu partial" ${options(', disabled: true')} />`,
+    '<Select name="twins-sel-a" label="Chooser" options={[{ value: \'a\', label: \'Option A\' }]} />',
+    '<Select name="twins-sel-b" label="Chooser" options={[{ value: \'a\', label: \'Option A\' }]} />',
+    '<p id="select-own-note">Menu own note</p>',
+    select('own', 'Menu own', 'hint="Menu own hint" aria-describedby="select-own-note" '),
+    `<Select id="select-long" label="Menu long" options={[{ value: 'a', label: 'Option A' }, { value: 'l', label: "${selectLongOption}" }]} />`,
+  ].join(framework === 'react' ? '\n      ' : '\n\t\t');
+}
+
+/** Makes the consumer's entry import Button, Input, Textarea, Checkbox, RadioGroup, Select and the stylesheet once, and render every instance. */
 function useButtons(framework: Framework, dir: string, name: string): void {
   if (framework === 'react') {
     writeFileSync(
       join(dir, 'src', 'MuseumButtons.tsx'),
-      `import { Button, Checkbox, Input, RadioGroup, Textarea } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n      ${inputInstances(framework)}\n      ${textareaInstances(framework)}\n      ${checkboxInstances(framework)}\n      ${radiogroupInstances()}\n    </>\n  )\n}\n`,
+      `import { Button, Checkbox, Input, RadioGroup, Select, Textarea } from '${name}'\nimport '${name}/styles.css'\n\nexport default function MuseumButtons() {\n  return (\n    <>\n      ${buttonInstances(framework)}\n      ${inputInstances(framework)}\n      ${textareaInstances(framework)}\n      ${checkboxInstances(framework)}\n      ${radiogroupInstances()}\n      ${selectInstances(framework)}\n    </>\n  )\n}\n`,
     );
     patch(join(dir, entries.react), (source) =>
       `import MuseumButtons from './MuseumButtons.tsx'\n${source.replace('<App />', '<App />\n    <MuseumButtons />')}`,
@@ -344,8 +372,8 @@ function useButtons(framework: Framework, dir: string, name: string): void {
   } else {
     patch(join(dir, entries.astro), (source) =>
       source
-        .replace(/^---\r?\n/, `---\nimport { Button, Checkbox, Input, RadioGroup, Textarea } from '${name}';\nimport '${name}/styles.css';\n`)
-        .replace('</body>', `\t${buttonInstances(framework)}\n\t\t${inputInstances(framework)}\n\t\t${textareaInstances(framework)}\n\t\t${checkboxInstances(framework)}\n\t\t${radiogroupInstances()}\n\t</body>`),
+        .replace(/^---\r?\n/, `---\nimport { Button, Checkbox, Input, RadioGroup, Select, Textarea } from '${name}';\nimport '${name}/styles.css';\n`)
+        .replace('</body>', `\t${buttonInstances(framework)}\n\t\t${inputInstances(framework)}\n\t\t${textareaInstances(framework)}\n\t\t${checkboxInstances(framework)}\n\t\t${radiogroupInstances()}\n\t\t${selectInstances(framework)}\n\t</body>`),
     );
   }
 }
