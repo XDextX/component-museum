@@ -6,7 +6,7 @@ import { createElement, Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { astroCases } from '../gallery/lib/contract-args.ts';
-import { Checkbox, Input, RadioGroup, Textarea } from '../packages/react/dist/index.js';
+import { Checkbox, Input, RadioGroup, Select, Textarea } from '../packages/react/dist/index.js';
 import { loadContract } from './lib/contract.ts';
 
 // The canonical markup of plan 009, block 4. `id` is passed so the output is exact.
@@ -336,6 +336,110 @@ describe('RadioGroup markup in React (spec 013, RF-2 to RF-9, RF-16)', () => {
   });
 });
 
+// Spec 014, T-3: the same field around a native <select>, with one <option> per option.
+const slHtml = (props: Record<string, unknown>) => renderToStaticMarkup(createElement(Select, { id: 'f', label: 'Label', options: opts, ...props }));
+// The attribute order of the canonical markup: id, class, aria-*, required, disabled, hook.
+const sel = (attrs: string, ...inner: string[]) => `<select id="f" class="museum-select museum-select--md"${attrs} data-museum-select="">${inner.join('')}</select>`;
+const opt = (value: string, text: string, attrs = '') => `<option value="${value}"${attrs}>${text}</option>`;
+const optsMarkup = (a = '', b = '') => opt('a', 'Option A', a) + opt('b', 'Option B', b);
+const ph = (selected = true) => opt('', 'Choose', ` disabled=""${selected ? ' selected=""' : ''}`);
+const SEL = ' selected=""';
+
+describe('Select markup in React (spec 014, RF-2 to RF-9, RF-16)', () => {
+  it('RF-2, RF-5: without hint or error it is a label and a select, with no ARIA and no empty nodes', () => {
+    expect(slHtml({})).toBe(field(label(), sel('', optsMarkup())));
+  });
+
+  it('RF-3: a hint is described by the select', () => {
+    expect(slHtml({ hint: 'Hint' })).toBe(field(label(), sel(' aria-describedby="f-hint"', optsMarkup()), hint));
+  });
+
+  it('RF-4: an error marks the select invalid and is described by it', () => {
+    expect(slHtml({ error: 'Error' })).toBe(field(label(), sel(' aria-describedby="f-error" aria-invalid="true"', optsMarkup()), error));
+  });
+
+  it('RF-3, RF-4: with both, the error comes first in the description', () => {
+    expect(slHtml({ hint: 'Hint', error: 'Error' })).toBe(
+      field(label(), sel(' aria-describedby="f-error f-hint" aria-invalid="true"', optsMarkup()), hint, error),
+    );
+  });
+
+  it('RF-6: required is native and the label shows a marker hidden from reading', () => {
+    expect(slHtml({ required: true })).toBe(field(label(star), sel(' required=""', optsMarkup())));
+  });
+
+  it('RF-16: disabled of the select and of one option are the native ones', () => {
+    expect(slHtml({ disabled: true })).toBe(field(label(), sel(' disabled=""', optsMarkup())));
+    expect(slHtml({ options: [opts[0], { ...opts[1], disabled: true }] })).toBe(field(label(), sel('', optsMarkup('', ' disabled=""'))));
+  });
+
+  it('RF-8: defaultValue selects the option with that value, and no other', () => {
+    expect(slHtml({ defaultValue: 'b' })).toBe(field(label(), sel('', optsMarkup('', SEL))));
+    expect(slHtml({ defaultValue: '' })).toBe(field(label(), sel('', optsMarkup())));
+  });
+
+  it('RF-9: a placeholder is a first disabled option, selected when there is no defaultValue', () => {
+    expect(slHtml({ placeholder: 'Choose' })).toBe(field(label(), sel('', ph() + optsMarkup())));
+  });
+
+  it('RF-8, RF-9: with a placeholder and a defaultValue, defaultValue wins', () => {
+    expect(slHtml({ placeholder: 'Choose', defaultValue: 'b' })).toBe(field(label(), sel('', ph(false) + optsMarkup('', SEL))));
+  });
+
+  it('RF-8: a defaultValue that is not in options counts as absent', () => {
+    expect(slHtml({ defaultValue: 'zzz' })).toBe(slHtml({}));
+    expect(slHtml({ defaultValue: 'zzz', placeholder: 'Choose' })).toBe(slHtml({ placeholder: 'Choose' }));
+  });
+
+  it('RF-8: a controlled value selects its option, with no defaultValue and no React warning', () => {
+    const errors: unknown[] = [];
+    const spy = console.error;
+    console.error = (...a: unknown[]) => void errors.push(a);
+    try {
+      expect(slHtml({ value: 'a', onChange: () => {} })).toBe(field(label(), sel('', optsMarkup(SEL))));
+      expect(slHtml({ value: 'a', defaultValue: 'b', onChange: () => {} })).toBe(field(label(), sel('', optsMarkup(SEL))));
+    } finally {
+      console.error = spy;
+    }
+    expect(errors).toEqual([]);
+  });
+
+  it('keeps the consumer id and appends its aria-describedby after the component ids', () => {
+    const out = slHtml({ id: 'mine', hint: 'Hint', 'aria-describedby': 'extra' });
+    expect(out).toContain('<select id="mine"');
+    expect(out).toContain('for="mine"');
+    expect(out).toContain('id="mine-hint"');
+    expect(out).toContain('aria-describedby="mine-hint extra"');
+    expect(slHtml({ 'aria-describedby': 'extra' })).toContain('aria-describedby="extra"');
+  });
+
+  it('sends free attributes and the class to the select, and the component wins a clash', () => {
+    const out = slHtml({ name: 'q', className: 'mine', 'data-museum-select': 'x' });
+    expect(out).toContain('class="museum-select museum-select--md mine"');
+    expect(out).toMatch(/<select[^>]* name="q"/);
+    expect(out.match(/data-museum-select/g)).toHaveLength(1);
+  });
+
+  it('writes the size as a class of the select', () => {
+    expect(slHtml({ size: 'lg' })).toContain('class="museum-select museum-select--lg"');
+  });
+
+  it('with no options it is a label and an empty select (or only the placeholder)', () => {
+    expect(slHtml({ options: [] })).toBe(field(label(), sel('')));
+    expect(slHtml({ options: [], placeholder: 'Choose' })).toBe(field(label(), sel('', ph())));
+  });
+
+  it('gives two Select in one tree different ids, each label pointing at its own select', () => {
+    const out = renderToStaticMarkup(
+      createElement(Fragment, null, createElement(Select, { label: 'Same', options: opts }), createElement(Select, { label: 'Same', options: opts })),
+    );
+    const ids = [...out.matchAll(/<select id="([^"]+)"/g)].map((m) => m[1]);
+    const fors = [...out.matchAll(/for="([^"]+)"/g)].map((m) => m[1]);
+    expect(new Set(ids).size).toBe(2);
+    expect(fors).toEqual(ids);
+  });
+});
+
 const repo = resolve(import.meta.dirname, '..');
 type Rendered = { id: string; props: Record<string, unknown>; html: string }[];
 const generated = (slug: string) => JSON.parse(readFileSync(resolve(repo, `gallery/generated/astro-${slug}.json`), 'utf8')) as Rendered;
@@ -472,6 +576,36 @@ describe('RadioGroup markup in Astro against React (spec 013, RF-1 to RF-9)', ()
       [...rendered.find((c) => c.id === id)!.html.matchAll(/<input[^>]*>/g)].filter((m) => /\schecked/.test(m[0])).map((m) => /value="([^"]+)"/.exec(m[0])![1]);
     expect(checked('default')).toEqual([]);
     expect(checked('defaultValue')).toEqual(['b']);
+  });
+
+  it('emits no <script> in any case', () => {
+    expect(rendered.filter((c) => /<script/i.test(c.html)).map((c) => c.id)).toEqual([]);
+  });
+});
+
+describe('Select markup in Astro against React (spec 014, RF-1 to RF-9)', () => {
+  const contract = loadContract(resolve(repo, 'contracts/select.contract.json'));
+  const rendered = generated('select');
+  const norm = (m: string) => serialised(normalise('select', m));
+
+  it('has one Astro render per case of the contract (10, the owner\'s hint-error one last)', () => {
+    expect(rendered.map((c) => c.id)).toEqual(astroCases(contract).map((c) => c.id));
+    expect(rendered.map((c) => c.id)).toEqual(['default', 'hint', 'error', 'placeholder', 'size-sm', 'size-lg', 'disabled', 'required', 'defaultValue', 'hint-error']);
+  });
+
+  it('renders every case with the same markup as React', () => {
+    for (const { id, props, html: astro } of rendered) {
+      const react = renderToStaticMarkup(createElement(Select, props as never));
+      expect(norm(astro), `case ${id}`).toBe(norm(react));
+    }
+  });
+
+  it('RF-8, RF-9: the default case selects nothing, defaultValue only option b, and the placeholder case its own option', () => {
+    const selected = (id: string) =>
+      [...rendered.find((c) => c.id === id)!.html.matchAll(/<option[^>]*>/g)].filter((m) => /\sselected/.test(m[0])).map((m) => /value="([^"]*)"/.exec(m[0])![1]);
+    expect(selected('default')).toEqual([]);
+    expect(selected('defaultValue')).toEqual(['b']);
+    expect(selected('placeholder')).toEqual(['']);
   });
 
   it('emits no <script> in any case', () => {

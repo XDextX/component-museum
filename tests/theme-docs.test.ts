@@ -14,6 +14,7 @@ const docs = [
   'gallery/stories/Textarea.mdx',
   'gallery/stories/Checkbox.mdx',
   'gallery/stories/RadioGroup.mdx',
+  'gallery/stories/Select.mdx',
 ];
 
 // Each document holds a Spanish and an English half; RF-6 asks for the sentence in both.

@@ -37,7 +37,7 @@ export function casesOf(contract: Contract): { arg: string; shows: (b: Rendered)
         const other = exampleOptions().every((o) => o.label !== 'Other') ? 'Other' : 'Another';
         return [{ arg: `${prop}[0].value:x;${prop}[0].label:${other}`, shows: (b: Rendered) => b.shown.includes(other) }];
       }
-      // A group's name and its default value land on its radios, not in the text (spec 013, RF-3, RF-9).
+      // A group's name and its default value land on its radios, not in the text (spec 013, RF-3, RF-9); a select's, on its chosen option.
       if (spec.type === 'string' && 'options' in contract.props && prop === 'name') {
         return [{ arg: `${prop}:Name`, shows: (b: Rendered) => b.names.includes('Name') }];
       }
@@ -51,7 +51,7 @@ export function casesOf(contract: Contract): { arg: string; shows: (b: Rendered)
       }
       // `defaultChecked` is the HTML attribute `checked` (spec 012); on a group (a fieldset) `required` is `aria-required` (spec 013); every other boolean is its own name.
       if (spec.type === 'boolean') {
-        const attribute = prop === 'defaultChecked' ? 'checked' : prop === 'required' && 'options' in contract.props ? 'aria-required' : prop;
+        const attribute = prop === 'defaultChecked' ? 'checked' : prop === 'required' && 'options' in contract.props && 'name' in contract.props ? 'aria-required' : prop;
         return [{ arg: `${prop}:!${!spec.default}`, shows: (b: Rendered) => attribute in b.attributes }];
       }
       const value = spec.values.find((v) => v !== spec.default)!;
@@ -82,7 +82,8 @@ async function render(browser: Browser, url: string, contract: Contract, colorSc
       shown: document.getElementById('storybook-root')?.textContent ?? '',
       // Storybook shows a story that throws in its own error display on <body>.
       error: document.body.classList.contains('sb-show-errordisplay'),
-      checked: [...b.querySelectorAll<HTMLInputElement>('input[type=radio]:checked')].map((i) => i.value),
+      // A select's chosen value counts as checked too (spec 014): its defaultValue lands there.
+      checked: [...b.querySelectorAll<HTMLInputElement>('input[type=radio]:checked')].map((i) => i.value).concat(b instanceof HTMLSelectElement && b.selectedIndex >= 0 ? [b.value] : []),
       names: [...b.querySelectorAll<HTMLInputElement>('input[type=radio]')].map((i) => i.name),
     }));
   } finally {
