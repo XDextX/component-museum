@@ -118,6 +118,29 @@ describe('every RadioGroup rule reads only var(--museum-*) or a system color (sp
   });
 });
 
+describe('every Select rule reads only var(--museum-*) or a system color (spec 014)', () => {
+  const bodies = [...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter((m) => /\.museum-select/.test(m[1]))
+    .flatMap((m) => m[2].split(';').map((d) => d.trim()).filter(Boolean).map((d) => ({ rule: m[1].trim(), decl: d })));
+  it('has rules, among them the forced-colors ones', () => {
+    expect(bodies.length).toBeGreaterThan(10);
+    expect(bodies.some(({ rule, decl }) => rule.includes('.museum-select') && /^forced-color-adjust:\s*none$/.test(decl))).toBe(true);
+  });
+  it('shares the Input rules: Select is grouped with them, not copied', () => {
+    for (const size of sizes) {
+      const rule = css.split('{').map((s) => s.slice(s.lastIndexOf('}') + 1)).find((s) => s.includes(`.museum-input--${size}`) && s.includes(`.museum-textarea--${size}`));
+      expect(rule, size).toContain(`.museum-select--${size}`);
+    }
+  });
+  it('has no literal color (the arrow geometry is in em)', () => {
+    expect(bodies.filter(({ decl }) => /#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i.test(decl.replace(/var\([^)]*\)/g, '')))).toEqual([]);
+  });
+  it('--museum-select-arrow is declared in the three theme blocks, and a system color under forced colors', () => {
+    expect(css.split('--museum-select-arrow: var(--museum-control-fg);').length - 1).toBe(3);
+    expect(css.split('--museum-select-arrow: CanvasText;').length - 1).toBe(1);
+  });
+});
+
 describe('RF-5 (spec 011): a field on a dark page that asks for no theme stays legible', { timeout: 60_000 }, () => {
   // The page is dark (#111827) and sets no data-theme: the package is light, and the field paints its own surface.
   for (const scheme of ['light', 'dark'] as const) {
@@ -557,6 +580,146 @@ describe('the fixed field page, in Edge', { timeout: 60_000 }, () => {
     expect(box.field).toBe(320);
     expect(box.control).toBe(box.content);
     expect(box.scroll).toBeLessThanOrEqual(320);
+    await page.context().close();
+  });
+
+  // Spec 014: Select, on the same fixed page.
+  /** What a Select paints: border, chosen text, own background, the arrow's colors, the surface under it, and its height. */
+  const sel = (page: Page, id: string) =>
+    page.locator(`#${id}`).evaluate((el) => {
+      const s = getComputedStyle(el);
+      return {
+        border: s.borderTopColor, fg: s.color, bg: s.backgroundColor, arrow: s.backgroundImage.match(/rgb\([^)]*\)/g) ?? [],
+        surface: getComputedStyle(el.closest('.museum-field') ?? document.body).backgroundColor, height: el.getBoundingClientRect().height,
+      };
+    });
+  const worst = (ratios: number[]) => +Math.min(...ratios).toFixed(2);
+
+  for (const mode of modes) {
+    describe(`Select, ${mode.name}`, () => {
+      it('RF-10: the border is 3:1 against the surface and the control background, at rest and in error', async () => {
+        const page = await open(mode);
+        const ratios: number[] = [];
+        for (const id of ['sel-md', 'sel-error']) {
+          const p = await sel(page, id);
+          ratios.push(contrastRatio(parseRgb(p.border), parseRgb(p.surface)), contrastRatio(parseRgb(p.border), parseRgb(p.bg)));
+        }
+        console.log('SELECT RF-10', mode.name, worst(ratios));
+        expect(worst(ratios)).toBeGreaterThanOrEqual(3);
+        await page.context().close();
+      });
+
+      it('RF-11: the arrow is drawn in one color, 3:1 against the control background, in every size and in error', async () => {
+        const page = await open(mode);
+        const ratios: number[] = [];
+        for (const id of ['sel-sm', 'sel-md', 'sel-lg', 'sel-error']) {
+          const p = await sel(page, id);
+          expect(p.arrow.length, id).toBe(2);
+          expect(new Set(p.arrow).size, id).toBe(1);
+          ratios.push(contrastRatio(parseRgb(p.arrow[0] ?? ''), parseRgb(p.bg)));
+        }
+        console.log('SELECT RF-11', mode.name, worst(ratios));
+        expect(worst(ratios)).toBeGreaterThanOrEqual(3);
+        await page.context().close();
+      });
+
+      it('RF-12: label, chosen text, indication, hint and error are 4.5:1, also the error of the disabled one', async () => {
+        const page = await open(mode);
+        const ratios = (await visibleTexts(page)).map((t) => contrastRatio(parseRgb(t.fg), parseRgb(t.bg)));
+        // A select shows its chosen option as part of the control, so it is measured apart.
+        for (const id of ['sel-md', 'sel-placeholder', 'sel-error']) {
+          const p = await sel(page, id);
+          ratios.push(contrastRatio(parseRgb(p.fg), parseRgb(p.bg)));
+        }
+        // The indication is the placeholder color of Input, not the chosen-text one.
+        expect((await sel(page, 'sel-placeholder')).fg).toBe((await paint(page, 'in-placeholder')).placeholder);
+        const error = await page.locator('#sel-disabled-error').evaluate((el) => {
+          let opacity = 1;
+          for (let n: Element | null = el; n; n = n.parentElement) opacity *= +getComputedStyle(n).opacity;
+          return { fg: getComputedStyle(el).color, opacity };
+        });
+        expect(error.opacity).toBe(1);
+        ratios.push(contrastRatio(parseRgb(error.fg), parseRgb((await sel(page, 'sel-disabled')).surface)));
+        console.log('SELECT RF-12', mode.name, worst(ratios));
+        expect(worst(ratios)).toBeGreaterThanOrEqual(4.5);
+        await page.context().close();
+      });
+
+      it('RF-14: the focus ring is 3:1 around the control, and in error the border stays the error one and the ring stands off it', async () => {
+        const page = await open(mode);
+        const ratios: number[] = [];
+        for (const id of ['sel-md', 'sel-error']) {
+          await page.keyboard.press('Tab');
+          await page.locator(`#${id}`).focus();
+          const ring = await page.evaluate(() => {
+            const el = document.activeElement as HTMLElement;
+            const s = getComputedStyle(el);
+            const error = el.closest('.museum-field')!.querySelector('.museum-field__error');
+            return { id: el.id, color: s.outlineColor, width: parseFloat(s.outlineWidth), style: s.outlineStyle, offset: parseFloat(s.outlineOffset), border: s.borderTopColor, error: error ? getComputedStyle(error).color : '', surface: getComputedStyle(document.body).backgroundColor };
+          });
+          expect(ring.id).toBe(id);
+          expect(ring.style, id).not.toBe('none');
+          expect(ring.width, id).toBeGreaterThanOrEqual(2);
+          ratios.push(contrastRatio(parseRgb(ring.color), parseRgb(ring.surface)));
+          if (id === 'sel-error') {
+            expect(ring.border).toBe(ring.error);
+            expect(ring.offset).toBeGreaterThan(0);
+          }
+        }
+        console.log('SELECT RF-14', mode.name, worst(ratios));
+        expect(worst(ratios)).toBeGreaterThanOrEqual(3);
+        await page.context().close();
+      });
+    });
+  }
+
+  it('RF-13: Select and Input of the same size are the same height, and at least 24 px', async () => {
+    for (const mode of modes) {
+      const page = await open(mode);
+      for (const size of sizes) {
+        const s = (await sel(page, `sel-${size}`)).height;
+        const i = await page.locator(`#in-${size}`).evaluate((el) => el.getBoundingClientRect().height);
+        expect(+s.toFixed(2), `${mode.name}, ${size}`).toBe(+i.toFixed(2));
+        expect(s, size).toBeGreaterThanOrEqual(24);
+      }
+      await page.context().close();
+    }
+  });
+
+  it('RF-15: with forced colors, the border and the arrow differ from the background, also in error', async () => {
+    const report: Record<string, number>[] = [];
+    for (const scheme of ['light', 'dark'] as const) {
+      for (const theme of ['light', 'dark']) {
+        const page = await (await browser.newContext({ colorScheme: scheme, forcedColors: 'active', viewport: { width: 1024, height: 900 } })).newPage();
+        await page.setContent(html);
+        await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme);
+        for (const id of ['sel-md', 'sel-error']) {
+          const p = await sel(page, id);
+          expect(p.arrow.length, id).toBe(2);
+          report.push({
+            [`${scheme}/${theme} ${id} border`]: +contrastRatio(parseRgb(p.border), parseRgb(p.surface)).toFixed(2),
+            [`${scheme}/${theme} ${id} arrow`]: +contrastRatio(parseRgb(p.arrow[0] ?? ''), parseRgb(p.bg)).toFixed(2),
+          });
+        }
+        await page.context().close();
+      }
+    }
+    console.log('SELECT RF-15 forced', JSON.stringify(report));
+    expect(report.flatMap((r) => Object.entries(r)).filter(([, ratio]) => ratio < 3), JSON.stringify(report)).toEqual([]);
+  });
+
+  it('a 200-character option does not widen a 320 px Select field', async () => {
+    const page = await open(modes[2], 800);
+    const box = await page.evaluate(() => {
+      const field = document.getElementById('long-field-sel')!;
+      const s = getComputedStyle(field);
+      const content = field.getBoundingClientRect().width - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight);
+      return { field: field.getBoundingClientRect().width, content, control: document.getElementById('sel-long')!.getBoundingClientRect().width, scroll: field.scrollWidth, ellipsis: getComputedStyle(document.getElementById('sel-long')!).textOverflow };
+    });
+    expect(box.field).toBe(320);
+    expect(box.control).toBe(box.content);
+    expect(box.scroll).toBeLessThanOrEqual(320);
+    expect(box.ellipsis).toBe('ellipsis');
     await page.context().close();
   });
 });
