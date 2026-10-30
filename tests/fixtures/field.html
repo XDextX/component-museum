@@ -123,6 +123,14 @@
       <p id="sel-placeholder-hint" class="museum-field__hint">Hint</p>
     </div>
     <div class="museum-field">
+      <label class="museum-field__label" for="sel-empty">Empty value</label>
+      <select id="sel-empty" class="museum-select museum-select--md" data-museum-select>
+        <option value="" selected>Todos</option>
+        <option value="a">Option A</option>
+        <option value="c" disabled>Option C</option>
+      </select>
+    </div>
+    <div class="museum-field">
       <label class="museum-field__label" for="sel-error">Error<span class="museum-field__required" aria-hidden="true">*</span></label>
       <select id="sel-error" class="museum-select museum-select--md" aria-describedby="sel-error-error sel-error-hint" aria-invalid="true" required data-museum-select>
         <option value="a" selected>Option A</option>
