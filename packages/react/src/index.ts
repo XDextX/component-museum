@@ -6,3 +6,5 @@ export { Textarea } from './Textarea/Textarea.js';
 export type { TextareaOwnProps, TextareaProps } from './Textarea/Textarea.js';
 export { Checkbox } from './Checkbox/Checkbox.js';
 export type { CheckboxOwnProps, CheckboxProps } from './Checkbox/Checkbox.js';
+export { RadioGroup } from './RadioGroup/RadioGroup.js';
+export type { RadioGroupOption, RadioGroupOwnProps, RadioGroupProps } from './RadioGroup/RadioGroup.js';
