@@ -13,6 +13,9 @@ export const exampleClasses: Record<string, Record<string, string>> = {
   Checkbox: {
     'my-checkbox': '.my-checkbox {\n  border-radius: 999px;\n}',
   },
+  RadioGroup: {
+    'my-radiogroup': '.my-radiogroup {\n  letter-spacing: 0.05em;\n}',
+  },
   Textarea: {
     'my-textarea': '.my-textarea {\n  border-radius: 0.25rem;\n  letter-spacing: 0.05em;\n}',
   },

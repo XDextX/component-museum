@@ -198,6 +198,9 @@ describe('options props (spec 013, RF-1)', () => {
     expect(cases[0].props).toEqual(base);
     expect(cases[5].props).toEqual({ ...base, disabled: true });
     expect(cases[7].props).toEqual({ ...base, defaultValue: 'b' });
+    // Only defaultValue names an option; hint and error keep their example text.
+    expect(cases[1].props).toEqual({ ...base, hint: exampleText('hint') });
+    expect(cases[2].props).toEqual({ ...base, error: exampleText('error') });
     expect(cases[8].props).toEqual({ ...base, hint: 'Hint', error: 'Error' });
   });
 

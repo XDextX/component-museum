@@ -6,7 +6,7 @@ import { createElement, Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { astroCases } from '../gallery/lib/contract-args.ts';
-import { Checkbox, Input, Textarea } from '../packages/react/dist/index.js';
+import { Checkbox, Input, RadioGroup, Textarea } from '../packages/react/dist/index.js';
 import { loadContract } from './lib/contract.ts';
 
 // The canonical markup of plan 009, block 4. `id` is passed so the output is exact.
@@ -228,6 +228,114 @@ describe('Checkbox markup in React (spec 012, RF-2 to RF-6, RF-12)', () => {
   });
 });
 
+// Spec 013, T-4: the same field as a group (fieldset + legend) with one radio per option.
+const opts = [
+  { value: 'a', label: 'Option A' },
+  { value: 'b', label: 'Option B' },
+];
+const rgHtml = (props: Record<string, unknown>) =>
+  renderToStaticMarkup(createElement(RadioGroup, { id: 'f', label: 'Label', name: 'n', options: opts, ...props }));
+const legend = (required = '') => `<legend class="museum-field__label">Label${required}</legend>`;
+// React writes required and disabled before the name, and checked between the name and the value.
+const radio = (i: number, value: string, text: string, attrs = '') =>
+  `<div class="museum-radiogroup__option"><input id="f-${i}" type="radio" class="museum-radio"${attrs.replace(' checked=""', '')} name="n"${attrs.includes('checked') ? ' checked=""' : ''} value="${value}"/><label for="f-${i}">${text}</label></div>`;
+const optionsMarkup = (attrs: [string, string] = ['', '']) => radio(0, 'a', 'Option A', attrs[0]) + radio(1, 'b', 'Option B', attrs[1]);
+
+describe('RadioGroup markup in React (spec 013, RF-2 to RF-9, RF-16)', () => {
+  // The attribute order is the one of the canonical markup: id, class, role, aria-*, disabled, hook.
+  const g = (extra: { describedby?: string; invalid?: boolean; required?: boolean; disabled?: boolean }, ...parts: string[]) =>
+    `<fieldset id="f" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup"${
+      extra.describedby ? ` aria-describedby="${extra.describedby}"` : ''
+    }${extra.invalid ? ' aria-invalid="true"' : ''}${extra.required ? ' aria-required="true"' : ''}${extra.disabled ? ' disabled=""' : ''} data-museum-radiogroup="">${parts.join('')}</fieldset>`;
+
+  it('RF-2, RF-5: without hint or error it is a legend and the options, with no ARIA and no empty nodes', () => {
+    expect(rgHtml({})).toBe(g({}, legend(), optionsMarkup()));
+  });
+
+  it('RF-4: a hint is described by the group', () => {
+    expect(rgHtml({ hint: 'Hint' })).toBe(g({ describedby: 'f-hint' }, legend(), optionsMarkup(), hint));
+  });
+
+  it('RF-5: an error marks the group invalid and is described by it', () => {
+    expect(rgHtml({ error: 'Error' })).toBe(g({ describedby: 'f-error', invalid: true }, legend(), optionsMarkup(), error));
+  });
+
+  it('RF-4, RF-5: with both, the error comes first in the description', () => {
+    expect(rgHtml({ hint: 'Hint', error: 'Error' })).toBe(
+      g({ describedby: 'f-error f-hint', invalid: true }, legend(), optionsMarkup(), hint, error),
+    );
+  });
+
+  it('RF-6: required is on the group and on every radio, and the legend shows a hidden marker', () => {
+    expect(rgHtml({ required: true })).toBe(g({ required: true }, legend(star), optionsMarkup([' required=""', ' required=""'])));
+  });
+
+  it('RF-16: disabled of the group is the fieldset\'s, and of one option is that radio\'s', () => {
+    expect(rgHtml({ disabled: true })).toBe(g({ disabled: true }, legend(), optionsMarkup()));
+    const out = rgHtml({ options: [opts[0], { ...opts[1], disabled: true }] });
+    expect(out).toBe(g({}, legend(), optionsMarkup(['', ' disabled=""'])));
+    expect(out).not.toMatch(/<fieldset[^>]* disabled/);
+  });
+
+  it('RF-9: defaultValue checks the option with that value, and no other', () => {
+    expect(rgHtml({ defaultValue: 'b' })).toBe(g({}, legend(), optionsMarkup(['', ' checked=""'])));
+    expect(rgHtml({ defaultValue: '' })).toBe(g({}, legend(), optionsMarkup()));
+    expect(rgHtml({ defaultValue: 'zzz' })).toBe(g({}, legend(), optionsMarkup()));
+  });
+
+  it('RF-9: a controlled value checks its option, with no defaultChecked and no React warning', () => {
+    const errors: unknown[] = [];
+    const spy = console.error;
+    console.error = (...a: unknown[]) => void errors.push(a);
+    try {
+      expect(rgHtml({ value: 'a', onChange: () => {} })).toBe(g({}, legend(), optionsMarkup([' checked=""', ''])));
+      expect(rgHtml({ value: 'a', defaultValue: 'b', onChange: () => {} })).toBe(g({}, legend(), optionsMarkup([' checked=""', ''])));
+      expect(rgHtml({ value: '', defaultValue: 'b', onChange: () => {} })).toBe(g({}, legend(), optionsMarkup()));
+    } finally {
+      console.error = spy;
+    }
+    expect(errors).toEqual([]);
+  });
+
+  it('keeps the consumer id and appends its aria-describedby after the component ids', () => {
+    const out = rgHtml({ id: 'mine', hint: 'Hint', 'aria-describedby': 'extra' });
+    expect(out).toContain('<fieldset id="mine"');
+    expect(out).toContain('id="mine-0"');
+    expect(out).toContain('for="mine-1"');
+    expect(out).toContain('id="mine-hint"');
+    expect(out).toContain('aria-describedby="mine-hint extra"');
+    expect(rgHtml({ 'aria-describedby': 'extra' })).toContain('aria-describedby="extra"');
+  });
+
+  it('sends the class and the free attributes to the fieldset, and the component wins a clash', () => {
+    const out = rgHtml({ className: 'mine', 'data-x': 'y', 'data-museum-radiogroup': 'x' });
+    expect(out).toContain('class="museum-field museum-radiogroup museum-radiogroup--md mine"');
+    expect(out).toMatch(/<fieldset[^>]* data-x="y"/);
+    expect(out.match(/data-museum-radiogroup/g)).toHaveLength(1);
+    expect(out.match(/data-x/g)).toHaveLength(1);
+  });
+
+  it('writes the size on the group, not on the radios', () => {
+    const out = rgHtml({ size: 'lg' });
+    expect(out).toContain('museum-radiogroup--lg');
+    expect(out).not.toContain('museum-radio--');
+  });
+
+  it('with no options it is a legend and nothing else', () => {
+    expect(rgHtml({ options: [] })).toBe(g({}, legend()));
+  });
+
+  it('gives two RadioGroup in one tree different ids, each label pointing at its own radio', () => {
+    const out = renderToStaticMarkup(
+      createElement(Fragment, null, createElement(RadioGroup, { label: 'Same', name: 'x', options: opts }), createElement(RadioGroup, { label: 'Same', name: 'y', options: opts })),
+    );
+    const ids = [...out.matchAll(/<input id="([^"]+)"/g)].map((m) => m[1]);
+    const fors = [...out.matchAll(/for="([^"]+)"/g)].map((m) => m[1]);
+    expect(new Set(ids).size).toBe(4);
+    expect(fors).toEqual(ids);
+  });
+});
+
 const repo = resolve(import.meta.dirname, '..');
 type Rendered = { id: string; props: Record<string, unknown>; html: string }[];
 const generated = (slug: string) => JSON.parse(readFileSync(resolve(repo, `gallery/generated/astro-${slug}.json`), 'utf8')) as Rendered;
@@ -334,6 +442,36 @@ describe('Checkbox markup in Astro against React (spec 012, RF-1 to RF-6, RF-12)
   it('RF-12: the default case has no checked attribute and defaultChecked has it', () => {
     expect(rendered.find((c) => c.id === 'default')!.html).not.toMatch(/\schecked/);
     expect(rendered.find((c) => c.id === 'defaultChecked')!.html).toMatch(/\schecked/);
+  });
+
+  it('emits no <script> in any case', () => {
+    expect(rendered.filter((c) => /<script/i.test(c.html)).map((c) => c.id)).toEqual([]);
+  });
+});
+
+describe('RadioGroup markup in Astro against React (spec 013, RF-1 to RF-9)', () => {
+  const contract = loadContract(resolve(repo, 'contracts/radiogroup.contract.json'));
+  const rendered = generated('radiogroup');
+  // The group's id stands for every occurrence, the options' ids included (`ID-0`).
+  const norm = (m: string) => serialised(normalise('fieldset', m));
+
+  it('has one Astro render per case of the contract (9, the owner\'s hint-error one last)', () => {
+    expect(rendered.map((c) => c.id)).toEqual(astroCases(contract).map((c) => c.id));
+    expect(rendered.map((c) => c.id)).toEqual(['default', 'hint', 'error', 'size-sm', 'size-lg', 'disabled', 'required', 'defaultValue', 'hint-error']);
+  });
+
+  it('renders every case with the same markup as React', () => {
+    for (const { id, props, html: astro } of rendered) {
+      const react = renderToStaticMarkup(createElement(RadioGroup, props as never));
+      expect(norm(astro), `case ${id}`).toBe(norm(react));
+    }
+  });
+
+  it('RF-9: the default case checks no radio and defaultValue checks only option b', () => {
+    const checked = (id: string) =>
+      [...rendered.find((c) => c.id === id)!.html.matchAll(/<input[^>]*>/g)].filter((m) => /\schecked/.test(m[0])).map((m) => /value="([^"]+)"/.exec(m[0])![1]);
+    expect(checked('default')).toEqual([]);
+    expect(checked('defaultValue')).toEqual(['b']);
   });
 
   it('emits no <script> in any case', () => {

@@ -91,7 +91,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va en la ola 2: con la T-1 y la T-2 serían tres `npm test` a la vez.
 
-- [ ] **T-4 — Contrato y RadioGroup en los dos frameworks, con su galería**
+- [x] **T-4 — Contrato y RadioGroup en los dos frameworks, con su galería**
   Cubre: RF-1, RF-2 a RF-9 y RF-16 (marcado), NFR de galería
   Archivos: `contracts/radiogroup.contract.json` (exacto, plan, bloque 4),
   `packages/react/src/RadioGroup/RadioGroup.tsx`, `packages/react/src/index.ts`,
@@ -99,7 +99,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   `packages/astro/index.d.ts`, `gallery/stories/RadioGroup.react.stories.tsx`,
   `gallery/stories/RadioGroup.astro.stories.tsx`, `gallery/stories/RadioGroup.mdx`,
   `gallery/lib/example-classes.ts`, `tests/gallery-browser-radiogroup.test.ts`,
-  `tests/field-markup.test.ts`
+  `tests/field-markup.test.ts`, y por lo que la tarea destapó, `tests/lib/gallery-browser.ts`, `tests/theme-docs.test.ts`, `tests/gallery.test.ts` y `tests/snippets.test.ts`
   Hecho cuando:
   - `contract.test.ts`, `packages.test.ts` y `projects.test.ts` dan verde con RadioGroup.
   - `field-markup.test.ts` (un `kind` RadioGroup) da el marcado canónico en React:
@@ -109,7 +109,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
     - `value` controlado sin `defaultChecked`;
     - `id` y `aria-describedby` del consumidor, y la clase en el `fieldset`;
     - `options` vacío.
-  - En Astro, los 8 casos dan el mismo marcado que React, sin `<script>` y con ids reproducibles.
+  - En Astro, los 9 casos (el último, `hint-error`, por la regla de la 010) dan el mismo marcado que React, sin `<script>` y con ids reproducibles.
   - Los tests de galería generalizados dan verde con RadioGroup, y la matriz lo muestra en los dos
     frameworks.
   - Cuatro commits: el contrato (`feat:`), `feat(packages/react)`, `feat(packages/astro)` y la
@@ -117,6 +117,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - El coordinator aprueba las capturas en los dos temas antes del commit.
   Inyección: marcar siempre la primera opción en Astro pone en rojo el caso `default` contra React;
   quitar `tests/gallery-browser-radiogroup.test.ts` pone en rojo `projects.test.ts`.
+  Nota: se hizo tal cual el plan, con tres ajustes. (1) Los casos de Astro son 9, no 8: la regla de la 010 añade `hint-error` al final, como en Checkbox y como dejó dicho la T-1. (2) `casesOf` (T-1) esperaba `required` como atributo del elemento raíz, y en un grupo es `aria-required` (un `fieldset` no admite `required`): una rama en `tests/lib/gallery-browser.ts`. (3) `RadioGroup.mdx` entra en la lista de `tests/theme-docs.test.ts`; `tests/gallery.test.ts` acepta un control `object` para `options`, y `tests/snippets.test.ts` da `options` a `fullArgs` y lee `options={…}` como código, no como atributos (dos suites generalizadas que la T-1 no tocó). El orden de atributos del radio es el de React (`required`/`disabled`, `name`, `checked`, `value`), y Astro lo copia. `value` (controlado) viene de `InputHTMLAttributes`, no se declara, para que `contract.test.ts` vea solo las props del contrato. La clase de ejemplo `my-radiogroup` pone `letter-spacing`, porque el `fieldset` no tiene borde que redondear. `options` por URL (`options[0].value:x;options[0].label:Other`) funciona en la historia real: lo comprueba `casesOf` y se vio a mano (las opciones pasan a Other, b, c). Inyecciones vistas en rojo: marcar siempre la primera opción en Astro (el caso `default` contra React y el de RF-9) y quitar `tests/gallery-browser-radiogroup.test.ts` (`projects.test.ts`). Capturas en el scratchpad de la sesión, pendientes del coordinator.
 
   Va sola en la ola 3: necesita la T-1 y la T-2, y sus capturas, la hoja (T-3).
 

@@ -13,6 +13,7 @@ const docs = [
   'gallery/stories/Input.mdx',
   'gallery/stories/Textarea.mdx',
   'gallery/stories/Checkbox.mdx',
+  'gallery/stories/RadioGroup.mdx',
 ];
 
 // Each document holds a Spanish and an English half; RF-6 asks for the sentence in both.

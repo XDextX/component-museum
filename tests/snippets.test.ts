@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { exampleText, usageSnippet, type Contract } from '../gallery/lib/contract-args.ts';
+import { exampleOptions, exampleText, usageSnippet, type Contract } from '../gallery/lib/contract-args.ts';
 import { exampleClasses } from '../gallery/lib/example-classes.ts';
 import { initialLanguage } from '../gallery/lib/Lang.tsx';
 import { loadContract } from './lib/contract.ts';
@@ -32,6 +32,18 @@ const SECTIONS = {
   en: ['Usage', 'How it is built', 'How to alter it'],
 };
 
+/** `text` with every `{…}` block, nested braces included, taken out. */
+function withoutExpressions(text: string): string {
+  let depth = 0;
+  let out = '';
+  for (const ch of text) {
+    if (ch === '{') depth++;
+    else if (ch === '}') depth--;
+    else if (depth === 0) out += ch;
+  }
+  return out;
+}
+
 /** Returns every violation of RF-7 and RF-8 in one usage snippet (tsx or astro) of the component `c`. */
 function snippetProblems(lang: 'tsx' | 'astro', code: string, c: Contract = contract): string[] {
   const fw = lang === 'tsx' ? 'react' : 'astro';
@@ -51,7 +63,9 @@ function snippetProblems(lang: 'tsx' | 'astro', code: string, c: Contract = cont
     if (/^import\b/m.test(outside)) problems.push('an import outside the frontmatter');
   }
   const classAttr = lang === 'tsx' ? 'className' : 'class';
-  for (const [, attrs] of code.matchAll(new RegExp(`<${c.name}\\b([^>]*)>`, 'g'))) {
+  for (const [, rawAttrs] of code.matchAll(new RegExp(`<${c.name}\\b([^>]*)>`, 'g'))) {
+    // An expression value (`options={[…]}`) is code, not attributes: only its name is read.
+    const attrs = withoutExpressions(rawAttrs);
     for (const [, name, value] of attrs.matchAll(/([\w:-]+)(?:="([^"]*)")?/g)) {
       if (name === classAttr) {
         for (const cls of value.split(/\s+/).filter(Boolean)) {
@@ -67,7 +81,8 @@ function snippetProblems(lang: 'tsx' | 'astro', code: string, c: Contract = cont
 function fullArgs(c: Contract): Record<string, unknown> {
   const args: Record<string, unknown> = {};
   for (const [name, spec] of Object.entries(c.props)) {
-    args[name] = spec.type === 'enum' ? spec.values.find((v) => v !== spec.default) : spec.type === 'boolean' ? true : exampleText(name);
+    args[name] =
+      spec.type === 'enum' ? spec.values.find((v) => v !== spec.default) : spec.type === 'boolean' ? true : spec.type === 'options' ? exampleOptions() : exampleText(name);
   }
   if (c.content) args.children = 'Hi';
   if (c.classProp) args.className = Object.keys(exampleClasses[c.name] ?? {})[0];
