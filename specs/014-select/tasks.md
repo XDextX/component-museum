@@ -54,7 +54,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - Las reglas de Select leen solo `var(--museum-*)` y colores de sistema; la geometría de la flecha y el
     `padding` derecho van en `em`, así que su test prohíbe colores literales, no longitudes.
 
-- [ ] **T-2 — El prefijo `museum-select` en el ayudante de Astro**
+- [x] **T-2 — El prefijo `museum-select` en el ayudante de Astro**
   Cubre: RF-2 a RF-6 (la lógica, en Astro)
   Archivos: `packages/astro/src/field.ts`, `tests/field-ids.test.ts`
   Hecho cuando:
@@ -63,6 +63,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   - Un commit: `refactor(packages/astro)`.
   Inyección: compartir el contador con `museum-input` pone en rojo el caso de prefijos separados de
   `field-ids.test.ts`.
+  Nota: hecho. Inyección vista en rojo (caso de `museum-select`) y revertida por ruta. Vitest no
+  comprueba tipos: sin el prefijo en la unión lo corta `tsc --noEmit`.
 
   Va en la ola 1 junto a la T-1: no comparten archivos.
 
