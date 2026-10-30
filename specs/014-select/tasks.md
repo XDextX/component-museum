@@ -68,7 +68,7 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
 
   Va en la ola 1 junto a la T-1: no comparten archivos.
 
-- [ ] **T-3 — Contrato y Select en los dos frameworks, con su galería**
+- [x] **T-3 — Contrato y Select en los dos frameworks, con su galería**
   Cubre: RF-1, RF-2 a RF-9 y RF-16 (marcado), NFR de galería
   Archivos: `contracts/select.contract.json` (exacto, plan, bloque 4),
   `packages/react/src/Select/Select.tsx`, `packages/react/src/index.ts`,
@@ -96,6 +96,8 @@ Cada archivo compartido lo toca una sola tarea (plan, bloque 2):
   Inyección: escribir `selected` en la primera opción siempre en Astro pone en rojo el caso
   `default` contra React; quitar `tests/gallery-browser-select.test.ts` pone en rojo
   `projects.test.ts`.
+
+  Nota: hecha tal cual el plan, con tres ajustes. (1) Los casos de Astro son 10, no 9: la regla de la 010 añade `hint-error` al final (`default`, `hint`, `error`, `placeholder`, `size-sm`, `size-lg`, `disabled`, `required`, `defaultValue`, `hint-error`). (2) Suites generales tocadas: `casesOf` (`tests/lib/gallery-browser.ts`) lee `aria-required` solo en un grupo (`options` y `name`; en un `<select>` `required` es nativo) y cuenta el valor elegido de un `<select>` como `checked`; `Select.mdx` entra en la lista de `tests/theme-docs.test.ts`. `gallery.test.ts` y `snippets.test.ts` no necesitaron cambios. (3) React manda `defaultValue` al `<select>` solo sin `value` y solo si está en `options`; Astro escribe `selected` solo en esa opción o en la indicación. Inyecciones vistas en rojo y revertidas: `selected` siempre en la primera opción de Astro (caso `default` contra React y el test de `selected`), y quitar `tests/gallery-browser-select.test.ts` (`projects.test.ts`). Capturas en el scratchpad de la sesión, pendientes del coordinator.
 
   Va sola en la ola 2: necesita el prefijo (T-2), y sus capturas, la hoja (T-1).
 
