@@ -5,11 +5,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { closeBrowserAndServers } from './browser.ts';
 import { visibleTexts } from './contrast.ts';
 import { contrastRatio, parseRgb } from './css.ts';
-import { checkboxLongLabel, radiogroupLongLabel } from './consumer.ts';
+import { checkboxLongLabel, radiogroupLongLabel, selectLongOption } from './consumer.ts';
 import type { Framework } from './paths.ts';
 import { serve, type Served } from './serve.ts';
 
-// Spec 009 T-6, spec 010 T-4 and spec 012 T-4 (RadioGroup: spec 013 T-5, at the end): Input, Textarea and Checkbox as a consumer gets them, built from the
+// Spec 009 T-6, spec 010 T-4, spec 012 T-4 and spec 014 T-4 (RadioGroup: spec 013 T-5, at the end): Input, Textarea, Checkbox and Select as a consumer gets them, built from the
 // packed package, in real Edge (RF-2 to RF-8, the focus rules, for Textarea RF-9 to RF-11, and Checkbox's own RF-2 to
 // RF-13 block at the end). The instances come from tests/lib/consumer.ts.
 // Spec 017 T-12: one test file per kind (tests/field-a11y-*.test.ts) so Vitest runs them in parallel. Each file calls
@@ -25,8 +25,8 @@ const modes = [
 const sizes = ['sm', 'md', 'lg'];
 
 type Kind = {
-  name: 'Input' | 'Textarea' | 'Checkbox';
-  tag: 'input' | 'textarea';
+  name: 'Input' | 'Textarea' | 'Checkbox' | 'Select';
+  tag: 'input' | 'textarea' | 'select';
   prefix: string;
   twins: string[];
   /** The attribute that marks the component's control. */
@@ -72,6 +72,15 @@ const kinds: Kind[] = [
       'checkbox-own': 'Tick own', 'checkbox-long': checkboxLongLabel,
     }),
     hint: 'Tick hint text', error: 'Tick error text', disabledError: 'Tick disabled error', ownHint: 'Tick own hint', ownNote: 'Tick own note',
+  },
+  {
+    name: 'Select', tag: 'select', prefix: 'select', twins: ['twins-sel-a', 'twins-sel-b'], hook: 'data-museum-select', twinLabel: 'Chooser', twinPrefix: 'twins-sel-', twinTotal: 2,
+    labels: () => ({
+      'select-sm': 'Menu sm', 'select-md': 'Menu md', 'select-lg': 'Menu lg', 'select-hint': 'Menu hint', 'select-error': 'Menu error', 'select-both': 'Menu both',
+      'select-required': 'Menu required', 'select-disabled': 'Menu disabled', 'select-placeholder': 'Menu placeholder', 'select-selected': 'Menu selected',
+      'select-partial': 'Menu partial', 'select-own': 'Menu own', 'select-long': 'Menu long',
+    }),
+    hint: 'Menu hint text', error: 'Menu error text', disabledError: 'Menu disabled error', ownHint: 'Menu own hint', ownNote: 'Menu own note',
   },
 ];
 
@@ -150,8 +159,8 @@ export function defineFieldA11y(kindName: Kind['name'] | 'RadioGroup', consumers
         await page.evaluate(GROUND);
       }, 60_000);
       afterAll(() => context.close());
-      // Checkbox changes state when a label is pressed: every Checkbox test starts from a fresh page.
-      if (kind.name === 'Checkbox') {
+      // Checkbox changes state when a label is pressed and Select when an option is chosen: their tests start from a fresh page.
+      if (kind.name === 'Checkbox' || kind.name === 'Select') {
         beforeEach(async () => {
           await page.goto(server.url);
           await page.waitForSelector(`#${id('md')}`);
@@ -167,6 +176,8 @@ export function defineFieldA11y(kindName: Kind['name'] | 'RadioGroup', consumers
         const props = Object.fromEntries((nodes[0].properties ?? []).map((p) => [p.name, p.value.value]));
         return { name: nodes[0].name?.value ?? '', description: nodes[0].description?.value ?? '', invalid: props.invalid, required: props.required === true, checked: props.checked };
       }
+      /** The numbering of the spec: Select's RF-10 to RF-12 are Input's RF-7 and RF-8. */
+      const n = (input: string, select: string) => (kind.name === 'Select' ? select : input);
       const activeKey = () => page.evaluate(() => (document.activeElement as HTMLInputElement).name || (document.activeElement as HTMLInputElement).id);
 
       it('the mode gives the theme it stands for', async () => {
@@ -227,15 +238,15 @@ export function defineFieldA11y(kindName: Kind['name'] | 'RadioGroup', consumers
       it('RF-5: without an error there is no aria-invalid and no error text', async () => {
         for (const key of withoutError) {
           expect(await page.locator(sel(key)).getAttribute('aria-invalid'), `${key} aria-invalid`).toBeNull();
-          // Edge reports an unchecked required checkbox as invalid on its own (native validity, no aria-invalid): measured, not ours.
-          if (kind.name !== 'Checkbox' || key !== id('required')) expect([undefined, 'false'], `${key} invalid in the accessibility tree`).toContain((await ax(key)).invalid);
+          // Edge reports an unchecked required checkbox, and a required select on its indication, as invalid on its own (native validity, no aria-invalid): measured, not ours.
+          if (!['Checkbox', 'Select'].includes(kind.name) || key !== id('required')) expect([undefined, 'false'], `${key} invalid in the accessibility tree`).toContain((await ax(key)).invalid);
           expect(await page.locator(sel(key)).evaluate((el) => el.closest('.museum-field')!.querySelectorAll('.museum-field__error').length), `${key} error nodes`).toBe(0);
         }
       });
 
       it('RF-6: required marks the control and shows a marker in the label; the rest show none', async () => {
-        // The checkbox role has no "required" property in Edge's accessibility tree: its control is read from the DOM.
-        if (kind.name !== 'Checkbox') expect((await ax(id('required'))).required).toBe(true);
+        // The checkbox and the select roles have no "required" property in Edge's accessibility tree: their control is read from the DOM.
+        if (kind.name !== 'Checkbox' && kind.name !== 'Select') expect((await ax(id('required'))).required).toBe(true);
         expect(await page.locator(`#${id('required')}`).evaluate((el: HTMLInputElement) => el.required)).toBe(true);
         const marker = page.locator(`label[for="${id('required')}"] .museum-field__required`);
         expect(await marker.textContent()).toBe('*');
@@ -248,7 +259,7 @@ export function defineFieldA11y(kindName: Kind['name'] | 'RadioGroup', consumers
       });
 
       if (kind.name !== 'Checkbox') {
-        it('RF-7: the control border is 3:1 against the page and its own background, at rest and in error', async () => {
+        it(`${n('RF-7', 'RF-10')}: the control border is 3:1 against the page and its own background, at rest and in error`, async () => {
           const rows = await page.evaluate((selectors) => {
             const m = (window as unknown as { __museum: { parse(c: string): number[]; over(a: number[], b: number[]): number[]; rgb(c: number[]): string; ground(n: Element | null): number[] } }).__museum;
             return selectors.map(([key, selector]) => {
@@ -269,7 +280,7 @@ export function defineFieldA11y(kindName: Kind['name'] | 'RadioGroup', consumers
           }
         });
 
-        it('RF-8: label, hint, error, marker, value and placeholder are 4.5:1, the disabled error included', async () => {
+        it(`${n('RF-8', 'RF-12')}: label, hint, error, marker, value and placeholder are 4.5:1, the disabled error included`, async () => {
           // Against the background really composed behind each text, never a stand-in for it.
           const texts = (await visibleTexts(page)).filter((t) => fieldTexts.has(t.text));
           const rated = texts.map((t) => ({ text: t.text, ratio: Number(contrastRatio(parseRgb(t.fg), parseRgb(t.bg)).toFixed(2)) }));
@@ -291,9 +302,9 @@ export function defineFieldA11y(kindName: Kind['name'] | 'RadioGroup', consumers
               const s = getComputedStyle(el);
               const bg = m.over(m.parse(s.backgroundColor), m.ground(el.parentElement));
               const fg = (c: string) => m.rgb(m.over(m.parse(c), bg));
-              return { key, value: fg(s.color), placeholder: fg(getComputedStyle(el, '::placeholder').color), bg: m.rgb(bg) };
+              return { key, value: fg(s.color), placeholder: fg(el.tagName === 'SELECT' ? s.color : getComputedStyle(el, '::placeholder').color), bg: m.rgb(bg) };
             });
-          }, sizes.map((s) => id(s)));
+          }, [...sizes, ...(kind.tag === 'select' ? ['placeholder', 'selected'] : [])].map((s) => id(s)));
           const values = fields.map((f) => ({
             key: f.key, value: Number(contrastRatio(parseRgb(f.value), parseRgb(f.bg)).toFixed(2)), placeholder: Number(contrastRatio(parseRgb(f.placeholder), parseRgb(f.bg)).toFixed(2)),
           }));
@@ -314,6 +325,19 @@ export function defineFieldA11y(kindName: Kind['name'] | 'RadioGroup', consumers
           })), sizes);
           console.log(`${framework} ${theme} RF-9`, JSON.stringify(heights));
           for (const h of heights) expect(h.buttons.map((b) => +b.toFixed(2)), `${h.size} Button heights`).toEqual(h.buttons.map(() => +h.input.toFixed(2)));
+        });
+      } else if (kind.name === 'Select') {
+        it('RF-13: Select and Input of the same size are the same height, and at least 24 px', async () => {
+          const heights = await page.evaluate((list) => list.map((size) => ({
+            size,
+            select: document.getElementById(`select-${size}`)!.getBoundingClientRect().height,
+            input: document.getElementById(`input-${size}`)!.getBoundingClientRect().height,
+          })), sizes);
+          console.log(`${framework} ${theme} RF-13`, JSON.stringify(heights));
+          for (const h of heights) {
+            expect(+h.select.toFixed(2), `${h.size} Select against Input`).toBe(+h.input.toFixed(2));
+            expect(h.select, `${h.size} height`).toBeGreaterThanOrEqual(24);
+          }
         });
       } else if (kind.name === 'Textarea') {
         it('RF-9: Textarea and Input of the same size share font, border, radius, padding and colours', async () => {
@@ -404,6 +428,193 @@ export function defineFieldA11y(kindName: Kind['name'] | 'RadioGroup', consumers
           expect(r.haloIsSurface, `${r.key} halo is the package surface`).toBe(true);
         }
       });
+
+      if (kind.name === 'Select') {
+        type Museum = { parse(c: string): number[]; over(a: number[], b: number[]): number[]; rgb(c: number[]): string; ground(n: Element | null): number[] };
+        const ratio = (a: string, b: string) => Number(contrastRatio(parseRgb(a), parseRgb(b)).toFixed(2));
+        type Row = { value: string; label: string; disabled: boolean };
+        const abc: Row[] = [
+          { value: 'a', label: 'Option A', disabled: false }, { value: 'b', label: 'Option B', disabled: false }, { value: 'c', label: 'Option C', disabled: false },
+        ];
+        const indication: Row = { value: '', label: 'Choose one', disabled: true };
+        const listed: Record<string, Row[]> = {
+          ...Object.fromEntries([...sizes, 'hint', 'error', 'both', 'own', 'disabled'].map((k) => [id(k), abc])),
+          ...Object.fromEntries(['required', 'placeholder', 'selected'].map((k) => [id(k), [indication, ...abc]])),
+          [id('partial')]: [abc[0], abc[1], { ...abc[2], disabled: true }],
+          [id('long')]: [abc[0], { value: 'l', label: selectLongOption, disabled: false }],
+          'twins-sel-a': [abc[0]], 'twins-sel-b': [abc[0]],
+        };
+        const rowsOf = (key: string) => page.locator(sel(key)).evaluate((el: HTMLSelectElement) => [...el.options].map((o) => ({ value: o.value, label: o.label, disabled: o.disabled })));
+        const valueOf = (key: string) => page.locator(sel(key)).inputValue();
+        const shownOf = (key: string) => page.locator(sel(key)).evaluate((el: HTMLSelectElement) => el.selectedOptions[0]?.label);
+        /** The value the accessibility tree reports for the control: the text of the chosen option. */
+        async function axValue(key: string): Promise<unknown> {
+          const { root } = await cdp.send('DOM.getDocument', { depth: 0 });
+          const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: sel(key) });
+          const { nodes } = await cdp.send('Accessibility.getPartialAXTree', { nodeId, fetchRelatives: false });
+          return nodes[0].value?.value;
+        }
+        /** The distinct colours painted by the arrow's gradients, read from the computed background-image. */
+        const arrowColours = (image: string) => [...new Set((image.match(/rgba?\([^)]*\)/g) ?? []).filter((c) => c !== 'rgba(0, 0, 0, 0)'))];
+
+        it('RF-6: with the indication chosen the form does not send, and after a choice it does', async () => {
+          const sent = await page.evaluate(() => {
+            const select = document.getElementById('select-required') as HTMLSelectElement;
+            const form = document.createElement('form');
+            form.id = 'select-form';
+            document.body.append(form);
+            select.setAttribute('form', 'select-form');
+            let count = 0;
+            form.addEventListener('submit', (e) => { e.preventDefault(); count++; });
+            const start = { value: select.value, missing: select.validity.valueMissing };
+            form.requestSubmit();
+            const blocked = count;
+            select.value = 'a';
+            form.requestSubmit();
+            return { start, blocked, after: count };
+          });
+          console.log(`${framework} ${theme} RF-6 submit`, JSON.stringify(sent));
+          expect(sent).toEqual({ start: { value: '', missing: true }, blocked: 0, after: 1 });
+        });
+
+        it('RF-7: the options come in their order with their value and text, can be chosen one by one, and a disabled one cannot', async () => {
+          for (const [key, expected] of Object.entries(listed)) expect(await rowsOf(key), `${key} options`).toEqual(expected);
+          for (const o of abc) {
+            await page.locator('#select-md').selectOption(o.value);
+            expect(await valueOf('select-md'), `chose ${o.value}`).toBe(o.value);
+            expect(await shownOf('select-md')).toBe(o.label);
+            expect(await axValue('select-md'), `${o.value} in the accessibility tree`).toBe(o.label);
+          }
+          // A user reaches the last enabled option with End: the disabled C is not chosen.
+          await page.locator('#select-partial').focus();
+          await page.keyboard.press('End');
+          expect(await valueOf('select-partial'), 'End stops before the disabled option').toBe('b');
+          // Typing its text does not reach it either.
+          await page.keyboard.type('Option C');
+          expect(await valueOf('select-partial'), 'typing the disabled option does not choose it').not.toBe('c');
+          console.log(`${framework} ${theme} RF-7`, JSON.stringify(Object.fromEntries(Object.entries(listed).map(([k, v]) => [k, v.length]))));
+        });
+
+        it('RF-8 and RF-9: defaultValue starts chosen, also over the indication; with none the indication shows, empty, and cannot be chosen again', async () => {
+          expect(await valueOf('select-selected'), 'defaultValue wins over the indication').toBe('b');
+          expect(await shownOf('select-selected')).toBe('Option B');
+          expect(await axValue('select-selected'), 'chosen text in the accessibility tree').toBe('Option B');
+          expect(await valueOf('select-md'), 'no defaultValue and no indication: the first option').toBe('a');
+          for (const key of ['select-placeholder', 'select-required']) {
+            expect(await valueOf(key), `${key} value`).toBe('');
+            expect(await shownOf(key), `${key} shows the indication`).toBe('Choose one');
+            expect(await axValue(key), `${key} indication in the accessibility tree`).toBe('Choose one');
+            // After a choice, no way back: Home goes to the first enabled option, never to the indication.
+            await page.locator(sel(key)).selectOption('c');
+            await page.locator(sel(key)).focus();
+            await page.keyboard.press('Home');
+            expect(await valueOf(key), `${key} Home`).toBe('a');
+            await page.keyboard.press('ArrowUp');
+            expect(await valueOf(key), `${key} ArrowUp`).toBe('a');
+          }
+          console.log(`${framework} ${theme} RF-8/9`, JSON.stringify({ selected: await valueOf('select-selected'), md: await valueOf('select-md') }));
+        });
+
+        it('RF-11: the arrow is 3:1 against the background of the control, at rest and in error', async () => {
+          const rows = await page.evaluate((keys) => {
+            const m = (window as unknown as { __museum: Museum }).__museum;
+            return keys.map((key) => {
+              const el = document.getElementById(key)!;
+              const s = getComputedStyle(el);
+              return { key, image: s.backgroundImage, own: m.rgb(m.over(m.parse(s.backgroundColor), m.ground(el.parentElement))) };
+            });
+          }, [...sizes, 'hint', 'error', 'both', 'required', 'placeholder', 'selected', 'partial', 'own', 'long'].map(id));
+          const report = rows.map((r) => ({ key: r.key, arrow: arrowColours(r.image), ratio: arrowColours(r.image).length === 1 ? ratio(arrowColours(r.image)[0], r.own) : 0 }));
+          console.log(`${framework} ${theme} RF-11`, JSON.stringify(report.map((r) => [r.key, r.arrow[0], r.ratio])));
+          for (const r of report) {
+            expect(r.arrow.length, `${r.key} has one arrow colour`).toBe(1);
+            expect(r.ratio, `${r.key} arrow on its control`).toBeGreaterThanOrEqual(3);
+          }
+        });
+
+        it('RF-14: with Tab, a focused control in error keeps its error border, and the ring stands off the border', { timeout: 60_000 }, async () => {
+          await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+          await page.keyboard.press('Tab'); // keyboard modality, so a script focus shows the ring
+          const rows: { key: string; border: string; error: string; offset: number; width: number; ground: string }[] = [];
+          for (const key of [id('error'), id('both')]) {
+            await page.locator(sel(key)).focus();
+            rows.push(await page.evaluate((k) => {
+              const el = document.getElementById(k)!;
+              const s = getComputedStyle(el);
+              const g = (window as unknown as { __museum: Museum }).__museum;
+              const probe = document.createElement('div');
+              probe.style.color = 'var(--museum-field-error)';
+              document.body.append(probe);
+              const error = getComputedStyle(probe).color;
+              probe.remove();
+              return { key: k, border: s.borderTopColor, error, offset: parseFloat(s.outlineOffset), width: parseFloat(s.outlineWidth), ground: g.rgb(g.ground(el.parentElement)) };
+            }, key));
+          }
+          console.log(`${framework} ${theme} RF-14 error`, JSON.stringify(rows));
+          for (const r of rows) {
+            expect(r.border, `${r.key} focused border is the error colour`).toBe(r.error);
+            expect(r.offset, `${r.key} ring offset`).toBeGreaterThan(0);
+            expect(r.width, `${r.key} ring width`).toBeGreaterThanOrEqual(2);
+            expect(ratio(r.border, r.ground), `${r.key} border on the page while focused`).toBeGreaterThanOrEqual(3);
+          }
+        });
+
+        it('RF-15: with forced colours the border and the arrow differ from the background, in error too', async () => {
+          await page.emulateMedia({ forcedColors: 'active' });
+          try {
+            const rows = await page.evaluate((keys) => keys.map((key) => {
+              const s = getComputedStyle(document.getElementById(key)!);
+              return { key, border: s.borderTopColor, bg: s.backgroundColor, image: s.backgroundImage, forced: matchMedia('(forced-colors: active)').matches };
+            }), [id('md'), id('error'), id('both')]);
+            console.log(`${framework} ${theme} RF-15`, JSON.stringify(rows.map((r) => [r.key, r.border, r.bg, arrowColours(r.image)])));
+            for (const r of rows) {
+              expect(r.forced, 'forced colours are on').toBe(true);
+              expect(r.border, `${r.key} border differs from the background`).not.toBe(r.bg);
+              expect(r.border, `${r.key} border is painted`).not.toBe('rgba(0, 0, 0, 0)');
+              expect(arrowColours(r.image).length, `${r.key} has an arrow`).toBe(1);
+              expect(arrowColours(r.image)[0], `${r.key} arrow differs from the background`).not.toBe(r.bg);
+            }
+          } finally {
+            await page.emulateMedia({ forcedColors: null });
+          }
+        });
+
+        it('RF-16: ArrowDown skips the disabled option and never reaches the indication, and the disabled control takes no focus', async () => {
+          await page.locator('#select-partial').focus();
+          expect(await valueOf('select-partial')).toBe('a');
+          await page.keyboard.press('ArrowDown');
+          expect(await valueOf('select-partial'), 'ArrowDown reaches B').toBe('b');
+          await page.keyboard.press('ArrowDown');
+          expect(await valueOf('select-partial'), 'ArrowDown does not land on the disabled C').toBe('b');
+          await page.keyboard.press('ArrowUp');
+          expect(await valueOf('select-partial'), 'ArrowUp goes back').toBe('a');
+          await page.locator('#select-placeholder').focus();
+          await page.keyboard.press('ArrowDown');
+          expect(await valueOf('select-placeholder'), 'ArrowDown leaves the indication').toBe('a');
+          expect(await page.locator('#select-disabled').isDisabled()).toBe(true);
+          await page.evaluate(() => document.getElementById('select-disabled')!.focus());
+          expect(await activeKey(), 'a disabled select takes no focus').not.toBe('select-disabled');
+        });
+
+        it('a long option is cut inside the field at 320 px and the field does not widen', async () => {
+          await page.setViewportSize({ width: 320, height: 800 });
+          try {
+            const m = await page.evaluate(() => {
+              const select = document.getElementById('select-long')!;
+              const field = select.closest('.museum-field')!;
+              const s = select.getBoundingClientRect();
+              return { right: s.right, width: s.width, fieldRight: field.getBoundingClientRect().right, scroll: field.scrollWidth, client: field.clientWidth, view: innerWidth, sm: document.getElementById('select-md')!.getBoundingClientRect().width };
+            });
+            console.log(`${framework} ${theme} long option`, JSON.stringify(m));
+            expect(m.scroll, 'the field does not overflow').toBeLessThanOrEqual(m.client);
+            expect(m.right, 'the select stays in the field').toBeLessThanOrEqual(m.fieldRight + 0.5);
+            expect(m.right, 'and in the viewport').toBeLessThanOrEqual(m.view);
+            expect(m.width, 'as wide as a select with short options').toBe(m.sm);
+          } finally {
+            await page.setViewportSize({ width: 1024, height: 900 });
+          }
+        });
+      }
 
       if (kind.name === 'Checkbox') {
         type Museum = { parse(c: string): number[]; over(a: number[], b: number[]): number[]; rgb(c: number[]): string; ground(n: Element | null): number[] };
