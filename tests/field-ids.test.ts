@@ -61,6 +61,14 @@ describe('fieldIds, radiogroup prefix (spec 013, RF-2)', () => {
   });
 });
 
+describe('fieldIds, select prefix (spec 014, RF-2)', () => {
+  it('counts museum-select apart from the other prefixes', () => {
+    expect(fieldIds('museum-select', undefined, '', '', undefined).controlId).toBe('museum-select-1');
+    expect(fieldIds('museum-input', undefined, '', '', undefined).controlId).toBe('museum-input-1');
+    expect(fieldIds('museum-select', undefined, '', '', undefined).controlId).toBe('museum-select-2');
+  });
+});
+
 describe('Field group in React (spec 013, RF-2, RF-4 to RF-7)', () => {
   const render = (over: Record<string, unknown> = {}, group: Record<string, unknown> = {}) =>
     renderToStaticMarkup(
