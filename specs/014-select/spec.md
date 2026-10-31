@@ -1,6 +1,7 @@
 # Spec 014 — select
 
-**Status:** approved · **Approved:** 2026-10-24 · el coordinator en modo autónomo, con las 7 decisiones recomendadas del clarify (`notes.md`)
+**Status:** implemented · **Approved:** 2026-10-24 · el coordinator en modo autónomo, con las 7 decisiones recomendadas del clarify (`notes.md`)
+**Implemented:** 2026-10-31 · 4 tareas en 3 olas y una ronda de arreglos; tests 1104 → 1286; validada por el reviewer en 2 vueltas; sin comprobar: la lista nativa abierta; cierre aprobado por el dueño («Sí, ciérrala»)
 **Size:** L (16 RF) · **Entrega:** 4 (cierra con esta) · **Depende de:** 013
 
 ## Contexto y objetivo

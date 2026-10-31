@@ -53,7 +53,7 @@
 - `options` vacío pinta el control sin opciones (o solo la indicación); un `defaultValue` que no
   está en `options` cuenta como ausente; `defaultValue` gana a `placeholder`.
 - Casos Astro (`astroCases` con `options`): `default`, 2 de `size`, `hint`, `error`, `disabled`,
-  `required`, `defaultValue` y `placeholder` (10).
+  `required`, `defaultValue`, `placeholder` y `hint-error` (10).
 - La historia React monta de nuevo el control al cambiar `defaultValue` (`key`), como la 012 y la
   013.
 
