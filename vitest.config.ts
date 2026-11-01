@@ -14,6 +14,8 @@ export default defineConfig({
     // closes Edge needs headroom, not a hang (spec 005, T-7 correction).
     hookTimeout: 30_000,
     projects: [
+      // Spec 015: one test per story, in the system Edge; its own config lives in gallery/, where storybook resolves.
+      'gallery/vitest.config.ts',
       { extends: true, test: { name: 'unit', include: unit } },
       {
         extends: true,
