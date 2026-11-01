@@ -50,7 +50,7 @@ Archivos compartidos, siempre en olas distintas:
   configuración pone en rojo el dato de RF-3; otra versión de `playwright` pone en rojo RF-1.
   Nota: hecha. `channel: 'msedge'` lanza Edge con el proveedor de Vitest (12 historias aprobadas con `PLAYWRIGHT_BROWSERS_PATH` vacío). El proyecto `stories` carga `preview-head.html` (el preset `previewHead` lo aplica el plugin). No hace falta `.storybook/vitest.setup.ts`: el addon aplica solo las anotaciones de `preview.ts` desde Storybook 10.3, así que no se creó. Con el addon, `storybook` y los `@storybook/*` de la galería pasan a `node_modules` de la raíz (npm no deja `storybook` en `gallery/` si el addon va al lado); `storybook`, `addon-docs` y `react-vite` pasan de `^10.6.3` a 10.6.3 exacto en `gallery/package.json` (con rangos, npm sube a 10.6.5 y el layout se rompe); borrar lock y `node_modules` y hacer `npm install` da un layout que funciona. El lock añade 20 paquetes, ningún navegador ni script de instalación.
 
-- [ ] **T-3 — Los tests de historia respetan el lock (C-1)**
+- [x] **T-3 — Los tests de historia respetan el lock (C-1)**
   Cubre: RF-6
   Archivos: `tests/lib/lock.ts`, `tests/lock.test.ts`, `tests/stories-setup.ts`,
   `gallery/vitest.config.ts`
@@ -64,6 +64,7 @@ Archivos compartidos, siempre en olas distintas:
   - Los casos que ya tiene `lock.test.ts` siguen iguales.
   Inyección: quitar el caso del mismo dueño deja `npm test` esperando y agota el tiempo; soltar el
   lock desde el segundo dueño pone en rojo el caso de `lock.test.ts`.
+  Nota: hecha. El panel de Storybook crea su Vitest con `createVitest('test', { watch: true, ... })` (`@storybook/addon-vitest/dist/node/vitest.js`), así que `project.vitest.config.watch` es verdadero; `vitest run` lo deja en falso. Comprobado leyendo el addon y con un `createVitest` igual (`config.watch` true); el panel real no se abrió. `tests/stories-setup.ts` no toma el lock si `watch`. Desvío del plan: el mismo dueño es una opción, `shareWithProcess`, no el comportamiento por defecto, porque el caso existente del rival (que usa `process.pid`) habría dejado de fallar; por eso `tests/global-setup.ts` pasa `shareWithProcess: true` (una línea). Inyección vista: sin la línea del mismo dueño, `vitest run --project e2e --project stories` queda en «waiting for another npm test» hasta el timeout; liberar desde el segundo dueño pone en rojo el caso nuevo de `lock.test.ts`. Con un lock de otro proceso vivo, `vitest run --project stories` espera.
 
 - [ ] **T-4 — El panel, la lista de tests y la medida final (C-2, C-3, C-4)**
   Cubre: RF-4, RF-5, NFR de duración
