@@ -148,3 +148,33 @@ Worktree `.claude/worktrees/agent-a4368a35b84735ab6`, rama `spec/015-addon-vites
 **Número de tests.** 1287 en el JSON de `vitest run` (1286 pasan, 1 omitido). `vitest list --json` **no se pudo usar**: sale con 1 y `No test suite found in file` en los `field-a11y-*.test.ts` (que generan sus tests en tiempo de ejecución) y deja un JSON vacío. La T-1 pedía su número; se usa el del reporte JSON. Nada de esto está en el repo.
 
 **Anomalías.** Fuera de la serie 1: P3 de la serie 2 salió con 1 por un `Unhandled Rejection` (`apiResponse.text: Response has been disposed`) con todos los tests en verde, parecido al `ECONNRESET` de la T-16 de la 017. `PATH` no tiene `vitest`; los comandos sueltos van con `npm exec`. No toqué el Edge del usuario.
+
+## Después (T-4, 2026-11-01)
+
+Worktree `.claude/worktrees/agent-a25837543bcbc58a4`, rama `spec/015-addon-vitest-T-4` sobre `9d770e8` (con la T-1 a la T-3), 12 núcleos, sin código cambiado.
+
+**El panel (C-2).** `storybook dev --no-open` (puerto 6006) y Edge headless por script (`playwright-core`, canal `msedge`), sin ventana. En el widget «Component tests» del Storybook real, «Start test run» deja «Ran 12 tests» y «Component tests passed» (`Story status: Pass`); 3.5 s con el servidor ya en marcha. Inyección: un decorador que lanza `inject-T4` en `Button.react.stories.tsx` deja «Component tests failed (1 errors or warnings so far)», `Story status: Fail` y un contador 1 en rojo; revertido, vuelve a verde. Con el panel abierto y su Vitest vivo (`watch`), un `npm test` entero terminó en 0 sin esperar al panel (151.3 s, con el servidor y Edge del panel en marcha: no cuenta como medida). Servidor y Edge cerrados al acabar.
+
+**La lista de tests (C-3).** `vitest list --json` sigue sin servir (ver «Base»); se compara el reporte JSON de `vitest run`, nombre completo con archivo. Antes: el árbol de la T-1 (`2cd3dbd`, aparte, fuera del repo), 1287 tests. Ahora: 1309. **Falta ninguno**; suman 22: 12 historias (una por `*.stories.tsx`, 6 componentes por React y Astro), 4 de `addon-vitest.test.ts`, 2 de `lock.test.ts` y 4 de `route.test.ts` (estos de la 017, no del addon). 1308 pasan, 1 omitido.
+
+**Medida (C-4).** Antes: CPU 2 a 7 % (un pico de 48 % de un instante), sin otra sesión de `npm test`. En marcha: GitKraken, Discord, Opera, CurseForge, Steam, varios Claude, `servidor/principal.ts` y el MCP de lienzo, todo inactivo; los `msedge` que había son del dueño y no se tocaron. CPU justo antes de cada pasada: 7, 10, 3 y 4 %.
+
+| Pasada | Total (s) | vitest (s) | Salida |
+|---|---|---|---|
+| Calentamiento | 140.1 | 133.9 | 0 |
+| P1 | 141.1 | 135.1 | 0 |
+| P2 | 141.4 | 135.5 | 0 |
+| P3 | 140.6 | 134.7 | 0 |
+| Mediana | **141.1** | | 80.9 % de 174.3 s |
+
+- **Suma sobre la base (139.0 s): +2.1 s.** Cumple ≤ 10 s (C-4).
+- **Límite de 150 s: cumple**, con 8.9 s de margen. El de 130.7 s (75 %) ya no rige (Changed); lo pasa por 10.4 s, 2.1 s más que en la base.
+- Cero `Hook timed out` y cero `Unhandled Rejection` en las 4 pasadas.
+
+**Fases de la mediana** (P1, 141.1 s): `build react` 0.6; `gallery:astro` 0.5 (acierto); bloque `tipos` 4.8 (`tsc -p gallery` 2.0, `tsc` 3.0, `astro check` 4.4, 4.7 y 4.8); `globalSetup` ~20.6 (type check package-react 3.9, package-astro 11.2; cadena más larga, package-astro, 20.6); `vitest` 135.1 (incluye el `globalSetup`); total 141.1. Frente a la base: `vitest` +2.1 s, el resto igual.
+
+**Qué aporta `stories`.** 12 archivos, todos empiezan entre los segundos 61.9 y 63.5 del run y acaban antes del 63.8: unos 1.9 s de reloj, solapados con los tests de Edge de `e2e`; suman 7.4 s de tiempo de test entre los 12. Es el origen de los +2.1 s. Sin `globalSetup` nuevo: reutiliza el de `e2e`.
+
+**Primer arranque sin caché de Vite.** Borrado `node_modules/.vite`: `vitest run --project stories` tarda 9 s de reloj (Duration 4.61 s) frente a 8 s (4.55 s) con la caché. Sin diferencia que importe.
+
+**Anomalías.** El `click()` normal de Playwright sobre «Start test run» queda tapado por el aviso «What's new» del Storybook, así que el script lo pulsa por DOM.

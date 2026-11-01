@@ -66,7 +66,7 @@ Archivos compartidos, siempre en olas distintas:
   lock desde el segundo dueño pone en rojo el caso de `lock.test.ts`.
   Nota: hecha. El panel de Storybook crea su Vitest con `createVitest('test', { watch: true, ... })` (`@storybook/addon-vitest/dist/node/vitest.js`), así que `project.vitest.config.watch` es verdadero; `vitest run` lo deja en falso. Comprobado leyendo el addon y con un `createVitest` igual (`config.watch` true); el panel real no se abrió. `tests/stories-setup.ts` no toma el lock si `watch`. Desvío del plan: el mismo dueño es una opción, `shareWithProcess`, no el comportamiento por defecto, porque el caso existente del rival (que usa `process.pid`) habría dejado de fallar; por eso `tests/global-setup.ts` pasa `shareWithProcess: true` (una línea). Inyección vista: sin la línea del mismo dueño, `vitest run --project e2e --project stories` queda en «waiting for another npm test» hasta el timeout; liberar desde el segundo dueño pone en rojo el caso nuevo de `lock.test.ts`. Con un lock de otro proceso vivo, `vitest run --project stories` espera.
 
-- [ ] **T-4 — El panel, la lista de tests y la medida final (C-2, C-3, C-4)**
+- [x] **T-4 — El panel, la lista de tests y la medida final (C-2, C-3, C-4)**
   Cubre: RF-4, RF-5, NFR de duración
   Archivos: `specs/015-addon-vitest/notes.md` (sección «Después»)
   Hecho cuando:
@@ -77,6 +77,7 @@ Archivos compartidos, siempre en olas distintas:
   - Sin caché de Vite se anota también el primer arranque, aparte.
   Inyección: `throw` en una historia hace que el panel la marque en rojo; un test borrado sale en la
   comparación de la lista.
+  Nota: hecha. Panel real (Edge headless, `storybook dev --no-open`): «Ran 12 tests», «passed»; un `throw` lo pone en rojo; `npm test` con el panel abierto termina en 0. Lista: 1287 antes, 1309 ahora, 0 que falten. Mediana de 3 pasadas **141.1 s** (141.1, 141.4, 140.6; calentamiento 140.1): **+2.1 s** sobre los 139.0 s de la base, cumple ≤ 10 s y el límite de 150 s (margen 8.9 s). Sin `hookTimeout`. Detalle en `notes.md`, «Después».
 
 ## Grafo de olas
 
