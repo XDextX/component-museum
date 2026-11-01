@@ -8,6 +8,8 @@ export default defineConfig({
   plugins: [storybookTest({ configDir: join(import.meta.dirname, '.storybook') })],
   test: {
     name: 'stories',
+    // Spec 015 RF-6: a command-line run takes the lock of `npm test`; the panel's watch run does not.
+    globalSetup: [join(import.meta.dirname, '..', 'tests', 'stories-setup.ts')],
     browser: {
       enabled: true,
       headless: true,
