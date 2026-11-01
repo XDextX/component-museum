@@ -28,7 +28,7 @@ Archivos compartidos, siempre en olas distintas:
   Inyección: no aplica (es una medida); las 3 cifras sueltas van junto a la mediana.
   Nota: hecha, sin código cambiado. Serie 1 (con otra carga: 227.6 s de calentamiento y pasadas de 277.5, 209.0 y 156.5 s, con `Hook timed out`) descartada. Serie 2 con la máquina libre: 138.1, 139.0 y 139.2 s; mediana **139.0 s, 79.7 %** de 174.3 s. **Pasa de 130.7 s** (75 %) por 8.3 s: la entrega 4 añadió componentes (1287 tests hoy, 912 en la 017). Fases y 6 archivos más lentos en `notes.md`, «Base». `vitest list --json` falla (`No test suite found`); número de tests de `vitest run` en JSON: 1287.
 
-- [ ] **T-2 — El addon y el proyecto `stories`, en Edge y dentro de `npm test`**
+- [x] **T-2 — El addon y el proyecto `stories`, en Edge y dentro de `npm test`**
   Cubre: RF-1, RF-2, RF-3
   Archivos: `gallery/package.json`, `package-lock.json`, `gallery/.storybook/main.ts`,
   `gallery/vitest.config.ts`, `gallery/.storybook/vitest.setup.ts`, `vitest.config.ts`,
@@ -48,6 +48,7 @@ Archivos compartidos, siempre en olas distintas:
     `main.ts`.
   Inyección: `throw` en una historia pone `npm test` en rojo con su nombre; quitar `channel` de la
   configuración pone en rojo el dato de RF-3; otra versión de `playwright` pone en rojo RF-1.
+  Nota: hecha. `channel: 'msedge'` lanza Edge con el proveedor de Vitest (12 historias aprobadas con `PLAYWRIGHT_BROWSERS_PATH` vacío). El proyecto `stories` carga `preview-head.html` (el preset `previewHead` lo aplica el plugin). No hace falta `.storybook/vitest.setup.ts`: el addon aplica solo las anotaciones de `preview.ts` desde Storybook 10.3, así que no se creó. Con el addon, `storybook` y los `@storybook/*` de la galería pasan a `node_modules` de la raíz (npm no deja `storybook` en `gallery/` si el addon va al lado); `storybook`, `addon-docs` y `react-vite` pasan de `^10.6.3` a 10.6.3 exacto en `gallery/package.json` (con rangos, npm sube a 10.6.5 y el layout se rompe); borrar lock y `node_modules` y hacer `npm install` da un layout que funciona. El lock añade 20 paquetes, ningún navegador ni script de instalación.
 
 - [ ] **T-3 — Los tests de historia respetan el lock (C-1)**
   Cubre: RF-6
