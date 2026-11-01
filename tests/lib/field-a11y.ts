@@ -8,6 +8,7 @@ import { contrastRatio, parseRgb } from './css.ts';
 import { checkboxLongLabel, radiogroupLongLabel, selectLongOption } from './consumer.ts';
 import type { Framework } from './paths.ts';
 import { serve, type Served } from './serve.ts';
+import { setThemeAttribute } from './route.ts';
 
 // Spec 009 T-6, spec 010 T-4, spec 012 T-4 and spec 014 T-4 (RadioGroup: spec 013 T-5, at the end): Input, Textarea, Checkbox and Select as a consumer gets them, built from the
 // packed package, in real Edge (RF-2 to RF-8, the focus rules, for Textarea RF-9 to RF-11, and Checkbox's own RF-2 to
@@ -146,11 +147,7 @@ export function defineFieldA11y(kindName: Kind['name'] | 'RadioGroup', consumers
         context = await browser.newContext({ colorScheme: scheme, viewport: { width: 1024, height: 900 } });
         // The attribute is written into the served HTML, on <html>, as a page asking for the theme would.
         if (attribute) {
-          await context.route(server.url + '**', async (route) => {
-            const response = await route.fetch();
-            const body = await response.text();
-            await route.fulfill({ response, body: response.headers()['content-type']?.includes('text/html') ? body.replace('<html', `<html data-theme="${attribute}"`) : body });
-          });
+          await setThemeAttribute(context, server.url, attribute);
         }
         page = await context.newPage();
         cdp = await context.newCDPSession(page);
@@ -899,11 +896,7 @@ function defineRadioGroupA11y(consumers: ProvidedContext['consumers']): void {
       beforeAll(async () => {
         context = await browser.newContext({ colorScheme: scheme, viewport: { width: 1024, height: 900 } });
         if (attribute) {
-          await context.route(server.url + '**', async (route) => {
-            const response = await route.fetch();
-            const body = await response.text();
-            await route.fulfill({ response, body: response.headers()['content-type']?.includes('text/html') ? body.replace('<html', `<html data-theme="${attribute}"`) : body });
-          });
+          await setThemeAttribute(context, server.url, attribute);
         }
         page = await context.newPage();
         cdp = await context.newCDPSession(page);
