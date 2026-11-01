@@ -15,7 +15,7 @@ Archivos compartidos, siempre en olas distintas:
 - `gallery/vitest.config.ts`: T-2 y T-3;
 - `specs/015-addon-vitest/notes.md`: T-1 y T-4.
 
-- [ ] **T-1 — Medir la base de hoy**
+- [x] **T-1 — Medir la base de hoy**
   Cubre: NFR de duración, RF-5 (la lista de partida)
   Archivos: `specs/015-addon-vitest/notes.md` (sección «Base»)
   Hecho cuando:
@@ -26,6 +26,7 @@ Archivos compartidos, siempre en olas distintas:
   - Si la mediana ya pasa de 130.7 s (75 %), se dice: la entrega 4 añadió dos componentes después de
     la última medida de la 017.
   Inyección: no aplica (es una medida); las 3 cifras sueltas van junto a la mediana.
+  Nota: hecha, sin código cambiado. Serie 1 (con otra carga: 227.6 s de calentamiento y pasadas de 277.5, 209.0 y 156.5 s, con `Hook timed out`) descartada. Serie 2 con la máquina libre: 138.1, 139.0 y 139.2 s; mediana **139.0 s, 79.7 %** de 174.3 s. **Pasa de 130.7 s** (75 %) por 8.3 s: la entrega 4 añadió componentes (1287 tests hoy, 912 en la 017). Fases y 6 archivos más lentos en `notes.md`, «Base». `vitest list --json` falla (`No test suite found`); número de tests de `vitest run` en JSON: 1287.
 
 - [ ] **T-2 — El addon y el proyecto `stories`, en Edge y dentro de `npm test`**
   Cubre: RF-1, RF-2, RF-3
