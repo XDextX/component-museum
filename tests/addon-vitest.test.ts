@@ -28,3 +28,21 @@ describe('the story-test project launches the system Edge (spec 015 RF-3)', () =
     expect(config).toMatch(/channel:\s*'msedge'/);
   });
 });
+
+// Spec 015 RF-2 and RF-6: the wiring that makes `npm test` run the stories, and run them under the lock. Read as text
+// like RF-3: unplugging any of the three links leaves every other test green, so something must name them.
+describe('the story tests are wired into npm test (spec 015 RF-2, RF-6)', () => {
+  const read = (...path: string[]): string => readFileSync(join(root, ...path), 'utf8');
+
+  it("lists 'gallery/vitest.config.ts' in the projects of vitest.config.ts", () => {
+    expect(read('vitest.config.ts')).toMatch(/'gallery\/vitest\.config\.ts'/);
+  });
+
+  it('gives the stories project the globalSetup that takes the lock', () => {
+    expect(read('gallery', 'vitest.config.ts')).toMatch(/\bglobalSetup:\s*\[[^\]]*stories-setup\.ts/);
+  });
+
+  it('takes the lock in stories-setup.ts', () => {
+    expect(read('tests', 'stories-setup.ts')).toMatch(/return acquireLock\(/);
+  });
+});
