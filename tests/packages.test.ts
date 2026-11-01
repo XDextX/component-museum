@@ -2,12 +2,15 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFile
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { findContractFiles, loadContract } from './lib/contract.ts';
 import { npmCli } from './lib/consumer.ts';
 import { entryExports } from '../gallery/lib/matrix.ts';
 import type { Framework } from './lib/paths.ts';
 import { run } from './lib/run.ts';
+import { tarballFiles } from './lib/tarball.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
@@ -28,7 +31,7 @@ type Manifest = Record<string, unknown> & {
 
 const manifestOf = (dir: string): Manifest => JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
 
-/** What `npm pack` would publish, without writing a tarball. */
+/** What a dry-run `npm pack` of `dir` would publish; only the clean-clone test below needs a pack of its own. */
 function packedFiles(dir: string): { name: string; files: string[] } {
   // --silent: the prepack banner goes to stderr, which run() appends after the JSON.
   const result = run(process.execPath, [npmCli, 'pack', '--dry-run', '--json', '--silent'], { cwd: dir });
@@ -36,6 +39,38 @@ function packedFiles(dir: string): { name: string; files: string[] } {
   const [packed] = JSON.parse(result.output.slice(result.output.indexOf('[')));
   return { name: packed.name, files: packed.files.map((file: { path: string }) => file.path) };
 }
+
+/** Spec 017 RF-1: what the run's own tarball of `framework` holds; the globalSetup packed it once. */
+function tarballOf(framework: Framework): { name: string; files: string[] } {
+  const { name, path } = need('tarballs')[framework];
+  return { name, files: tarballFiles(readFileSync(path)).map((file) => file.replace(/^package\//, '')) };
+}
+
+describe('tarballFiles (spec 017 RF-1)', () => {
+  /** A minimal ustar archive: a 512-byte header per file (name at 0, octal size at 124), data padded to 512. */
+  const ustar = (entries: Record<string, string>) =>
+    gzipSync(
+      Buffer.concat([
+        ...Object.entries(entries).flatMap(([name, text]) => {
+          const header = Buffer.alloc(512);
+          header.write(name, 0);
+          header.write(`${text.length.toString(8).padStart(11, '0')}\0`, 124);
+          const data = Buffer.alloc(Math.ceil(text.length / 512) * 512);
+          data.write(text);
+          return [header, data];
+        }),
+        Buffer.alloc(1024),
+      ]),
+    );
+  it('lists every file of the archive, in order, and nothing else', () => {
+    expect(tarballFiles(ustar({ 'package/a.js': 'x', 'package/dist/b.js': 'y'.repeat(600), 'package/LICENSE': '' }))).toEqual([
+      'package/a.js',
+      'package/dist/b.js',
+      'package/LICENSE',
+    ]);
+    expect(tarballFiles(ustar({}))).toEqual([]);
+  });
+});
 
 /** Spec 006 RF-2: paths outside the allowed list, and required ones missing. An entry ending in "/" admits everything under it. */
 export function tarballProblems(files: string[], allowed: string[], required: string[]): string[] {
@@ -155,10 +190,9 @@ describe('manifestPublishProblems and licenseProblems (spec 006 RF-1)', () => {
 });
 
 for (const { framework, dir, peers, keywords, allowed } of packages) {
-  // React's prepack compiles dist/ (spec 006): 2.3 s alone, over 10 s beside the Edge tests.
   describe(`@component-museum/${framework}`, { timeout: 60_000 }, () => {
     it('packs under the @component-museum scope with its entry, stylesheet and type declarations (RF-1)', () => {
-      const { name, files } = packedFiles(dir);
+      const { name, files } = tarballOf(framework);
       expect(name).toBe(`@component-museum/${framework}`);
       const manifest = manifestOf(dir);
       const exports = manifest.exports as Record<string, string | Record<string, string>>;
@@ -170,7 +204,7 @@ for (const { framework, dir, peers, keywords, allowed } of packages) {
     });
 
     it('packs nothing beyond the allowed list and everything required, LICENSE and README.md included (spec 006 RF-2)', () => {
-      const { files } = packedFiles(dir);
+      const { files } = tarballOf(framework);
       const exports = manifestOf(dir).exports as Record<string, Record<string, string> | string>;
       const entry = exports['.'] as Record<string, string>;
       const required = [entry.import, entry.types, 'styles.css', 'LICENSE', 'README.md'].map((path) => path.replace(/^\.\//, ''));

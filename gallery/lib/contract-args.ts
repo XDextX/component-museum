@@ -2,7 +2,10 @@
 
 type PropSpec =
   | { type: 'enum'; values: string[]; default: string }
-  | { type: 'boolean'; default: boolean };
+  | { type: 'boolean'; default: boolean }
+  | { type: 'string'; default: string }
+  | { type: 'string'; required: true }
+  | { type: 'options'; required: true };
 
 /** The part of a component contract this module reads (structurally the repo's `Contract`). */
 export type Contract = {
@@ -14,7 +17,7 @@ export type Contract = {
 };
 
 export type ArgType = {
-  control: { type: 'select' | 'boolean' | 'text'; labels?: Record<string, string> };
+  control: { type: 'select' | 'boolean' | 'text' | 'object'; labels?: Record<string, string> };
   options?: string[];
   description?: string;
   table?: { defaultValue: { summary: string } };
@@ -23,9 +26,27 @@ export type ArgTypes = Record<string, ArgType>;
 
 type Framework = 'react' | 'astro';
 
-/** A prop's contract default as the props table writes it: `primary`, `md`, `button`, `false`. */
-export function defaultSummary(spec: PropSpec): string {
-  return String(spec.default);
+/** A prop's contract default as the props table writes it: `primary`, `md`, `false`, `""`; none when required. */
+export function defaultSummary(spec: PropSpec): string | undefined {
+  if (!('default' in spec)) return undefined;
+  return spec.type === 'string' ? JSON.stringify(spec.default) : String(spec.default);
+}
+
+export type Option = { value: string; label: string; disabled?: boolean };
+
+/** The example options of an `options` prop: three, none disabled. */
+export function exampleOptions(): Option[] {
+  return [{ value: 'a', label: 'Option A' }, { value: 'b', label: 'Option B' }, { value: 'c', label: 'Option C' }];
+}
+
+/** An options list as the usage writes it: `[{ value: 'a', label: 'Option A' }, …]`. */
+function optionsSource(list: Option[]): string {
+  return `[${list.map((o) => `{ value: '${o.value}', label: '${o.label}'${o.disabled ? ', disabled: true' : ''} }`).join(', ')}]`;
+}
+
+/** The example text of a text prop: its name capitalised (`label` gives `Label`). */
+export function exampleText(prop: string): string {
+  return prop[0].toUpperCase() + prop.slice(1);
 }
 
 /**
@@ -37,11 +58,12 @@ export function defaultSummary(spec: PropSpec): string {
 export function argTypesFromContract(contract: Contract, exampleClasses: Record<string, string>): ArgTypes {
   const types: ArgTypes = {};
   for (const [name, spec] of Object.entries(contract.props)) {
-    const table = { defaultValue: { summary: defaultSummary(spec) } };
+    const summary = defaultSummary(spec);
+    const table = summary === undefined ? undefined : { defaultValue: { summary } };
     types[name] =
       spec.type === 'enum'
         ? { control: { type: 'select' }, options: spec.values, table }
-        : { control: { type: 'boolean' }, table };
+        : { control: { type: spec.type === 'options' ? 'object' : spec.type === 'string' ? 'text' : 'boolean' }, table };
   }
   if (contract.content) types.children = { control: { type: 'text' } };
   if (contract.classProp) {
@@ -64,8 +86,8 @@ export function usageSnippet(framework: Framework, args: Record<string, unknown>
   const attrs: string[] = [];
   for (const [name, spec] of Object.entries(contract.props)) {
     const value = args[name];
-    if (value === undefined || value === spec.default) continue;
-    attrs.push(spec.type === 'boolean' ? name : `${name}="${value}"`);
+    if (value === undefined || ('default' in spec && value === spec.default)) continue;
+    attrs.push(spec.type === 'boolean' ? name : spec.type === 'options' ? `${name}={${optionsSource(value as Option[])}}` : `${name}="${value}"`);
   }
   const cls = args.className;
   if (contract.classProp && typeof cls === 'string' && cls !== '') {
@@ -80,16 +102,37 @@ export function usageSnippet(framework: Framework, args: Record<string, unknown>
 }
 
 /**
- * The Astro states to prerender: every `variant` value, normal then disabled.
- * @returns cases with an id (`primary`, `primary-disabled`) and the props to render.
+ * The Astro states to prerender. With a `variant`: each value, normal then disabled. Without: the
+ * `default` state (required texts filled), then one state per non-default value of each prop.
+ * @returns cases with an id (`primary-disabled`, `type-email`) and the props to render.
  */
 export function astroCases(contract: Contract): { id: string; props: Record<string, unknown> }[] {
   const variant = contract.props.variant;
-  if (variant?.type !== 'enum') return [];
-  return variant.values.flatMap((v) =>
-    [false, true].map((disabled) => ({
-      id: disabled ? `${v}-disabled` : v,
-      props: { variant: v, disabled, children: contract.name },
-    })),
-  );
+  if (variant?.type === 'enum') {
+    return variant.values.flatMap((v) =>
+      [false, true].map((disabled) => ({
+        id: disabled ? `${v}-disabled` : v,
+        props: { variant: v, disabled, children: contract.name },
+      })),
+    );
+  }
+  const base: Record<string, unknown> = contract.content ? { children: contract.name } : {};
+  for (const [name, spec] of Object.entries(contract.props)) {
+    if (spec.type === 'string' && 'required' in spec) base[name] = exampleText(name);
+    else if (spec.type === 'options') base[name] = exampleOptions();
+  }
+  const cases = [{ id: 'default', props: base }];
+  for (const [name, spec] of Object.entries(contract.props)) {
+    if (spec.type === 'enum') {
+      for (const v of spec.values.filter((x) => x !== spec.default)) cases.push({ id: `${name}-${v}`, props: { ...base, [name]: v } });
+    } else if (spec.type === 'boolean') cases.push({ id: name, props: { ...base, [name]: true } });
+    // With options, the `defaultValue` text (and only it) must name one of them (spec 013, RF-9).
+    else if ('default' in spec) cases.push({ id: name, props: { ...base, [name]: 'options' in contract.props && name === 'defaultValue' ? exampleOptions()[1].value : exampleText(name) } });
+  }
+  // A field with both texts gets one case that has them together, so the error-hint order is compared (spec 010).
+  const { hint, error } = contract.props;
+  if (hint?.type === 'string' && error?.type === 'string') {
+    cases.push({ id: 'hint-error', props: { ...base, hint: exampleText('hint'), error: exampleText('error') } });
+  }
+  return cases;
 }

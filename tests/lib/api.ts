@@ -16,6 +16,19 @@ export function diffApi(expected: Api, declared: Api): string[] {
   return out;
 }
 
+/** True for a `{ value: string; label: string; disabled?: boolean }[]`: exactly those properties. */
+function isOptionList(checker: ts.TypeChecker, t: ts.Type): boolean {
+  if (t.symbol?.name !== 'Array') return false;
+  const [item] = checker.getTypeArguments(t as ts.TypeReference);
+  if (!item) return false;
+  const props = checker.getPropertiesOfType(item);
+  const kind = (name: string, flag: ts.TypeFlags) => {
+    const p = props.find((x) => x.name === name);
+    return !!p && !!(checker.getNonNullableType(checker.getTypeOfSymbol(p)).flags & flag) && (name === 'disabled' || !(p.flags & ts.SymbolFlags.Optional));
+  };
+  return props.every((p) => ['value', 'label', 'disabled'].includes(p.name)) && kind('value', ts.TypeFlags.String) && kind('label', ts.TypeFlags.String) && (!props.some((p) => p.name === 'disabled') || kind('disabled', ts.TypeFlags.Boolean));
+}
+
 export type Declared = { own: Api; all: string[] };
 
 /**
@@ -57,8 +70,11 @@ export function declaredProps(file: string, typeName: string, source?: string): 
     all.push(prop.name);
     if (!prop.declarations?.some((d) => d.getSourceFile() === sf)) continue;
     const t = checker.getNonNullableType(checker.getTypeOfSymbol(prop));
-    if (t.flags & ts.TypeFlags.Boolean) own[prop.name] = 'boolean';
+    const optional = (prop.flags & ts.SymbolFlags.Optional) !== 0;
+    if (isOptionList(checker, t)) own[prop.name] = optional ? 'options' : 'options!';
+    else if (t.flags & ts.TypeFlags.Boolean) own[prop.name] = 'boolean';
     else if (t.isUnion() && t.types.every((u) => u.isStringLiteral())) own[prop.name] = t.types.map((u) => (u as ts.StringLiteralType).value);
+    else if (t.flags & ts.TypeFlags.String) own[prop.name] = optional ? 'string' : 'string!';
     else own[prop.name] = 'any';
   }
   return { own, all };

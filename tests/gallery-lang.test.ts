@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { chromium, type Browser, type Locator, type Page } from 'playwright-core';
-import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
 import { closeBrowserAndServers } from './lib/browser.ts';
 import { contrastRatio, parseRgb, type Rgb } from './lib/css.ts';
 import { serve, type Served } from './lib/serve.ts';
@@ -27,7 +28,7 @@ describe('language switch style (RF-2, RF-3)', { timeout: 180_000 }, () => {
   let served: Served;
   let browser: Browser;
   beforeAll(async () => {
-    served = await serve(inject('gallery').storybook);
+    served = await serve(need('gallery').storybook);
     browser = await chromium.launch({ channel: 'msedge' });
   });
   afterAll(async () => {

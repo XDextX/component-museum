@@ -1,0 +1,69 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { fieldIds } from '../field.js';
+
+/** One radio of the group. */
+interface Option {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+/** RadioGroup's own API, from contracts/radiogroup.contract.json translated to Astro. */
+interface OwnProps {
+  label: string;
+  name: string;
+  options: Option[];
+  hint?: string;
+  error?: string;
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  required?: boolean;
+  defaultValue?: string;
+  /** Added to the component's own classes, never replacing them. */
+  class?: string;
+}
+
+/** Any other HTML attribute reaches the `<fieldset>`; the Omit keeps the own props single. */
+export interface Props extends OwnProps, Omit<HTMLAttributes<'fieldset'>, keyof OwnProps> {}
+
+// The hook is the component's own: a consumer's data-museum-radiogroup is dropped, not rendered twice.
+const {
+  label,
+  name,
+  options,
+  hint = '',
+  error = '',
+  size = 'md',
+  disabled = false,
+  required = false,
+  defaultValue = '',
+  class: className,
+  id,
+  'aria-describedby': describedBy,
+  'data-museum-radiogroup': _hook,
+  ...attributes
+} = Astro.props;
+const { controlId, hintId, errorId, describedBy: description } = fieldIds('museum-radiogroup', id, hint, error, describedBy);
+---
+
+<fieldset
+  {...attributes}
+  id={controlId}
+  class:list={['museum-field museum-radiogroup', `museum-radiogroup--${size}`, className]}
+  role="radiogroup"
+  aria-describedby={description}
+  aria-invalid={error ? 'true' : undefined}
+  aria-required={required ? 'true' : undefined}
+  disabled={disabled || undefined}
+  data-museum-radiogroup>
+  <legend class="museum-field__label">{label}{required && <span class="museum-field__required" aria-hidden="true">*</span>}</legend>
+  {options.map((option, i) => (
+    <div class="museum-radiogroup__option">
+      <input id={`${controlId}-${i}`} type="radio" class="museum-radio" required={required} disabled={option.disabled} name={name} checked={option.value === defaultValue} value={option.value} />
+      <label for={`${controlId}-${i}`}>{option.label}</label>
+    </div>
+  ))}
+  {hint && <p id={hintId} class="museum-field__hint">{hint}</p>}
+  {error && <p id={errorId} class="museum-field__error">{error}</p>}
+</fieldset>

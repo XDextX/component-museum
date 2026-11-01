@@ -1,0 +1,236 @@
+import { Canvas, Controls, Meta, Source } from '@storybook/addon-docs/blocks';
+import * as ReactStories from './RadioGroup.react.stories.tsx';
+import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
+import { exampleClasses } from '../lib/example-classes.ts';
+
+<Meta title="RadioGroup/Documentation" />
+
+# RadioGroup
+
+<LanguageSwitch />
+
+<Canvas of={ReactStories.Default} sourceState="shown" />
+
+<Controls of={ReactStories.Default} />
+
+<Lang lang="es">
+
+## Uso
+
+RadioGroup sirve para elegir una opción entre varias: un plan, un método de envío. Trae su leyenda, su ayuda y su error ya cableados: no hay que escribir ningún `id` ni atributo ARIA. Las opciones se pasan como dato, en `options`, una lista de `{ value, label, disabled? }`; no son hijos. `label` (la leyenda del grupo), `name` y `options` son obligatorias; `hint` (ayuda) y `error` son textos opcionales; `size` es `sm`, `md` o `lg`; `disabled`, `required` y `defaultValue` son estados. Se instala desde el paquete de tu framework y se importa siempre por su nombre de paquete, junto con su hoja de estilos.
+
+En React:
+
+```tsx
+import { RadioGroup } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<RadioGroup
+  label="Plan"
+  name="plan"
+  options={[
+    { value: 'free', label: 'Gratis' },
+    { value: 'pro', label: 'Pro' },
+  ]}
+  hint="Puedes cambiarlo después"
+  required
+/>
+```
+
+En Astro:
+
+```astro
+---
+import { RadioGroup } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<RadioGroup
+  label="Plan"
+  name="plan"
+  options={[
+    { value: 'free', label: 'Gratis' },
+    { value: 'pro', label: 'Pro' },
+  ]}
+  hint="Puedes cambiarlo después"
+  required
+/>
+```
+
+Solo se escriben las props que no tienen su valor por defecto (`md`, sin ayuda, sin error, sin `disabled`, sin `required` y sin opción elegida). Cualquier otro atributo HTML (eventos como `onChange`, `data-*`) llega al `<fieldset>`. El evento `change` es el nativo del navegador y sube desde cada radio. El componente muestra el `error` que recibe; quién valida es tu código. Una opción con `disabled: true` no se enfoca ni se elige.
+
+**Estado inicial: `defaultValue`.** Con `defaultValue` empieza elegida la opción con ese `value`, y el usuario cambia después. Se llama igual en React y en Astro. Si quieres controlarlo desde React, pasa `value` y tu `onChange`: entonces el componente no envía `defaultValue`, para que React no avise de un control a la vez controlado y no controlado.
+
+## Construcción
+
+RadioGroup son dos implementaciones de un mismo contrato (`contracts/radiogroup.contract.json`) que comparten una sola hoja de estilos con Input, Textarea y Checkbox. Las dos emiten el mismo marcado:
+
+- **Grupo:** un `<fieldset role="radiogroup">` con las clases `museum-radiogroup`, `museum-radiogroup--<size>` y la clase que pases, y `data-museum-radiogroup`. Si pasas tu propio `id`, ese es el del grupo; cada opción lleva `<id>-<índice>`.
+- **Leyenda:** un `<legend>` con el `label`, que da su nombre accesible al grupo. Con `required`, añade un `*` oculto a los lectores de pantalla; el grupo lleva `aria-required="true"` y cada radio, el `required` nativo.
+- **Opciones:** un `<input type="radio">` nativo por opción, todos con el mismo `name`, y un `<label for>` **después** de cada uno. Se dibuja con `appearance: none`: el rol, el estado y las flechas siguen siendo los del navegador, que entra al grupo con un solo `Tab`.
+- **Ayuda y error:** dos `<p>` bajo las opciones, que solo existen si hay texto. `aria-describedby`, en el grupo, los enlaza, el error primero y después la ayuda, y detrás los `id` que tú pases. Con error, el grupo lleva `aria-invalid="true"`; sin error, no lleva ni ese atributo ni el nodo.
+- **`disabled`:** el del grupo es el nativo del `<fieldset>`; el de una opción va en su radio.
+- **`id`:** en React, `useId()`; en Astro, un contador, sin `Math.random()`, así que dos grupos con la misma leyenda no chocan y el marcado se repite build a build.
+- **Círculo y punto:** el círculo mide 1 rem (1,125 rem en `lg`); el punto se pinta con una variable, así que sigue al tema. El borde sin elegir, y el punto contra el círculo elegido, dan al menos 3:1 en los dos temas. La zona de pulsación, el círculo con su etiqueta, mide al menos 24 × 24 px. Una etiqueta larga se parte en líneas a la derecha del círculo.
+- **Colores forzados:** cuando el sistema fuerza los colores (alto contraste de Windows), el círculo usa colores de sistema y la opción elegida se distingue de las demás.
+- **CSS:** vive en la capa `components.museum`. Cada color, tamaño y fuente sale de una variable `--museum-*`.
+- **Temas:** el claro es el de por defecto; el oscuro se pide con `data-theme="dark"` en cualquier contenedor, y `data-theme="system"` sigue la preferencia del sistema. Sin atributo, el paquete no mira el sistema. El error no depende solo del color: su texto siempre está.
+
+## Cómo alterarlo
+
+Como el CSS del paquete está en una capa, **tu CSS siempre gana**: no hace falta subir la especificidad ni usar `!important`.
+
+**1. Tokens.** Redefine una variable `--museum-*` en un contenedor o en `:root`:
+
+- Círculo: `--museum-control-bg`, `--museum-control-border`, y los de RadioGroup `--museum-radio-checked-bg` (el círculo elegido) y `--museum-radio-mark` (el punto).
+- Texto: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (que también es el borde en error).
+- Forma y tamaño: `--museum-border-width`, `--museum-disabled-opacity` y la escala `--museum-space-*`.
+- Foco: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-radio-checked-bg: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+Si cambias el círculo elegido, comprueba que el punto y el borde siguen dando 3:1.
+
+**2. Una regla sobre la clase.** Pasa tu propia clase (`className` en React, `class` en Astro): va al `<fieldset>`, se añade a las del componente y, al estar fuera de la capa, gana sin más. Esta historia define y muestra `my-radiogroup`, que es también la opción del control de clase:
+
+<Source language="css" code={exampleClasses.RadioGroup['my-radiogroup']} />
+
+En React:
+
+```tsx
+import { RadioGroup } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<RadioGroup label="Plan" name="plan" options={[{ value: 'free', label: 'Gratis' }]} className="my-radiogroup" />
+```
+
+En Astro:
+
+```astro
+---
+import { RadioGroup } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<RadioGroup label="Plan" name="plan" options={[{ value: 'free', label: 'Gratis' }]} class="my-radiogroup" />
+```
+
+**3. Utilidades.** Si tu proyecto usa Tailwind, sus utilidades también ganan a la capa del paquete. Se usan igual, como clase de tu proyecto. El círculo (`museum-radio`) no se personaliza con una prop: se alcanza con los tokens.
+
+</Lang>
+
+<Lang lang="en">
+
+## Usage
+
+RadioGroup is for choosing one option among several: a plan, a delivery method. It comes with its legend, hint and error already wired: you never write an `id` or an ARIA attribute. The options are data, in `options`, a list of `{ value, label, disabled? }`; they are not children. `label` (the group's legend), `name` and `options` are required; `hint` and `error` are optional texts; `size` is `sm`, `md` or `lg`; `disabled`, `required` and `defaultValue` are states. Install it from your framework's package and always import it by package name, together with its stylesheet.
+
+In React:
+
+```tsx
+import { RadioGroup } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<RadioGroup
+  label="Plan"
+  name="plan"
+  options={[
+    { value: 'free', label: 'Free' },
+    { value: 'pro', label: 'Pro' },
+  ]}
+  hint="You can change it later"
+  required
+/>
+```
+
+In Astro:
+
+```astro
+---
+import { RadioGroup } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<RadioGroup
+  label="Plan"
+  name="plan"
+  options={[
+    { value: 'free', label: 'Free' },
+    { value: 'pro', label: 'Pro' },
+  ]}
+  hint="You can change it later"
+  required
+/>
+```
+
+Only write the props that are off their default (`md`, no hint, no error, not `disabled`, not `required`, no option chosen). Any other HTML attribute (events such as `onChange`, `data-*`) reaches the `<fieldset>`. The `change` event is the browser's own and bubbles up from each radio. The component shows the `error` it receives; validating is your code's job. An option with `disabled: true` can be neither focused nor chosen.
+
+**Initial state: `defaultValue`.** With `defaultValue` the option with that `value` starts chosen, and the user changes it later. It has the same name in React and Astro. To control it from React, pass `value` and your own `onChange`: the component then does not send `defaultValue`, so React never warns about a control that is both controlled and uncontrolled.
+
+## How it is built
+
+RadioGroup is two implementations of one contract (`contracts/radiogroup.contract.json`) sharing a single stylesheet with Input, Textarea and Checkbox. Both emit the same markup:
+
+- **Group:** a `<fieldset role="radiogroup">`, with the classes `museum-radiogroup`, `museum-radiogroup--<size>` and the class you pass, plus `data-museum-radiogroup`. If you pass your own `id`, that is the group's; each option carries `<id>-<index>`.
+- **Legend:** a `<legend>` with the `label`, which names the group for assistive technology. With `required`, it adds a `*` hidden from screen readers; the group carries `aria-required="true"` and every radio the native `required`.
+- **Options:** one native `<input type="radio">` per option, all with the same `name`, and a `<label for>` **after** each. They are drawn with `appearance: none`: the role, the state and the arrow keys stay the browser's, which enters the group with a single `Tab`.
+- **Hint and error:** two `<p>` below the options, which exist only when there is text. `aria-describedby`, on the group, links them, error first and then hint, followed by any `id` you pass. With an error the group carries `aria-invalid="true"`; without one, neither that attribute nor the node exists.
+- **`disabled`:** the group's is the native one of the `<fieldset>`; an option's goes on its radio.
+- **`id`:** in React, `useId()`; in Astro, a counter, never `Math.random()`, so two groups with the same legend never clash and the markup repeats build to build.
+- **Circle and dot:** the circle is 1 rem (1.125 rem in `lg`); the dot is painted with a variable, so it follows the theme. The unchosen border, and the dot against the chosen circle, give at least 3:1 in both themes. The click area, the circle with its label, is at least 24 × 24 px. A long label wraps to the right of the circle.
+- **Forced colors:** when the system forces colors (Windows high contrast), the circle uses system colors and the chosen option differs from the others.
+- **CSS:** it lives in the `components.museum` layer. Every color, size and font comes from a `--museum-*` variable.
+- **Themes:** light is the default; dark is requested with `data-theme="dark"` on any container, and `data-theme="system"` follows the system preference. Without the attribute, the package does not look at the system. The error does not rely on color alone: its text is always there.
+
+## How to alter it
+
+Because the package CSS sits in a layer, **your CSS always wins**: no need to raise specificity or use `!important`.
+
+**1. Tokens.** Redefine a `--museum-*` variable on a container or on `:root`:
+
+- Circle: `--museum-control-bg`, `--museum-control-border`, and RadioGroup's own `--museum-radio-checked-bg` (the chosen circle) and `--museum-radio-mark` (the dot).
+- Text: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (also the border in error).
+- Shape and size: `--museum-border-width`, `--museum-disabled-opacity` and the `--museum-space-*` scale.
+- Focus: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-radio-checked-bg: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+If you change the chosen circle, check that the dot and the border still give 3:1.
+
+**2. A rule on the class.** Pass your own class (`className` in React, `class` in Astro): it goes to the `<fieldset>`, is added to the component's and, being outside the layer, wins outright. This story defines and shows `my-radiogroup`, which is also the class control's option:
+
+<Source language="css" code={exampleClasses.RadioGroup['my-radiogroup']} />
+
+In React:
+
+```tsx
+import { RadioGroup } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<RadioGroup label="Plan" name="plan" options={[{ value: 'free', label: 'Free' }]} className="my-radiogroup" />
+```
+
+In Astro:
+
+```astro
+---
+import { RadioGroup } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<RadioGroup label="Plan" name="plan" options={[{ value: 'free', label: 'Free' }]} class="my-radiogroup" />
+```
+
+**3. Utilities.** If your project uses Tailwind, its utilities also beat the package layer. Use them the same way, as a class from your project. The circle (`museum-radio`) has no prop of its own: reach it through the tokens.
+
+</Lang>

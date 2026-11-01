@@ -1,0 +1,54 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { fieldIds } from '../field.js';
+
+/** Input's own API, from contracts/input.contract.json translated to Astro. */
+interface OwnProps {
+  label: string;
+  hint?: string;
+  error?: string;
+  type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'number';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  required?: boolean;
+  /** Added to the component's own classes, never replacing them. */
+  class?: string;
+}
+
+/** Any other HTML attribute reaches the `<input>`; the Omit keeps the own props single. */
+export interface Props extends OwnProps, Omit<HTMLAttributes<'input'>, keyof OwnProps> {}
+
+// The hook is the component's own: a consumer's data-museum-input is dropped, not rendered twice (RF-11).
+const {
+  label,
+  hint = '',
+  error = '',
+  type = 'text',
+  size = 'md',
+  disabled = false,
+  required = false,
+  class: className,
+  id,
+  'aria-describedby': describedBy,
+  'data-museum-input': _hook,
+  ...attributes
+} = Astro.props;
+const { controlId, hintId, errorId, describedBy: description } = fieldIds('museum-input', id, hint, error, describedBy);
+---
+
+<div class="museum-field">
+  <label class="museum-field__label" for={controlId}>{label}{required && <span class="museum-field__required" aria-hidden="true">*</span>}</label>
+  <input
+    {...attributes}
+    id={controlId}
+    class:list={['museum-input', `museum-input--${size}`, className]}
+    type={type}
+    disabled={disabled}
+    required={required}
+    aria-describedby={description}
+    aria-invalid={error ? 'true' : undefined}
+    data-museum-input
+  />
+  {hint && <p id={hintId} class="museum-field__hint">{hint}</p>}
+  {error && <p id={errorId} class="museum-field__error">{error}</p>}
+</div>

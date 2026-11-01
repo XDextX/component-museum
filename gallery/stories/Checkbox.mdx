@@ -1,0 +1,196 @@
+import { Canvas, Controls, Meta, Source } from '@storybook/addon-docs/blocks';
+import * as ReactStories from './Checkbox.react.stories.tsx';
+import { Lang, LanguageSwitch } from '../lib/Lang.tsx';
+import { exampleClasses } from '../lib/example-classes.ts';
+
+<Meta title="Checkbox/Documentation" />
+
+# Checkbox
+
+<LanguageSwitch />
+
+<Canvas of={ReactStories.Default} sourceState="shown" />
+
+<Controls of={ReactStories.Default} />
+
+<Lang lang="es">
+
+## Uso
+
+Checkbox sirve para un sí o un no: aceptar los términos, suscribirse. Trae su etiqueta, su ayuda y su error ya cableados: no hay que escribir ningún `id` ni atributo ARIA. La etiqueta va a la derecha del cuadro y también se pulsa. `label` es obligatoria y siempre visible; `hint` (ayuda) y `error` son textos opcionales; `size` es `sm`, `md` o `lg`; `disabled`, `required` y `defaultChecked` son estados. Se instala desde el paquete de tu framework y se importa siempre por su nombre de paquete, junto con su hoja de estilos.
+
+En React:
+
+```tsx
+import { Checkbox } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Checkbox label="Acepto los términos" hint="Puedes leerlos antes de seguir" required />
+```
+
+En Astro:
+
+```astro
+---
+import { Checkbox } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Checkbox label="Acepto los términos" hint="Puedes leerlos antes de seguir" required />
+```
+
+Solo se escriben las props que no tienen su valor por defecto (`md`, sin ayuda, sin error, sin `disabled`, sin `required` y sin marcar). Cualquier otro atributo HTML (`name`, `value`…) llega al `<input>`. Los eventos `input` y `change` son los nativos del navegador. El componente muestra el `error` que recibe; quién valida es tu código. El estado mixto (`indeterminate`) no está: necesita JavaScript.
+
+**Estado inicial: `defaultChecked`.** Con `defaultChecked` el cuadro empieza marcado, y el usuario lo desmarca después. Se llama igual en React y en Astro. Si quieres controlarlo desde React, pasa `checked` y tu `onChange`, como en cualquier `<input type="checkbox">`: entonces el componente no envía `defaultChecked`, para que React no avise de un control a la vez controlado y no controlado.
+
+## Construcción
+
+Checkbox son dos implementaciones de un mismo contrato (`contracts/checkbox.contract.json`) que comparten una sola hoja de estilos con Input y Textarea. Las dos emiten el mismo marcado:
+
+- **Control:** un `<input type="checkbox">` nativo, con las clases `museum-checkbox`, `museum-checkbox--<size>` y la clase que pases, y `data-museum-checkbox`. Se dibuja con `appearance: none`: el rol, el estado y la tecla `Espacio` siguen siendo los del navegador. Si pasas tu propio `id`, ese es el del control.
+- **Etiqueta:** un `<label for>` **después** del control, que apunta a su `id`; no lo envuelve, así que la ayuda y el error no entran en su nombre accesible. Con `required`, añade un `*` oculto a los lectores de pantalla (el `required` nativo ya dice «obligatorio»).
+- **Ayuda y error:** dos `<p>` bajo la etiqueta, que solo existen si hay texto. `aria-describedby` los enlaza, el error primero y después la ayuda, y detrás los `id` que tú pases. Con error, el control lleva `aria-invalid="true"`; sin error, no lleva ni ese atributo ni el nodo.
+- **`id`:** en React, `useId()`; en Astro, un contador, sin `Math.random()`, así que dos campos con la misma etiqueta no chocan y el marcado se repite build a build.
+- **Cuadro y marca:** el cuadro mide 1 rem (1,125 rem en `lg`); la marca es una máscara de imagen pintada con una variable, así que sigue al tema. El borde sin marcar, y la marca contra el cuadro marcado, dan al menos 3:1 en los dos temas. La zona de pulsación, el cuadro con su etiqueta, mide al menos 24 × 24 px. Una etiqueta larga se parte en líneas a la derecha del cuadro.
+- **Colores forzados:** cuando el sistema fuerza los colores (alto contraste de Windows), el cuadro usa colores de sistema y el marcado se distingue del sin marcar.
+- **CSS:** vive en la capa `components.museum`. Cada color, tamaño y fuente sale de una variable `--museum-*`.
+- **Temas:** el claro es el de por defecto; el oscuro se pide con `data-theme="dark"` en cualquier contenedor, y `data-theme="system"` sigue la preferencia del sistema. Sin atributo, el paquete no mira el sistema. El error no depende solo del color: su texto siempre está.
+
+## Cómo alterarlo
+
+Como el CSS del paquete está en una capa, **tu CSS siempre gana**: no hace falta subir la especificidad ni usar `!important`.
+
+**1. Tokens.** Redefine una variable `--museum-*` en un contenedor o en `:root`:
+
+- Cuadro: `--museum-control-bg`, `--museum-control-border`, y los de Checkbox `--museum-checkbox-checked-bg` (el cuadro marcado) y `--museum-checkbox-mark` (la marca).
+- Texto: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (que también es el borde en error).
+- Forma y tamaño: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity` y la escala `--museum-space-*`.
+- Foco: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-checkbox-checked-bg: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+Si cambias el cuadro marcado, comprueba que la marca y el borde siguen dando 3:1.
+
+**2. Una regla sobre la clase.** Pasa tu propia clase (`className` en React, `class` en Astro): va al `<input>`, se añade a las del componente y, al estar fuera de la capa, gana sin más. Esta historia define y muestra `my-checkbox`, que es también la opción del control de clase:
+
+<Source language="css" code={exampleClasses.Checkbox['my-checkbox']} />
+
+En React:
+
+```tsx
+import { Checkbox } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Checkbox label="Acepto los términos" className="my-checkbox" />
+```
+
+En Astro:
+
+```astro
+---
+import { Checkbox } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Checkbox label="Acepto los términos" class="my-checkbox" />
+```
+
+**3. Utilidades.** Si tu proyecto usa Tailwind, sus utilidades también ganan a la capa del paquete. Se usan igual, como clase de tu proyecto. El envoltorio del campo (`museum-field`) no se personaliza con una prop: se alcanza con los tokens.
+
+</Lang>
+
+<Lang lang="en">
+
+## Usage
+
+Checkbox is for a yes or a no: accept the terms, subscribe. It comes with its label, hint and error already wired: you never write an `id` or an ARIA attribute. The label sits to the right of the box and can be clicked too. `label` is required and always visible; `hint` and `error` are optional texts; `size` is `sm`, `md` or `lg`; `disabled`, `required` and `defaultChecked` are states. Install it from your framework's package and always import it by package name, together with its stylesheet.
+
+In React:
+
+```tsx
+import { Checkbox } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Checkbox label="I accept the terms" hint="You can read them before going on" required />
+```
+
+In Astro:
+
+```astro
+---
+import { Checkbox } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Checkbox label="I accept the terms" hint="You can read them before going on" required />
+```
+
+Only write the props that are off their default (`md`, no hint, no error, not `disabled`, not `required`, unchecked). Any other HTML attribute (`name`, `value`…) reaches the `<input>`. The `input` and `change` events are the browser's own. The component shows the `error` it receives; validating is your code's job. The mixed state (`indeterminate`) is not there: it needs JavaScript.
+
+**Initial state: `defaultChecked`.** With `defaultChecked` the box starts checked, and the user unchecks it later. It has the same name in React and Astro. To control it from React, pass `checked` and your own `onChange`, as with any `<input type="checkbox">`: the component then does not send `defaultChecked`, so React never warns about a control that is both controlled and uncontrolled.
+
+## How it is built
+
+Checkbox is two implementations of one contract (`contracts/checkbox.contract.json`) sharing a single stylesheet with Input and Textarea. Both emit the same markup:
+
+- **Control:** a native `<input type="checkbox">`, with the classes `museum-checkbox`, `museum-checkbox--<size>` and the class you pass, plus `data-museum-checkbox`. It is drawn with `appearance: none`: the role, the state and the `Space` key stay the browser's. If you pass your own `id`, that is the control's.
+- **Label:** a `<label for>` **after** the control, pointing at its `id`; it does not wrap it, so the hint and the error never become part of its accessible name. With `required`, it adds a `*` hidden from screen readers (the native `required` already says "required").
+- **Hint and error:** two `<p>` below the label, which exist only when there is text. `aria-describedby` links them, error first and then hint, followed by any `id` you pass. With an error the control carries `aria-invalid="true"`; without one, neither that attribute nor the node exists.
+- **`id`:** in React, `useId()`; in Astro, a counter, never `Math.random()`, so two fields with the same label never clash and the markup repeats build to build.
+- **Box and mark:** the box is 1 rem (1.125 rem in `lg`); the mark is an image mask painted with a variable, so it follows the theme. The unchecked border, and the mark against the checked box, give at least 3:1 in both themes. The click area, the box with its label, is at least 24 × 24 px. A long label wraps to the right of the box.
+- **Forced colors:** when the system forces colors (Windows high contrast), the box uses system colors and the checked state differs from the unchecked one.
+- **CSS:** it lives in the `components.museum` layer. Every color, size and font comes from a `--museum-*` variable.
+- **Themes:** light is the default; dark is requested with `data-theme="dark"` on any container, and `data-theme="system"` follows the system preference. Without the attribute, the package does not look at the system. The error does not rely on color alone: its text is always there.
+
+## How to alter it
+
+Because the package CSS sits in a layer, **your CSS always wins**: no need to raise specificity or use `!important`.
+
+**1. Tokens.** Redefine a `--museum-*` variable on a container or on `:root`:
+
+- Box: `--museum-control-bg`, `--museum-control-border`, and Checkbox's own `--museum-checkbox-checked-bg` (the checked box) and `--museum-checkbox-mark` (the mark).
+- Text: `--museum-field-label`, `--museum-field-hint`, `--museum-field-error` (also the border in error).
+- Shape and size: `--museum-radius`, `--museum-border-width`, `--museum-disabled-opacity` and the `--museum-space-*` scale.
+- Focus: `--museum-focus-ring`, `--museum-focus-width`, `--museum-focus-offset`.
+
+```css
+.checkout {
+  --museum-checkbox-checked-bg: #047857;
+  --museum-field-error: #9f1239;
+}
+```
+
+If you change the checked box, check that the mark and the border still give 3:1.
+
+**2. A rule on the class.** Pass your own class (`className` in React, `class` in Astro): it goes to the `<input>`, is added to the component's and, being outside the layer, wins outright. This story defines and shows `my-checkbox`, which is also the class control's option:
+
+<Source language="css" code={exampleClasses.Checkbox['my-checkbox']} />
+
+In React:
+
+```tsx
+import { Checkbox } from '@component-museum/react';
+import '@component-museum/react/styles.css';
+
+<Checkbox label="I accept the terms" className="my-checkbox" />
+```
+
+In Astro:
+
+```astro
+---
+import { Checkbox } from '@component-museum/astro';
+import '@component-museum/astro/styles.css';
+---
+
+<Checkbox label="I accept the terms" class="my-checkbox" />
+```
+
+**3. Utilities.** If your project uses Tailwind, its utilities also beat the package layer. Use them the same way, as a class from your project. The field wrapper (`museum-field`) has no prop of its own: reach it through the tokens.
+
+</Lang>

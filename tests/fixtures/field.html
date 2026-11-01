@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Field fixture</title>
+    <!-- museum.css -->
+    <style>
+      body { margin: 0; padding: 1rem; background: var(--museum-surface); font-family: var(--museum-font-family); }
+      .row { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+      .row > .museum-field { flex: 1; }
+      .narrow { width: 320px; }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="in-sm">Small</label>
+        <input id="in-sm" class="museum-input museum-input--sm" type="text" value="Value" data-museum-input />
+      </div>
+      <button id="btn-sm" class="museum-button museum-button--primary museum-button--sm" data-museum-button>Button</button>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="in-md">Medium</label>
+        <input id="in-md" class="museum-input museum-input--md" type="text" value="Value" data-museum-input />
+      </div>
+      <button id="btn-md" class="museum-button museum-button--primary museum-button--md" data-museum-button>Button</button>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="in-lg">Large</label>
+        <input id="in-lg" class="museum-input museum-input--lg" type="text" value="Value" data-museum-input />
+      </div>
+      <button id="btn-lg" class="museum-button museum-button--primary museum-button--lg" data-museum-button>Button</button>
+    </div>
+
+    <div class="museum-field">
+      <label class="museum-field__label" for="in-placeholder">Placeholder</label>
+      <input id="in-placeholder" class="museum-input museum-input--md" type="text" placeholder="Type here" aria-describedby="in-placeholder-hint" data-museum-input />
+      <p id="in-placeholder-hint" class="museum-field__hint">Hint</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="in-error">Error<span class="museum-field__required" aria-hidden="true">*</span></label>
+      <input id="in-error" class="museum-input museum-input--md" type="text" value="Value" aria-describedby="in-error-error in-error-hint" aria-invalid="true" required data-museum-input />
+      <p id="in-error-hint" class="museum-field__hint">Hint</p>
+      <p id="in-error-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="in-disabled">Disabled</label>
+      <input id="in-disabled" class="museum-input museum-input--md" type="text" value="Value" aria-describedby="in-disabled-error" aria-invalid="true" disabled data-museum-input />
+      <p id="in-disabled-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="ta-sm">Small</label>
+        <textarea id="ta-sm" class="museum-textarea museum-textarea--sm" data-museum-textarea>Value</textarea>
+      </div>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="ta-md">Medium</label>
+        <textarea id="ta-md" class="museum-textarea museum-textarea--md" data-museum-textarea>Value</textarea>
+      </div>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="ta-lg">Large</label>
+        <textarea id="ta-lg" class="museum-textarea museum-textarea--lg" data-museum-textarea>Value</textarea>
+      </div>
+    </div>
+
+    <div class="museum-field">
+      <label class="museum-field__label" for="ta-placeholder">Placeholder</label>
+      <textarea id="ta-placeholder" class="museum-textarea museum-textarea--md" placeholder="Type here" aria-describedby="ta-placeholder-hint" data-museum-textarea></textarea>
+      <p id="ta-placeholder-hint" class="museum-field__hint">Hint</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="ta-error">Error<span class="museum-field__required" aria-hidden="true">*</span></label>
+      <textarea id="ta-error" class="museum-textarea museum-textarea--md" aria-describedby="ta-error-error ta-error-hint" aria-invalid="true" required data-museum-textarea>Value</textarea>
+      <p id="ta-error-hint" class="museum-field__hint">Hint</p>
+      <p id="ta-error-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="ta-disabled">Disabled</label>
+      <textarea id="ta-disabled" class="museum-textarea museum-textarea--md" aria-describedby="ta-disabled-error" aria-invalid="true" disabled data-museum-textarea>Value</textarea>
+      <p id="ta-disabled-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="sel-sm">Small</label>
+        <select id="sel-sm" class="museum-select museum-select--sm" data-museum-select>
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="sel-md">Medium</label>
+        <select id="sel-md" class="museum-select museum-select--md" data-museum-select>
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="museum-field">
+        <label class="museum-field__label" for="sel-lg">Large</label>
+        <select id="sel-lg" class="museum-select museum-select--lg" data-museum-select>
+          <option value="a">Option A</option>
+          <option value="b">Option B</option>
+        </select>
+      </div>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="sel-placeholder">Placeholder</label>
+      <select id="sel-placeholder" class="museum-select museum-select--md" aria-describedby="sel-placeholder-hint" data-museum-select>
+        <option value="" disabled selected>Choose one</option>
+        <option value="a">Option A</option>
+        <option value="b">Option B</option>
+      </select>
+      <p id="sel-placeholder-hint" class="museum-field__hint">Hint</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="sel-empty">Empty value</label>
+      <select id="sel-empty" class="museum-select museum-select--md" data-museum-select>
+        <option value="" selected>Todos</option>
+        <option value="a">Option A</option>
+        <option value="c" disabled>Option C</option>
+      </select>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="sel-error">Error<span class="museum-field__required" aria-hidden="true">*</span></label>
+      <select id="sel-error" class="museum-select museum-select--md" aria-describedby="sel-error-error sel-error-hint" aria-invalid="true" required data-museum-select>
+        <option value="a" selected>Option A</option>
+        <option value="b">Option B</option>
+      </select>
+      <p id="sel-error-hint" class="museum-field__hint">Hint</p>
+      <p id="sel-error-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field">
+      <label class="museum-field__label" for="sel-disabled">Disabled</label>
+      <select id="sel-disabled" class="museum-select museum-select--md" aria-describedby="sel-disabled-error" aria-invalid="true" disabled data-museum-select>
+        <option value="a" selected>Option A</option>
+        <option value="b">Option B</option>
+      </select>
+      <p id="sel-disabled-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-sm" type="checkbox" class="museum-checkbox museum-checkbox--sm" data-museum-checkbox />
+      <label class="museum-field__label" for="cb-sm">Small</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-md" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-md-hint" data-museum-checkbox />
+      <label class="museum-field__label" for="cb-md">Medium</label>
+      <p id="cb-md-hint" class="museum-field__hint">Hint</p>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-lg" type="checkbox" class="museum-checkbox museum-checkbox--lg" data-museum-checkbox />
+      <label class="museum-field__label" for="cb-lg">Large</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-sm-checked" type="checkbox" class="museum-checkbox museum-checkbox--sm" checked data-museum-checkbox />
+      <label class="museum-field__label" for="cb-sm-checked">Small checked</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-md-checked" type="checkbox" class="museum-checkbox museum-checkbox--md" checked data-museum-checkbox />
+      <label class="museum-field__label" for="cb-md-checked">Medium checked</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-lg-checked" type="checkbox" class="museum-checkbox museum-checkbox--lg" checked data-museum-checkbox />
+      <label class="museum-field__label" for="cb-lg-checked">Large checked</label>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-error" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-error-error cb-error-hint" aria-invalid="true" required data-museum-checkbox />
+      <label class="museum-field__label" for="cb-error">Error<span class="museum-field__required" aria-hidden="true">*</span></label>
+      <p id="cb-error-hint" class="museum-field__hint">Hint</p>
+      <p id="cb-error-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-error-checked" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-error-checked-error" aria-invalid="true" checked data-museum-checkbox />
+      <label class="museum-field__label" for="cb-error-checked">Error checked</label>
+      <p id="cb-error-checked-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-disabled" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-disabled-error" aria-invalid="true" disabled data-museum-checkbox />
+      <label class="museum-field__label" for="cb-disabled">Disabled</label>
+      <p id="cb-disabled-error" class="museum-field__error">Error</p>
+    </div>
+    <div class="museum-field museum-field--inline">
+      <input id="cb-disabled-checked" type="checkbox" class="museum-checkbox museum-checkbox--md" aria-describedby="cb-disabled-checked-error" aria-invalid="true" checked disabled data-museum-checkbox />
+      <label class="museum-field__label" for="cb-disabled-checked">Disabled checked</label>
+      <p id="cb-disabled-checked-error" class="museum-field__error">Error</p>
+    </div>
+    <fieldset id="rg-sm" class="museum-field museum-radiogroup museum-radiogroup--sm" role="radiogroup" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio small</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-sm-0" type="radio" class="museum-radio" name="rg-sm" value="0" />
+        <label for="rg-sm-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-sm-1" type="radio" class="museum-radio" name="rg-sm" value="1" checked />
+        <label for="rg-sm-1">Option B</label>
+      </div>
+    </fieldset>
+    <fieldset id="rg-md" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" aria-describedby="rg-md-hint" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio medium</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-md-0" type="radio" class="museum-radio" name="rg-md" value="0" />
+        <label for="rg-md-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-md-1" type="radio" class="museum-radio" name="rg-md" value="1" checked />
+        <label for="rg-md-1">Option B</label>
+      </div>
+      <p id="rg-md-hint" class="museum-field__hint">Radio hint</p>
+    </fieldset>
+    <fieldset id="rg-lg" class="museum-field museum-radiogroup museum-radiogroup--lg" role="radiogroup" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio large</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-lg-0" type="radio" class="museum-radio" name="rg-lg" value="0" />
+        <label for="rg-lg-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-lg-1" type="radio" class="museum-radio" name="rg-lg" value="1" checked />
+        <label for="rg-lg-1">Option B</label>
+      </div>
+    </fieldset>
+    <fieldset id="rg-error" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" aria-describedby="rg-error-error rg-error-hint" aria-invalid="true" aria-required="true" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio error<span class="museum-field__required" aria-hidden="true">*</span></legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-error-0" type="radio" class="museum-radio" name="rg-error" value="0" required />
+        <label for="rg-error-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-error-1" type="radio" class="museum-radio" name="rg-error" value="1" required checked />
+        <label for="rg-error-1">Option B</label>
+      </div>
+      <p id="rg-error-hint" class="museum-field__hint">Radio hint</p>
+      <p id="rg-error-error" class="museum-field__error">Radio error text</p>
+    </fieldset>
+    <fieldset id="rg-disabled" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" aria-describedby="rg-disabled-error" aria-invalid="true" disabled data-museum-radiogroup>
+      <legend class="museum-field__label">Radio disabled</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-disabled-0" type="radio" class="museum-radio" name="rg-disabled" value="0" />
+        <label for="rg-disabled-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-disabled-1" type="radio" class="museum-radio" name="rg-disabled" value="1" checked />
+        <label for="rg-disabled-1">Option B</label>
+      </div>
+      <p id="rg-disabled-error" class="museum-field__error">Radio error text</p>
+    </fieldset>
+    <fieldset id="rg-option" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio one option</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-option-0" type="radio" class="museum-radio" name="rg-option" value="0" />
+        <label for="rg-option-0">Option A</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-option-1" type="radio" class="museum-radio" name="rg-option" value="1" disabled />
+        <label for="rg-option-1">Option B disabled</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-option-2" type="radio" class="museum-radio" name="rg-option" value="2" />
+        <label for="rg-option-2">Option C</label>
+      </div>
+    </fieldset>
+    <div class="narrow" id="long-field-rg">
+    <fieldset id="rg-long" class="museum-field museum-radiogroup museum-radiogroup--md" role="radiogroup" data-museum-radiogroup>
+      <legend class="museum-field__label">Radio long</legend>
+      <div class="museum-radiogroup__option">
+        <input id="rg-long-0" type="radio" class="museum-radio" name="rg-long" value="0" />
+        <label for="rg-long-0">A very long label that has to break into several lines on the right of the circle, which must stay on top of the first one xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</label>
+      </div>
+      <div class="museum-radiogroup__option">
+        <input id="rg-long-1" type="radio" class="museum-radio" name="rg-long" value="1" />
+        <label for="rg-long-1">Option B</label>
+      </div>
+    </fieldset>
+    </div>
+    <div class="narrow">
+      <div class="museum-field museum-field--inline" id="long-field-cb">
+        <input id="cb-long" type="checkbox" class="museum-checkbox museum-checkbox--md" data-museum-checkbox />
+        <label class="museum-field__label" for="cb-long">A very long label that has to break into several lines on the right of the square, which must stay on top of the first one xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</label>
+      </div>
+    </div>
+    <div class="narrow">
+      <div class="museum-field" id="long-field">
+        <label class="museum-field__label" for="in-long">Long</label>
+        <input id="in-long" class="museum-input museum-input--md" type="text" aria-describedby="in-long-error" aria-invalid="true" data-museum-input />
+        <p id="in-long-error" class="museum-field__error">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+      </div>
+    </div>
+    <div class="narrow">
+      <div class="museum-field" id="long-field-ta">
+        <label class="museum-field__label" for="ta-long">Long</label>
+        <textarea id="ta-long" class="museum-textarea museum-textarea--md" aria-describedby="ta-long-error" aria-invalid="true" data-museum-textarea></textarea>
+        <p id="ta-long-error" class="museum-field__error">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+      </div>
+    </div>
+    <div class="narrow">
+      <div class="museum-field" id="long-field-sel">
+        <label class="museum-field__label" for="sel-long">Long</label>
+        <select id="sel-long" class="museum-select museum-select--md" data-museum-select>
+          <option value="a">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</option>
+          <option value="b">Option B</option>
+        </select>
+      </div>
+    </div>
+  </body>
+</html>

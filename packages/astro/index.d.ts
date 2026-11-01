@@ -1,2 +1,7 @@
 /// <reference types="astro/client" />
 export { default as Button } from './src/Button/Button.astro';
+export { default as Input } from './src/Input/Input.astro';
+export { default as Textarea } from './src/Textarea/Textarea.astro';
+export { default as Checkbox } from './src/Checkbox/Checkbox.astro';
+export { default as RadioGroup } from './src/RadioGroup/RadioGroup.astro';
+export { default as Select } from './src/Select/Select.astro';

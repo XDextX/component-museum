@@ -1,7 +1,25 @@
 /**
- * The example class the gallery defines and shows beside the class control (spec 004, RF-9), keyed
- * by class name. The only copy: the React story and the documentation page both import it.
+ * The example classes the gallery defines and shows beside each component's class control (spec 004,
+ * RF-9), by component name, then by class name. The only copy: each React story and documentation
+ * page import it.
  */
-export const exampleClasses: Record<string, string> = {
-  'my-button': '.my-button {\n  border-radius: 999px;\n  letter-spacing: 0.05em;\n  text-transform: uppercase;\n}',
+export const exampleClasses: Record<string, Record<string, string>> = {
+  Button: {
+    'my-button': '.my-button {\n  border-radius: 999px;\n  letter-spacing: 0.05em;\n  text-transform: uppercase;\n}',
+  },
+  Input: {
+    'my-input': '.my-input {\n  border-radius: 999px;\n  letter-spacing: 0.05em;\n}',
+  },
+  Checkbox: {
+    'my-checkbox': '.my-checkbox {\n  border-radius: 999px;\n}',
+  },
+  RadioGroup: {
+    'my-radiogroup': '.my-radiogroup {\n  letter-spacing: 0.05em;\n}',
+  },
+  Select: {
+    'my-select': '.my-select {\n  border-radius: 999px;\n  letter-spacing: 0.05em;\n}',
+  },
+  Textarea: {
+    'my-textarea': '.my-textarea {\n  border-radius: 0.25rem;\n  letter-spacing: 0.05em;\n}',
+  },
 };

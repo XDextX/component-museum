@@ -1,21 +1,19 @@
-import { cpSync, existsSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterAll, describe, expect, inject, it } from 'vitest';
-import { buildConsumer, configFiles, installPackage, packPackage } from './lib/consumer.ts';
+import { cacheDir } from '../scripts/cache.mjs';
+import { describe, expect, it } from 'vitest';
+import { need } from './lib/need.ts';
+import { configFiles } from './lib/consumer.ts';
 import { consumerDir, isOutside, type Framework } from './lib/paths.ts';
-import { diffSnapshots, snapshotRoots, takeSnapshot } from './lib/snapshot.ts';
+import { fileInTarball, tarballFiles } from './lib/tarball.ts';
 
 const repo = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const frameworks: Framework[] = ['react', 'astro'];
 // Created once per run by tests/global-setup.ts; the plain ones are read-only here.
-const consumers = inject('consumers');
-
-// RF-6: the tree as global-setup.ts saw it before creating anything; the suite must leave it so.
-afterAll(() => {
-  expect(diffSnapshots(inject('treeBefore'), takeSnapshot(repo, snapshotRoots))).toEqual([]);
-});
+const consumers = need('consumers');
 
 /** Where the consumer's own require finds the package, with links resolved. */
 function resolvedFrom(dir: string): string {
@@ -54,41 +52,45 @@ describe('external consumer (RF-4)', () => {
   });
 });
 
-describe('undeclared module (RF-5)', { timeout: 300_000 }, () => {
-  const undeclaredFixture = join(repo, 'tests', 'fixtures', 'undeclared-module');
-  const inRepoRoot = join(repo, 'node_modules', 'museum-undeclared');
-  const inParent = join(consumers.guardParent, 'node_modules', 'museum-undeclared');
+// The RF-5 block and the byte check of the RF-5 guarded consumers live in consumer-undeclared.test.ts, the only file
+// that touches the RF-5 guarded consumers: it modifies them, so reading them here would race with it.
+describe('the installed packages are the run\'s tarballs (spec 017, RF-6)', () => {
+  const tarballs = need('tarballs');
+  const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
+  /** Each consumer with the packages the run installs in it: the test package and the framework package, or the undeclaring one. */
+  const installs = frameworks.flatMap((framework) => [
+    { label: `plain ${framework}`, dir: consumers.plain[framework], packed: [tarballs.testPackage, tarballs[framework]] },
+    { label: `002 guarded ${framework}`, dir: consumers.packageGuarded[framework], packed: [tarballs.testPackage, tarballs[framework]] },
+    { label: `tailwind ${framework}`, dir: consumers.tailwind[framework], packed: [tarballs.testPackage, tarballs[framework]] },
+  ]);
 
-  for (const framework of frameworks) {
-    it(`fails the ${framework} build with the module in the repo root's node_modules, then in the consumer's parent, and passes once declared`, async () => {
-      // This test is the only one that touches its guarded consumer, and the last to use it.
-      const dir = consumers.guarded[framework];
-      expect(existsSync(inRepoRoot), `${inRepoRoot} exists before the test; refusing to touch it`).toBe(false);
+  // 8 consumers in all; the RF-5 guarded ones (one per framework) are checked in consumer-undeclared.test.ts.
+  it('covers the 8 consumers', () => expect(installs).toHaveLength(8 - frameworks.length));
 
-      cpSync(undeclaredFixture, inRepoRoot, { recursive: true });
-      const fromRepoRoot = buildConsumer(dir);
-      rmSync(inRepoRoot, { recursive: true });
-      expect(fromRepoRoot.code, fromRepoRoot.output).not.toBe(0);
-      expect(fromRepoRoot.output).toContain('museum-undeclared');
-
-      cpSync(undeclaredFixture, inParent, { recursive: true });
-      const fromParent = buildConsumer(dir);
-      rmSync(inParent, { recursive: true });
-      expect(fromParent.code, fromParent.output).not.toBe(0);
-      expect(fromParent.output).toContain('resolves outside the consumer');
-
-      const declaring = join(consumers.guardParent, `pkg-declaring-${framework}`);
-      cpSync(consumers.undeclaringPackage, declaring, { recursive: true });
-      const manifest = join(declaring, 'package.json');
-      const undeclaredTarball = await packPackage(undeclaredFixture, join(consumers.guardParent, `pack-undeclared-${framework}`));
-      const json = JSON.parse(readFileSync(manifest, 'utf8'));
-      json.dependencies = { 'museum-undeclared': `file:${undeclaredTarball.path}` };
-      writeFileSync(manifest, JSON.stringify(json, null, 2));
-      await installPackage(dir, declaring);
-      const declared = buildConsumer(dir);
-      expect(declared.code, declared.output).toBe(0);
+  for (const { label, dir, packed } of installs) {
+    // Every file, not only package.json and dist/index.js: the barrel does not change when a component does.
+    it(`holds in the ${label} consumer every file of the run's tarballs, byte for byte`, () => {
+      for (const { name, path } of packed) {
+        const tgz = readFileSync(path);
+        const files = tarballFiles(tgz);
+        expect(files, `${name} has no package.json in its tarball`).toContain('package/package.json');
+        for (const file of files) {
+          const installed = join(dir, 'node_modules', name, file.slice('package/'.length));
+          expect(existsSync(installed), `${installed} is not installed`).toBe(true);
+          expect(sha256(readFileSync(installed)), `${installed} is not the run's tarball`).toBe(sha256(fileInTarball(tgz, file)!));
+        }
+      }
     });
   }
+
+  it('keeps the packages under test out of the stored consumers', () => {
+    const stored = join(cacheDir, 'consumers');
+    for (const entry of readdirSync(stored, { withFileTypes: true }).filter((e) => e.isDirectory() && e.name !== 'starters')) {
+      for (const name of ['@component-museum', 'museum-test-package']) {
+        expect(existsSync(join(stored, entry.name, 'node_modules', name)), `${entry.name} stores ${name}`).toBe(false);
+      }
+    }
+  });
 });
 
 /** True when some file under the consumer's dist/ contains `text`: the build really used Button. */
@@ -101,7 +103,7 @@ function builtWith(dir: string, text: string): boolean {
 
 describe('framework packages in the consumers (RF-3)', () => {
   // Built once by global-setup.ts, so the shared consumers stay read-only here.
-  const builds = inject('builds');
+  const builds = need('builds');
 
   for (const framework of frameworks) {
     for (const [kind, dirs] of [['untouched', consumers.plain], ['guarded 002', consumers.packageGuarded]] as const) {
@@ -120,7 +122,7 @@ describe('framework packages in the consumers (RF-3)', () => {
 
 describe('Button types in the consumers (002 RF-5)', () => {
   // Checked once by global-setup.ts in the 002 guarded consumers: tsc -b (React), astro check (Astro).
-  const typeChecks = inject('typeChecks');
+  const typeChecks = need('typeChecks');
 
   for (const framework of frameworks) {
     it(`passes the ${framework} consumer's type check, and fails it once a Button has variant="nope"`, () => {

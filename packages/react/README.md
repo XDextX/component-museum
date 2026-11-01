@@ -21,6 +21,8 @@ export function Save() {
 }
 ```
 
+El tema claro es el de por defecto. El oscuro se pide con `data-theme="dark"` en cualquier contenedor, y `data-theme="system"` sigue la preferencia del sistema. Sin atributo, el paquete no mira el sistema.
+
 `variant`: `primary`, `secondary` u `outline`. `size`: `sm`, `md` o `lg`. Más en el repositorio:
 https://github.com/XDextX/component-museum
 
@@ -42,6 +44,8 @@ export function Save() {
   return <Button variant="primary" size="md" onClick={() => console.log('saved')}>Save</Button>;
 }
 ```
+
+The light theme is the default. Dark is requested with `data-theme="dark"` on any container, and `data-theme="system"` follows the system preference. Without the attribute, the package does not look at the system.
 
 `variant`: `primary`, `secondary` or `outline`. `size`: `sm`, `md` or `lg`. More in the repository:
 https://github.com/XDextX/component-museum

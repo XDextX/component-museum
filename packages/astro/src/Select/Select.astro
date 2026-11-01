@@ -1,0 +1,71 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { fieldIds } from '../field.js';
+
+/** One option of the select. */
+interface Option {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+/** Select's own API, from contracts/select.contract.json translated to Astro. */
+interface OwnProps {
+  label: string;
+  options: Option[];
+  hint?: string;
+  error?: string;
+  /** Text of a first, disabled option that shows while nothing is chosen. */
+  placeholder?: string;
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  required?: boolean;
+  defaultValue?: string;
+  /** Added to the component's own classes, never replacing them. */
+  class?: string;
+}
+
+/** Any other HTML attribute reaches the `<select>`; the Omit keeps the own props single. */
+export interface Props extends OwnProps, Omit<HTMLAttributes<'select'>, keyof OwnProps> {}
+
+// The hook is the component's own: a consumer's data-museum-select is dropped, not rendered twice.
+const {
+  label,
+  options,
+  hint = '',
+  error = '',
+  placeholder = '',
+  size = 'md',
+  disabled = false,
+  required = false,
+  defaultValue = '',
+  class: className,
+  id,
+  'aria-describedby': describedBy,
+  'data-museum-select': _hook,
+  ...attributes
+} = Astro.props;
+const { controlId, hintId, errorId, describedBy: description } = fieldIds('museum-select', id, hint, error, describedBy);
+// A defaultValue that is not in `options` counts as absent: the placeholder (if any) is the one selected.
+const chosen = options.some((option) => option.value === defaultValue);
+---
+
+<div class="museum-field">
+  <label class="museum-field__label" for={controlId}>{label}{required && <span class="museum-field__required" aria-hidden="true">*</span>}</label>
+  <select
+    {...attributes}
+    id={controlId}
+    class:list={['museum-select', `museum-select--${size}`, className]}
+    aria-describedby={description}
+    aria-invalid={error ? 'true' : undefined}
+    required={required}
+    disabled={disabled}
+    data-museum-select>
+    {placeholder && <option value="" disabled selected={!chosen}>{placeholder}</option>}
+    {options.map((option) => (
+      <option value={option.value} disabled={option.disabled} selected={chosen && option.value === defaultValue}>{option.label}</option>
+    ))}
+  </select>
+  {hint && <p id={hintId} class="museum-field__hint">{hint}</p>}
+  {error && <p id={errorId} class="museum-field__error">{error}</p>}
+</div>

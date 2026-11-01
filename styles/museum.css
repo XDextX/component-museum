@@ -26,17 +26,39 @@
 
     --museum-font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --museum-font-weight: 600;
+    --museum-font-weight-regular: 400;
     --museum-line-height: 1.25;
     --museum-font-size-sm: 0.875rem;
     --museum-font-size-md: 1rem;
     --museum-font-size-lg: 1.125rem;
+
+    /* Checkbox: the pressable height (WCAG 2.2, 2.5.8), the square per size and the mark's shape. */
+    --museum-checkbox-target: 1.5rem;
+    --museum-checkbox-size-sm: 1rem;
+    --museum-checkbox-size-md: 1rem;
+    --museum-checkbox-size-lg: 1.125rem;
+    --museum-checkbox-mark-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 
-  /* Light theme: the default, and any container with data-theme="light". */
+  /* Light theme: the default, and any container that asks for it or for the system's (the @media below overrides). */
   :root,
-  [data-theme="light"] {
+  [data-theme="light"],
+  [data-theme="system"] {
     --museum-surface: #ffffff;
     --museum-focus-ring: #1d4ed8;
+
+    --museum-control-bg: var(--museum-surface);
+    --museum-control-fg: #111827;
+    --museum-control-border: #6b7280;
+    --museum-control-placeholder: #6b7280;
+    --museum-field-label: #111827;
+    --museum-field-hint: #4b5563;
+    --museum-field-error: #b91c1c;
+    --museum-checkbox-checked-bg: #1d4ed8;
+    --museum-checkbox-mark: #ffffff;
+    --museum-radio-checked-bg: var(--museum-checkbox-checked-bg);
+    --museum-radio-mark: var(--museum-checkbox-mark);
+    --museum-select-arrow: var(--museum-control-fg);
 
     --museum-button-primary-bg: #1d4ed8;
     --museum-button-primary-fg: #ffffff;
@@ -51,11 +73,24 @@
     --museum-button-outline-border: #1d4ed8;
   }
 
-  /* Dark theme from the system, unless the page asks for light. */
+  /* Dark theme from the system, only where the page asks to follow it. */
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
+    [data-theme="system"] {
       --museum-surface: #111827;
       --museum-focus-ring: #93c5fd;
+
+      --museum-control-bg: var(--museum-surface);
+      --museum-control-fg: #f9fafb;
+      --museum-control-border: #9ca3af;
+      --museum-control-placeholder: #9ca3af;
+      --museum-field-label: #f9fafb;
+      --museum-field-hint: #d1d5db;
+      --museum-field-error: #fca5a5;
+      --museum-checkbox-checked-bg: #3b82f6;
+      --museum-checkbox-mark: #111827;
+      --museum-radio-checked-bg: var(--museum-checkbox-checked-bg);
+      --museum-radio-mark: var(--museum-checkbox-mark);
+      --museum-select-arrow: var(--museum-control-fg);
 
       --museum-button-primary-bg: #2563eb;
       --museum-button-primary-fg: #ffffff;
@@ -75,6 +110,19 @@
   [data-theme="dark"] {
     --museum-surface: #111827;
     --museum-focus-ring: #93c5fd;
+
+    --museum-control-bg: var(--museum-surface);
+    --museum-control-fg: #f9fafb;
+    --museum-control-border: #9ca3af;
+    --museum-control-placeholder: #9ca3af;
+    --museum-field-label: #f9fafb;
+    --museum-field-hint: #d1d5db;
+    --museum-field-error: #fca5a5;
+    --museum-checkbox-checked-bg: #3b82f6;
+    --museum-checkbox-mark: #111827;
+    --museum-radio-checked-bg: var(--museum-checkbox-checked-bg);
+    --museum-radio-mark: var(--museum-checkbox-mark);
+    --museum-select-arrow: var(--museum-control-fg);
 
     --museum-button-primary-bg: #2563eb;
     --museum-button-primary-fg: #ffffff;
@@ -151,5 +199,463 @@
   .museum-button:disabled {
     opacity: var(--museum-disabled-opacity);
     cursor: not-allowed;
+  }
+
+  /* Field: the label, the control, the hint and the error, laid out in a column. It paints its own
+     surface, as the outline Button does, so its texts keep their contrast on a page that paints none;
+     the padding keeps the focus ring and its halo on that surface. */
+  .museum-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--museum-space-sm-y);
+    padding: calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo));
+    background-color: var(--museum-surface);
+    font-family: var(--museum-font-family);
+    line-height: var(--museum-line-height);
+  }
+
+  .museum-field__label {
+    color: var(--museum-field-label);
+    font-size: var(--museum-font-size-sm);
+    font-weight: var(--museum-font-weight);
+  }
+
+  .museum-field__required {
+    margin-inline-start: var(--museum-space-sm-y);
+    color: var(--museum-field-error);
+  }
+
+  .museum-field__hint,
+  .museum-field__error {
+    margin: 0;
+    font-size: var(--museum-font-size-sm);
+    font-weight: var(--museum-font-weight-regular);
+    overflow-wrap: anywhere;
+  }
+
+  .museum-field__hint {
+    color: var(--museum-field-hint);
+  }
+
+  .museum-field__error {
+    color: var(--museum-field-error);
+  }
+
+  /* Textarea and Select share every rule of Input (grouped selectors, no copied declarations).
+     Input matches Button's vertical padding, font size, line height and border, so both stand equally tall. */
+  .museum-input,
+  .museum-textarea,
+  .museum-select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    border-width: var(--museum-border-width);
+    border-style: solid;
+    border-color: var(--museum-control-border);
+    border-radius: var(--museum-radius);
+    background-color: var(--museum-control-bg);
+    color: var(--museum-control-fg);
+    font-family: var(--museum-font-family);
+    font-weight: var(--museum-font-weight-regular);
+    line-height: var(--museum-line-height);
+  }
+
+  .museum-input::placeholder,
+  .museum-textarea::placeholder {
+    color: var(--museum-control-placeholder);
+    opacity: 1;
+  }
+
+  .museum-input--sm,
+  .museum-textarea--sm,
+  .museum-select--sm {
+    padding: var(--museum-space-sm-y) var(--museum-space-sm-x);
+    font-size: var(--museum-font-size-sm);
+  }
+
+  .museum-input--md,
+  .museum-textarea--md,
+  .museum-select--md {
+    padding: var(--museum-space-md-y) var(--museum-space-md-x);
+    font-size: var(--museum-font-size-md);
+  }
+
+  .museum-input--lg,
+  .museum-textarea--lg,
+  .museum-select--lg {
+    padding: var(--museum-space-lg-y) var(--museum-space-lg-x);
+    font-size: var(--museum-font-size-lg);
+  }
+
+  .museum-input[aria-invalid="true"],
+  .museum-textarea[aria-invalid="true"],
+  .museum-select[aria-invalid="true"] {
+    border-color: var(--museum-field-error);
+  }
+
+  /* The same two-tone keyboard ring as Button. */
+  .museum-input:focus-visible,
+  .museum-textarea:focus-visible,
+  .museum-select:focus-visible {
+    outline: var(--museum-focus-width) solid var(--museum-focus-ring);
+    outline-offset: var(--museum-focus-offset);
+    box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) var(--museum-surface);
+  }
+
+  /* A <textarea> is inline-block (it would leave a line gap) and the user may stretch it only down. */
+  .museum-textarea {
+    display: block;
+    resize: vertical;
+  }
+
+  /* Only the control is dimmed: the label, hint and error keep their contrast. */
+  .museum-input:disabled,
+  .museum-textarea:disabled,
+  .museum-select:disabled {
+    opacity: var(--museum-disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  /* Select: the native control with its own arrow removed and redrawn from a token (two triangles, the second
+     mirrored, make a down arrow). The right padding makes room for it; a long option is cut with an ellipsis. */
+  .museum-select {
+    appearance: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background-image: linear-gradient(45deg, transparent 50%, var(--museum-select-arrow) 50%), linear-gradient(135deg, var(--museum-select-arrow) 50%, transparent 50%);
+    background-repeat: no-repeat;
+    background-size: 0.4em 0.4em, 0.4em 0.4em;
+    background-position: calc(100% - 1.15em) 50%, calc(100% - 0.78em) 50%;
+  }
+
+  .museum-select--sm {
+    padding-right: calc(var(--museum-space-sm-x) + 1.25em);
+  }
+
+  .museum-select--md {
+    padding-right: calc(var(--museum-space-md-x) + 1.25em);
+  }
+
+  .museum-select--lg {
+    padding-right: calc(var(--museum-space-lg-x) + 1.25em);
+  }
+
+  /* The indication is the disabled empty option while it is the chosen one; a normal option with an empty value
+     keeps the control colors. In the open list a disabled option reads as the placeholder. */
+  .museum-select:has(option[value=""][disabled]:checked) {
+    color: var(--museum-control-placeholder);
+  }
+
+  .museum-select option {
+    background-color: var(--museum-control-bg);
+    color: var(--museum-control-fg);
+  }
+
+  .museum-select option:disabled {
+    color: var(--museum-control-placeholder);
+  }
+
+  /* Checkbox: a drawn square on the native input; the label comes after it, so the field is two columns
+     (control, text) and the hint and error sit under the text. Each label line is as tall as the target,
+     so the square centres on the first line however long the label is. */
+  .museum-field--inline {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--museum-space-sm-y);
+    align-items: start;
+  }
+
+  .museum-field--inline .museum-field__label {
+    min-height: var(--museum-checkbox-target);
+    line-height: var(--museum-checkbox-target);
+    overflow-wrap: anywhere;
+  }
+
+  .museum-field--inline .museum-field__hint,
+  .museum-field--inline .museum-field__error {
+    grid-column: 2;
+  }
+
+  .museum-checkbox {
+    appearance: none;
+    box-sizing: border-box;
+    display: grid;
+    grid: 1fr / 1fr;
+    margin: 0;
+    border-width: var(--museum-border-width);
+    border-style: solid;
+    border-color: var(--museum-control-border);
+    border-radius: calc(var(--museum-radius) / 2);
+    background-color: var(--museum-control-bg);
+    cursor: pointer;
+  }
+
+  .museum-checkbox--sm {
+    width: var(--museum-checkbox-size-sm);
+    height: var(--museum-checkbox-size-sm);
+    margin-block-start: calc((var(--museum-checkbox-target) - var(--museum-checkbox-size-sm)) / 2);
+  }
+
+  .museum-checkbox--md {
+    width: var(--museum-checkbox-size-md);
+    height: var(--museum-checkbox-size-md);
+    margin-block-start: calc((var(--museum-checkbox-target) - var(--museum-checkbox-size-md)) / 2);
+  }
+
+  .museum-checkbox--lg {
+    width: var(--museum-checkbox-size-lg);
+    height: var(--museum-checkbox-size-lg);
+    margin-block-start: calc((var(--museum-checkbox-target) - var(--museum-checkbox-size-lg)) / 2);
+  }
+
+  .museum-checkbox--sm + .museum-field__label { font-size: var(--museum-font-size-sm); }
+  .museum-checkbox--md + .museum-field__label { font-size: var(--museum-font-size-md); }
+  .museum-checkbox--lg + .museum-field__label { font-size: var(--museum-font-size-lg); }
+
+  /* The mark is painted by a mask, so its colour is a token; it grows in when the box is checked. */
+  .museum-checkbox::before {
+    content: "";
+    width: 100%;
+    height: 100%;
+    background-color: var(--museum-checkbox-mark);
+    mask-image: var(--museum-checkbox-mark-image);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    transform: scale(0);
+  }
+
+  .museum-checkbox:checked {
+    border-color: var(--museum-checkbox-checked-bg);
+    background-color: var(--museum-checkbox-checked-bg);
+  }
+
+  .museum-checkbox:checked::before {
+    transform: scale(1);
+  }
+
+  /* An error keeps its border, checked or not. */
+  .museum-checkbox[aria-invalid="true"],
+  .museum-checkbox[aria-invalid="true"]:checked {
+    border-color: var(--museum-field-error);
+  }
+
+  /* The same two-tone keyboard ring as Button; it sits outside the border, so the error border stays seen. */
+  .museum-checkbox:focus-visible {
+    outline: var(--museum-focus-width) solid var(--museum-focus-ring);
+    outline-offset: var(--museum-focus-offset);
+    box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) var(--museum-surface);
+  }
+
+  /* Only the square is dimmed (its mark with it): the label, hint and error keep their contrast. */
+  .museum-checkbox:disabled {
+    opacity: var(--museum-disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  /* RadioGroup: a <fieldset> that is a Field (its own surface, grid and padding) with no border; the
+     legend names it and each option is a circle with its label after it, as in the inline Field. The
+     circle sizes are the Checkbox ones. */
+  .museum-radiogroup {
+    min-width: 0;
+    margin: 0;
+    border: 0;
+  }
+
+  .museum-radiogroup > legend {
+    padding: 0;
+    margin-block-end: var(--museum-space-sm-y);
+  }
+
+  .museum-radiogroup__option {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--museum-space-sm-y);
+    align-items: start;
+  }
+
+  .museum-radiogroup__option label {
+    min-height: var(--museum-checkbox-target);
+    color: var(--museum-field-label);
+    font-weight: var(--museum-font-weight-regular);
+    line-height: var(--museum-checkbox-target);
+    overflow-wrap: anywhere;
+  }
+
+  .museum-radiogroup--sm label { font-size: var(--museum-font-size-sm); }
+  .museum-radiogroup--md label { font-size: var(--museum-font-size-md); }
+  .museum-radiogroup--lg label { font-size: var(--museum-font-size-lg); }
+
+  .museum-radio {
+    appearance: none;
+    box-sizing: border-box;
+    display: grid;
+    grid: 1fr / 1fr;
+    margin: 0;
+    border-width: var(--museum-border-width);
+    border-style: solid;
+    border-color: var(--museum-control-border);
+    border-radius: 50%;
+    background-color: var(--museum-control-bg);
+    cursor: pointer;
+  }
+
+  .museum-radiogroup--sm .museum-radio {
+    width: var(--museum-checkbox-size-sm);
+    height: var(--museum-checkbox-size-sm);
+    margin-block-start: calc((var(--museum-checkbox-target) - var(--museum-checkbox-size-sm)) / 2);
+  }
+
+  .museum-radiogroup--md .museum-radio {
+    width: var(--museum-checkbox-size-md);
+    height: var(--museum-checkbox-size-md);
+    margin-block-start: calc((var(--museum-checkbox-target) - var(--museum-checkbox-size-md)) / 2);
+  }
+
+  .museum-radiogroup--lg .museum-radio {
+    width: var(--museum-checkbox-size-lg);
+    height: var(--museum-checkbox-size-lg);
+    margin-block-start: calc((var(--museum-checkbox-target) - var(--museum-checkbox-size-lg)) / 2);
+  }
+
+  /* The dot is a circle in the mark colour; it grows in when the option is selected. */
+  .museum-radio::before {
+    content: "";
+    width: 50%;
+    height: 50%;
+    place-self: center;
+    border-radius: 50%;
+    background-color: var(--museum-radio-mark);
+    transform: scale(0);
+  }
+
+  .museum-radio:checked {
+    border-color: var(--museum-radio-checked-bg);
+    background-color: var(--museum-radio-checked-bg);
+  }
+
+  .museum-radio:checked::before {
+    transform: scale(1);
+  }
+
+  /* An error keeps its border, selected or not. */
+  .museum-radiogroup[aria-invalid="true"] .museum-radio,
+  .museum-radiogroup[aria-invalid="true"] .museum-radio:checked {
+    border-color: var(--museum-field-error);
+  }
+
+  /* The same two-tone keyboard ring as Button; it sits outside the border, so the error border stays seen. */
+  .museum-radio:focus-visible {
+    outline: var(--museum-focus-width) solid var(--museum-focus-ring);
+    outline-offset: var(--museum-focus-offset);
+    box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) var(--museum-surface);
+  }
+
+  /* Only the circle is dimmed (its dot with it): the legend, labels, hint and error keep their contrast. */
+  .museum-radio:disabled {
+    opacity: var(--museum-disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  /* Forced colors repaint backgrounds and would turn the mark into the canvas colour: the square keeps
+     its own, drawn with system colours. */
+  @media (forced-colors: active) {
+    .museum-checkbox {
+      forced-color-adjust: none;
+      border-color: CanvasText;
+      background-color: Canvas;
+    }
+
+    .museum-checkbox::before {
+      background-color: HighlightText;
+    }
+
+    .museum-checkbox:checked {
+      border-color: Highlight;
+      background-color: Highlight;
+    }
+
+    /* The error token would outlast the forced palette here (this rule's specificity): a system colour
+       keeps the border seen, and the error text, not a colour, says what is wrong. */
+    .museum-checkbox[aria-invalid="true"],
+    .museum-checkbox[aria-invalid="true"]:checked {
+      border-color: CanvasText;
+    }
+
+    .museum-checkbox:focus-visible {
+      outline-color: CanvasText;
+      box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) Canvas;
+    }
+
+    .museum-checkbox:disabled {
+      border-color: GrayText;
+    }
+
+    /* As the Checkbox: forced colors repaint backgrounds, so the circle keeps its own, in system colours. */
+    .museum-radio {
+      forced-color-adjust: none;
+      border-color: CanvasText;
+      background-color: Canvas;
+    }
+
+    .museum-radio::before {
+      background-color: HighlightText;
+    }
+
+    .museum-radio:checked {
+      border-color: Highlight;
+      background-color: Highlight;
+    }
+
+    .museum-radiogroup[aria-invalid="true"] .museum-radio,
+    .museum-radiogroup[aria-invalid="true"] .museum-radio:checked {
+      border-color: CanvasText;
+    }
+
+    .museum-radio:focus-visible {
+      outline-color: CanvasText;
+      box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) Canvas;
+    }
+
+    .museum-radio:disabled {
+      border-color: GrayText;
+    }
+
+    /* As the Checkbox: forced colors repaint backgrounds and would drop the arrow, so the Select keeps its own,
+       in system colours; the error border is the resting one, and the error text says what is wrong. */
+    .museum-select {
+      forced-color-adjust: none;
+      --museum-select-arrow: CanvasText;
+      border-color: CanvasText;
+      background-color: Canvas;
+      color: CanvasText;
+    }
+
+    .museum-select:has(option[value=""][disabled]:checked),
+    .museum-select option {
+      color: CanvasText;
+    }
+
+    .museum-select option {
+      background-color: Canvas;
+    }
+
+    .museum-select option:disabled {
+      color: GrayText;
+    }
+
+    .museum-select[aria-invalid="true"] {
+      border-color: CanvasText;
+    }
+
+    .museum-select:focus-visible {
+      outline-color: CanvasText;
+      box-shadow: 0 0 0 calc(var(--museum-focus-offset) + var(--museum-focus-width) + var(--museum-focus-halo)) Canvas;
+    }
+
+    .museum-select:disabled {
+      border-color: GrayText;
+    }
   }
 }
