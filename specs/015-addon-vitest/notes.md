@@ -178,3 +178,15 @@ Worktree `.claude/worktrees/agent-a25837543bcbc58a4`, rama `spec/015-addon-vites
 **Primer arranque sin caché de Vite.** Borrado `node_modules/.vite`: `vitest run --project stories` tarda 9 s de reloj (Duration 4.61 s) frente a 8 s (4.55 s) con la caché. Sin diferencia que importe.
 
 **Anomalías.** El `click()` normal de Playwright sobre «Start test run» queda tapado por el aviso «What's new» del Storybook, así que el script lo pulsa por DOM.
+
+## T-5 (2026-11-01)
+
+Las tres conexiones de RF-2 y RF-6 se podían quitar con `unit` en verde. Ahora las guarda `tests/addon-vitest.test.ts` (proyecto `unit`, 3 tests nuevos, 7 en el archivo). Inyecciones, una a una, revertidas con `git checkout -- <ruta>`:
+
+| Inyección | Test que se pone en rojo |
+|---|---|
+| Quitar `gallery/vitest.config.ts` de `projects` | `lists gallery/vitest.config.ts in the projects` |
+| Quitar la línea `globalSetup` de `gallery/vitest.config.ts` | `gives the stories project the globalSetup that takes the lock` |
+| `return acquireLock(` a `return noLock(` en `tests/stories-setup.ts` | `takes the lock in stories-setup.ts` |
+
+La primera prueba de la segunda (renombrar a `xglobalSetup`) seguía en verde: la regex casaba dentro de la palabra. Se le puso `\b` y se repitió con la línea quitada.
