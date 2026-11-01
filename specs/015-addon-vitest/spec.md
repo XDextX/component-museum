@@ -2,6 +2,7 @@
 
 **Status:** approved · **Approved:** 2026-10-23 · el dueño, para después de la entrega 4; tests de historia dentro de npm test
 **Changed:** 2026-11-01 · cambios de la revisión del 2026-11-01 (C-1 a C-4, en `notes.md`), por decisión del dueño («Apruebo todo»)
+**Changed:** 2026-11-01 · límite de `npm test` de 130.7 s (75 % de la base de la 017) a ≤ 150 s, por decisión del dueño («Subirlo a 150 s»), tras medir 139.0 s en la T-1
 **Size:** M (6 RF) · **Entrega:** 5 (herramientas de la galería) · **Depende de:** 014
 
 ## Contexto y objetivo

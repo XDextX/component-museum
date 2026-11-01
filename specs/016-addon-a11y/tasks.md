@@ -65,7 +65,7 @@ Archivo compartido, en olas distintas: `gallery/.storybook/preview.ts`, T-1 y T-
   - Desde `npm run gallery`, en Edge, el panel «Accessibility» da 0 violaciones en las 12 historias,
     en los dos temas.
   - Con el método de la T-8 de la 017, se anotan la mediana de `npm test`, lo que suma respecto de
-    la base de la 015 y si cumple ≤ 15 s (C-4) y el 75 % de la 017. Si no cumple alguno, se dice
+    la base de la 015 y si cumple ≤ 15 s (C-4) y el límite de 150 s. Si no cumple alguno, se dice
     cuánto falta y dónde.
   Inyección: un input sin etiqueta en una historia sale como violación en el panel.
 

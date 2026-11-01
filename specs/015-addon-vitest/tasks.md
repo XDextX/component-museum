@@ -70,7 +70,7 @@ Archivos compartidos, siempre en olas distintas:
   - Desde `npm run gallery`, en Edge, «Run tests» deja aprobadas las 12 historias.
   - Cada nombre de la lista de la T-1 sigue en `vitest list --json`.
   - Con el mismo método de la T-1, se anotan la mediana, lo que suma respecto de la base y si cumple
-    ≤ 10 s (C-4) y el 75 % de la 017. Si no cumple alguno, se dice cuánto falta y dónde.
+    ≤ 10 s (C-4) y el límite de 150 s. Si no cumple alguno, se dice cuánto falta y dónde.
   - Sin caché de Vite se anota también el primer arranque, aparte.
   Inyección: `throw` en una historia hace que el panel la marque en rojo; un test borrado sale en la
   comparación de la lista.
