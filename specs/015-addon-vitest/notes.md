@@ -98,3 +98,53 @@ que propongo, y que decide el dueño:
   última medida (126.7 s) es de antes de RadioGroup y Select, y la suite ha pasado de 913 a 1286
   tests. Puede que ya no se cumpla antes de empezar: lo mide la T-1. Si es así, el dueño decide si
   mueve ese límite.
+
+## Base (T-1, 2026-11-01)
+
+Worktree `.claude/worktrees/agent-a4368a35b84735ab6`, rama `spec/015-addon-vitest-T-1` sobre `2cd3dbd`, 12 núcleos, sin código cambiado. Arranque: `npm ci`, `npm run build:packages`, `npm run gallery:astro`. Cada pasada: 67 archivos, 1287 tests (1286 pasan, 1 omitido).
+
+**Otra carga.** El dueño tenía abiertos Claude (varios procesos), GitKraken, Opera, Discord, Steam y CurseForge, y otra sesión de Claude (mini-apps/telar) corrió un script `carrera3.mjs` y un servidor `servidor/principal.ts` durante la primera serie. Nadie más lanzó `npm test` de este repo.
+
+**Serie 1, contaminada (no cuenta).** Calentamiento 227.6 s, pasada 1 277.5 s, pasada 2 209.0 s, pasada 3 156.5 s. Las tres primeras fallaron por `Hook timed out in 30000ms` (`gallery-browser-button`, `gallery-i18n` dos veces) con todos los tests en verde y la CPU al 100 %, y el cierre de Edge pasó de 20 s. Se descarta.
+
+**Serie 2, máquina libre (CPU 3 %, sin `msedge` ni otro `npm test`)**, tras el calentamiento de la serie 1:
+
+| Pasada | Total (s) | vitest (s) | Salida |
+|---|---|---|---|
+| P1 | 138.1 | 132.0 | 0 |
+| P2 | 139.0 | 133.0 | 0 |
+| P3 | 139.2 | 132.9 | 1 (los 1286 tests en verde; un `Unhandled Rejection: apiResponse.text: Response has been disposed`) |
+| Mediana | **139.0** | | **79.7 % de 174.3 s** |
+
+**Pasa de 130.7 s (75 %): sí**, por 8.3 s. La 017 midió 126.7 s con 912 tests; hoy son 1287 (la entrega 4 añadió Checkbox, RadioGroup y Select). Con el límite de la 017 la 015 parte ya incumpliéndolo: el dueño decide si lo mueve (C-4).
+
+**Fases de la mediana** (P2, 139.0 s):
+
+| Fase | s | Caché |
+|---|---|---|
+| `build react` | 0.6 | |
+| `gallery:astro` | 0.5 | acierto |
+| bloque `tipos` (5 a la vez; `tsc` 3.1, `tsc -p gallery` 2.0, `astro check` test-package 4.6, packages/astro 4.8, astro-render 4.9) | 5.0 | |
+| `globalSetup`: cleanup 0.5; 4 `pack` 0.7 a 1.4; starters, astro-render y Storybook 0.0 a 0.1 | | acierto |
+| `globalSetup`: 8 consumidores | 1.5 a 8.4 | acierto |
+| `globalSetup`: type check package-react / package-astro | 3.8 / 11.7 | |
+| `globalSetup`: cadena más larga (package-astro) | 21.3 | |
+| `vitest` (incluye el `globalSetup`) | 133.0 | |
+| **Total** | **139.0** | |
+
+`vitest` es el 96 % del total. El `globalSetup` ronda los 21 s.
+
+**Los 6 archivos más lentos** (pasada `vitest run --reporter=json` aparte, fuera de la mediana; el último archivo acaba en el segundo 130.2):
+
+| Archivo | Segundos | Empieza en |
+|---|---|---|
+| `consumer-undeclared.test.ts` | 75.0 | 23.3 s |
+| `a11y.test.ts` | 66.6 | 23.6 s |
+| `gallery-i18n.test.ts` | 57.4 | 24.3 s |
+| `field-a11y-radiogroup.test.ts` | 52.6 | 25.1 s |
+| `field-a11y-checkbox.test.ts` | 47.4 | 26.0 s |
+| `field-a11y-select.test.ts` | 42.2 | 26.7 s |
+
+**Número de tests.** 1287 en el JSON de `vitest run` (1286 pasan, 1 omitido). `vitest list --json` **no se pudo usar**: sale con 1 y `No test suite found in file` en los `field-a11y-*.test.ts` (que generan sus tests en tiempo de ejecución) y deja un JSON vacío. La T-1 pedía su número; se usa el del reporte JSON. Nada de esto está en el repo.
+
+**Anomalías.** Fuera de la serie 1: P3 de la serie 2 salió con 1 por un `Unhandled Rejection` (`apiResponse.text: Response has been disposed`) con todos los tests en verde, parecido al `ECONNRESET` de la T-16 de la 017. `PATH` no tiene `vitest`; los comandos sueltos van con `npm exec`. No toqué el Edge del usuario.
