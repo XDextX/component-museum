@@ -158,7 +158,7 @@ async function chain(
 export default async function setup(project: TestProject): Promise<() => void> {
   const runId = randomUUID().slice(0, 8);
   // One run per checkout (T-9): a second npm test would see this run's RF-5 module in RF-6.
-  const releaseLock = await acquireLock(join(repo, 'node_modules', '.museum-test-lock'), { runId });
+  const releaseLock = await acquireLock(join(repo, 'node_modules', '.museum-test-lock'), { runId, shareWithProcess: true });
   // Before any consumer exists, so whatever creating them changes in the repo shows in RF-6.
   project.provide('treeBefore', takeSnapshot(repo, snapshotRoots));
   const base = tmpdir();
