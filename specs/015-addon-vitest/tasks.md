@@ -79,6 +79,17 @@ Archivos compartidos, siempre en olas distintas:
   comparación de la lista.
   Nota: hecha. Panel real (Edge headless, `storybook dev --no-open`): «Ran 12 tests», «passed»; un `throw` lo pone en rojo; `npm test` con el panel abierto termina en 0. Lista: 1287 antes, 1309 ahora, 0 que falten. Mediana de 3 pasadas **141.1 s** (141.1, 141.4, 140.6; calentamiento 140.1): **+2.1 s** sobre los 139.0 s de la base, cumple ≤ 10 s y el límite de 150 s (margen 8.9 s). Sin `hookTimeout`. Detalle en `notes.md`, «Después».
 
+- [x] **T-5 — Guardar las conexiones de RF-2 y RF-6 (hallazgo de validación, regla 8)**
+  Cubre: RF-2, RF-6
+  Archivos: `tests/addon-vitest.test.ts`, `specs/015-addon-vitest/notes.md`
+  Hecho cuando:
+  - Un test falla si `gallery/vitest.config.ts` sale de `projects` en `vitest.config.ts`.
+  - Un test falla si el proyecto `stories` pierde el `globalSetup` de `tests/stories-setup.ts`.
+  - Un test falla si `tests/stories-setup.ts` deja de llamar a `acquireLock`.
+  - Los tres corren en el proyecto `unit`, sin Edge ni `globalSetup`.
+  Inyección: quitar la entrada de `projects`, quitar la línea `globalSetup` o cambiar `return acquireLock(` por otra llamada pone en rojo, cada una, su test.
+  Nota: hecha. Los tres se leen como texto, igual que el dato de RF-3, porque comprobar la toma del lock como dato (ejecutar el setup) exigiría un lock real y un `TestProject` falso, más frágil que el texto. Inyecciones vistas en rojo y revertidas; detalle en `notes.md`, «T-5».
+
 ## Grafo de olas
 
 | Ola | Tareas | Por qué esperan |

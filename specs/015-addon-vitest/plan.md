@@ -41,10 +41,11 @@ Comprobado en `spec/015-addon-vitest` (333dd15, `main` con la entrega 4):
 | `tests/addon-vitest.test.ts` | sí | RF-1 y el dato de RF-3. | T-2 |
 | `tests/lib/lock.ts`, `tests/lock.test.ts` | mod. | Un mismo proceso puede volver a pedir el lock que ya tiene. | T-3 |
 | `tests/stories-setup.ts` | sí | Toma el lock para el proyecto `stories`, salvo en modo vigilancia. | T-3 |
+| `tests/addon-vitest.test.ts` | mod. | Guarda las tres conexiones de RF-2 y RF-6, leídas como texto. | T-5 |
 
 **Archivos compartidos:** `gallery/vitest.config.ts` lo tocan la T-2 y la T-3, en olas distintas, y
-`notes.md`, la T-1 y la T-4. **`tests/global-setup.ts` no se toca:** `acquireLock` sigue igual para
-él.
+`notes.md`, la T-1, la T-4 y la T-5. **`tests/global-setup.ts` casi no se toca:** la T-3 le añadió
+una línea (`shareWithProcess: true`) y `acquireLock` sigue igual para él por defecto.
 
 ## 3. Lógica pura
 
