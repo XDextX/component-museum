@@ -17,17 +17,19 @@ const docs = exportedContracts(repo).map((c) => {
   return [c.name, { es: sectionTitles(langs.es ?? ''), en: sectionTitles(langs.en ?? '') }] as const;
 });
 
-describe.each(docs)('the %s docs page language switch in the browser (spec 005, RF-1 and RF-5)', { timeout: 120_000 }, (name, titles) => {
-  let served: Served;
-  let browser: Browser;
-  beforeAll(async () => {
-    served = await serve(need('gallery').storybook);
-    browser = await chromium.launch({ channel: 'msedge' });
-  });
-  afterAll(async () => {
-    await closeBrowserAndServers(browser, [served]);
-  });
+// One Edge and one server for the whole file: each test opens its own context, and closing Edge is what
+// slows down when the full run closes many at once (spec 016, T-5).
+let served: Served;
+let browser: Browser;
+beforeAll(async () => {
+  served = await serve(need('gallery').storybook);
+  browser = await chromium.launch({ channel: 'msedge' });
+});
+afterAll(async () => {
+  await closeBrowserAndServers(browser, [served]);
+});
 
+describe.each(docs)('the %s docs page language switch in the browser (spec 005, RF-1 and RF-5)', { timeout: 120_000 }, (name, titles) => {
   it('starts in Spanish, switches to English, and keeps English after a reload', async () => {
     expect(titles.es.length, 'the MDX has Spanish sections').toBeGreaterThan(0);
     expect(titles.en.length, 'the MDX has English sections').toBeGreaterThan(0);

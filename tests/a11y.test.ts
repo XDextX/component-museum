@@ -5,6 +5,7 @@ import { need } from './lib/need.ts';
 import { contrastRatio, parseRgb } from './lib/css.ts';
 import type { Framework } from './lib/paths.ts';
 import { serve, type Served } from './lib/serve.ts';
+import { setThemeAttribute } from './lib/route.ts';
 
 const consumers = need('consumers');
 const frameworks: Framework[] = ['react', 'astro'];
@@ -33,11 +34,7 @@ async function measure(url: string, colorScheme: 'light' | 'dark', attribute?: s
     const context = await browser.newContext({ colorScheme });
     // The attribute is written into the served HTML, on <html>, as a page asking for the theme would.
     if (attribute) {
-      await context.route(url + '**', async (route) => {
-        const response = await route.fetch();
-        const body = await response.text();
-        await route.fulfill({ response, body: response.headers()['content-type']?.includes('text/html') ? body.replace('<html', `<html data-theme="${attribute}"`) : body });
-      });
+      await setThemeAttribute(context, url, attribute);
     }
     const page = await context.newPage();
     await page.goto(url);

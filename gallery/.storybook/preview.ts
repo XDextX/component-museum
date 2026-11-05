@@ -3,6 +3,9 @@ import type { Decorator, Preview } from '@storybook/react-vite';
 import { themes } from 'storybook/theming';
 // By specifier, exactly as an outside project imports it (constitution, rule 1; spec 004, RF-10).
 import '@component-museum/react/styles.css';
+// Spec 016, C-5: the usage code of the Astro stories reaches 4.5:1.
+import '../lib/astro-code.css';
+import { a11yExceptions } from '../lib/a11y-exceptions.ts';
 
 // Spec 005, RF-3. No JSX here: gallery/tsconfig.json only includes `.storybook/*.ts`.
 // "system" asks for data-theme="system" (spec 011): the package follows the system preference only when asked.
@@ -71,7 +74,11 @@ function ThemedDocsContainer(props: ComponentProps<typeof DocsContainer>) {
 
 const preview: Preview = {
   decorators: [withTheme],
-  parameters: { docs: { container: ThemedDocsContainer } },
+  parameters: {
+    docs: { container: ThemedDocsContainer },
+    // Spec 016 RF-2: a violation fails the story test; RF-4: the only rules off are the listed exceptions.
+    a11y: { test: 'error', config: { rules: a11yExceptions.map(({ rule }) => ({ id: rule, enabled: false })) } },
+  },
   globalTypes: {
     theme: {
       // Storybook names the toolbar button from this description (the toolbar title is not read):

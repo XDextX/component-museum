@@ -119,6 +119,26 @@ describe('a lock two processes fight over (T-9)', { timeout: 30_000 }, () => {
     release();
   });
 
+  it('lets a run of this same process co-own the lock, and only the first owner releases it (spec 015 C-1)', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'cm-lock-'));
+    const lockDir = join(dir, '.museum-test-lock');
+    const first = await acquireLock(lockDir, { runId: 'e2e', waitMs: 500, pollMs: 50, shareWithProcess: true, log: () => {} });
+    const second = await acquireLock(lockDir, { runId: 'stories', waitMs: 500, pollMs: 50, shareWithProcess: true, log: () => {} });
+
+    second();
+    expect(existsSync(lockDir)).toBe(true);
+    first();
+    expect(existsSync(lockDir)).toBe(false);
+  });
+
+  it('still makes a run of this process wait when it does not share (the default)', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'cm-lock-'));
+    const lockDir = join(dir, '.museum-test-lock');
+    await acquireLock(lockDir, { runId: 'first', waitMs: 500, pollMs: 50, log: () => {} });
+
+    await expect(acquireLock(lockDir, { runId: 'second', waitMs: 300, pollMs: 50, log: () => {} })).rejects.toThrow('pid ' + process.pid);
+  });
+
   it('keeps waiting for a lock without owner.json that is still new', async () => {
     dir = mkdtempSync(join(tmpdir(), 'cm-lock-'));
     const lockDir = join(dir, '.museum-test-lock');

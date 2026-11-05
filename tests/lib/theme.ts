@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it, type ProvidedContext } from 
 import type { Framework } from './paths.ts';
 import { closeBrowserAndServers } from './browser.ts';
 import { serve, type Served } from './serve.ts';
+import { setThemeAttribute } from './route.ts';
 
 // Spec 017 T-15: one test file per framework (tests/theme-<framework>.test.ts), so Vitest runs them in parallel. Each file
 // calls need('consumers') itself and passes the consumers; that call is what splitTests reads to send it to the e2e project.
@@ -44,11 +45,7 @@ export function defineTheme(framework: Framework, consumers: ProvidedContext['co
   async function open(f: Framework, scheme: 'light' | 'dark', javaScriptEnabled = true, attribute?: string): Promise<Page> {
     const context = await browser.newContext({ colorScheme: scheme, javaScriptEnabled, viewport: { width: 1024, height: 768 } });
     if (attribute) {
-      await context.route(servers[f]!.url + '**', async (route) => {
-        const response = await route.fetch();
-        const body = await response.text();
-        await route.fulfill({ response, body: response.headers()['content-type']?.includes('text/html') ? body.replace('<html', `<html data-theme="${attribute}"`) : body });
-      });
+      await setThemeAttribute(context, servers[f]!.url, attribute);
     }
     const page = await context.newPage();
     await page.goto(servers[f]!.url);

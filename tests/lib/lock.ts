@@ -6,6 +6,8 @@ export type LockOwner = { pid: number; runId: string; startedAt: number };
 
 export type LockOptions = {
   runId: string;
+  /** The projects of one vitest run share its process: an owner with this same pid is a co-owner, and only the first one releases. */
+  shareWithProcess?: boolean;
   /** How long to wait for another run before failing; 10 minutes by default. */
   waitMs?: number;
   pollMs?: number;
@@ -76,7 +78,7 @@ function reclaim(lockDir: string, runId: string, owner: LockOwner | undefined): 
  * removing an orphan. Returns the release, which deletes the lock only if it is still this run's.
  */
 export async function acquireLock(lockDir: string, options: LockOptions): Promise<() => void> {
-  const { runId, waitMs = 10 * 60_000, pollMs = 2_000, maxAgeMs = 15 * 60_000, unreadableMs = 30_000, beforeReclaim, log = console.log } = options;
+  const { runId, shareWithProcess, waitMs = 10 * 60_000, pollMs = 2_000, maxAgeMs = 15 * 60_000, unreadableMs = 30_000, beforeReclaim, log = console.log } = options;
   const deadline = Date.now() + waitMs;
   let warned = false;
 
@@ -93,6 +95,7 @@ export async function acquireLock(lockDir: string, options: LockOptions): Promis
     }
 
     const owner = readOwner(lockDir);
+    if (shareWithProcess && owner?.pid === process.pid) return () => {};
     // No readable owner: taken a moment ago (held), or its run died before writing it (orphan once old).
     const orphan = owner ? isStale(owner, Date.now(), isAlive, maxAgeMs) : ageOf(lockDir) > unreadableMs;
     if (orphan) {

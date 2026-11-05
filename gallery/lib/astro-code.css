@@ -1,0 +1,7 @@
+/* Spec 016, C-5: Storybook paints a namespace token #f14d4d, 3.55:1 on white. In the usage code of the
+   Astro stories `value:` and `label:` are JS object keys, not namespaces, so they take the block's own
+   text colour. !important: the highlighter sets the colour inline. */
+pre .token.namespace {
+  color: inherit !important;
+  opacity: 1 !important;
+}
