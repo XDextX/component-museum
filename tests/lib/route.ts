@@ -1,7 +1,7 @@
 import type { BrowserContext } from 'playwright-core';
 
 // Errors Playwright raises in a route handler that is still working when its page, context or browser closes.
-const closing = /Target (page, context or browser )?has been closed|Browser has been closed|has been disposed|ECONNRESET/;
+const closing = /Target (page, context or browser )?has been closed|Browser has been closed|has been disposed|Request context disposed|ECONNRESET/;
 
 /** Runs a route handler; a close-time error is dropped, any other error is rethrown so the test still fails. */
 export async function untilClosed(work: () => Promise<void>): Promise<void> {
