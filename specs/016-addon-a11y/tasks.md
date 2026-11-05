@@ -61,7 +61,7 @@ Archivo compartido, en olas distintas: `gallery/.storybook/preview.ts`, T-1 y T-
   pasada.
   Nota: hecha. Dos proyectos, `stories-light` y `stories-dark`: 24 tests de historia, 12 por tema. Desvío: un archivo de configuración de Vitest solo puede exportar un proyecto, así que el oscuro vive en `gallery/vitest.dark.config.ts` (importa el constructor `themed` de `gallery/vitest.config.ts`) y se añade a `projects` en `vitest.config.ts`. Inyecciones vistas en rojo y revertidas (`notes.md`).
 
-- [ ] **T-4 — El panel y la medida final (C-2 de la 015)**
+- [x] **T-4 — El panel y la medida final (C-2 de la 015)**
   Cubre: RF-5, NFR
   Archivos: `specs/016-addon-a11y/notes.md` (sección «Después»)
   Hecho cuando:
@@ -71,6 +71,22 @@ Archivo compartido, en olas distintas: `gallery/.storybook/preview.ts`, T-1 y T-
     la base de la 015 y si cumple ≤ 15 s (C-4) y el límite de 150 s. Si no cumple alguno, se dice
     cuánto falta y dónde.
   Inyección: un input sin etiqueta en una historia sale como violación en el panel.
+  Nota: hecha, con veredicto negativo en la medida. Panel: 0 violaciones en las 12 historias y los dos temas (24 combinaciones); el input sin etiqueta sale como 1 violación en los dos temas (historia temporal borrada). Medida (`notes.md`, «Después»): mediana de P1 a P3 = 184.2 s contra la base de la 015 (162.4 s): +21.8 s, **no cumple ≤ 15 s** (faltan 6.8 s); y **no cumple ≤ 170 s** (sobran 14.2 s; el límite de 150 s de la tarea lo subió el dueño a 170 s en la 015). Solo 1 de 6 pasadas (166.8 s) cumple los dos. 4 de 6 salieron con 1 por el `afterAll` de `gallery-i18n.test.ts` (cierre de Edge, `Hook timed out in 30000ms`) con todos los tests en verde. Decide el dueño.
+  T-5: el fallo de salida está arreglado (todas las pasadas posteriores terminan en 0); el veredicto de duración sigue sin cumplirse (188.9 s en la serie final).
+
+- [x] **T-5 — El cierre de Edge en `gallery-i18n`**
+  Cubre: el NFR de duración (C-4 y ≤ 170 s) y «`npm test` termina en 0»
+  Archivos: `tests/gallery-i18n.test.ts`, `tests/gallery-i18n-edge.test.ts`, `tests/lib/route.ts`,
+  `tests/route.test.ts`,
+  `specs/016-addon-a11y/notes.md` (sección «Después (T-5)»)
+  Hecho cuando:
+  - `gallery-i18n.test.ts` lanza un solo Edge y un solo servidor por archivo, no uno por componente.
+  - Tres pasadas de `npm test` con el método de la 015 terminan en 0, sin `Hook timed out`.
+  - Se anotan los totales, la mediana y el veredicto contra ≤ 15 s sobre 162.4 s y contra ≤ 170 s.
+  - No cambia ningún `hookTimeout` ni `testTimeout` (fuera de alcance).
+  Inyección: devolver el `chromium.launch` al interior del `describe.each` pone en rojo
+  `gallery-i18n-edge.test.ts`.
+  Nota: hecha. Causa: `browser.close()` de Edge tarda hasta 24 s con la suite entera en marcha (0.3 s solo), y `gallery-i18n` lo hacía 6 veces (67 de sus 99 s); no había nada sin cerrar. Arreglo: un Edge y un servidor por archivo; sin tocar timeouts. Un segundo fallo, `route.fetch: Request context disposed`, se añadió a `untilClosed`. Ambos con test visto en rojo. 8 pasadas sin un solo `Hook timed out`; salida 0 en las 4 de la serie final. Duración (`notes.md`, «Después (T-5)»): mediana 188.9 s, +26.5 s sobre 162.4 s y 18.9 s sobre 170 s: **no cumple ninguno**; una serie anterior dio 170.8 s (+8.4 s; 0.8 s sobre 170), y la máquina deriva 18 s entre series. Decide el dueño. Tests 1345 → 1347.
 
 ## Grafo de olas
 
