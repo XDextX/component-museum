@@ -90,6 +90,16 @@ Archivos compartidos, siempre en olas distintas:
   Inyección: quitar la entrada de `projects`, quitar la línea `globalSetup` o cambiar `return acquireLock(` por otra llamada pone en rojo, cada una, su test.
   Nota: hecha. Los tres se leen como texto, igual que el dato de RF-3, porque comprobar la toma del lock como dato (ejecutar el setup) exigiría un lock real y un `TestProject` falso, más frágil que el texto. Inyecciones vistas en rojo y revertidas; detalle en `notes.md`, «T-5».
 
+- [x] **T-6 — Que los tests de conexión no se dejen engañar (hallazgo del reviewer sobre la T-5)**
+  Cubre: RF-2, RF-6
+  Archivos: `tests/addon-vitest.test.ts`, `specs/015-addon-vitest/notes.md`
+  Hecho cuando:
+  - Comentar la entrada de `projects` (con `//` o con `/* */`) o la línea `globalSetup` pone en rojo su test.
+  - El test de `stories-setup.ts` exige la guarda de `watch` y el `return acquireLock(` seguidos: sin la guarda, con la condición invertida o con un `return () => {};` que deja el lock inalcanzable, falla.
+  - Las tres inyecciones de la T-5 siguen en rojo.
+  Inyección: las cinco del reviewer y las tres de la T-5, una a una, cada una en rojo y revertida.
+  Nota: hecha. Los textos se leen sin comentarios (`//` y `/* */`) y el tercero exige las dos sentencias seguidas. Tabla en `notes.md`, «T-6».
+
 ## Grafo de olas
 
 | Ola | Tareas | Por qué esperan |
