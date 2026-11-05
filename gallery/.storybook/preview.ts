@@ -3,6 +3,8 @@ import type { Decorator, Preview } from '@storybook/react-vite';
 import { themes } from 'storybook/theming';
 // By specifier, exactly as an outside project imports it (constitution, rule 1; spec 004, RF-10).
 import '@component-museum/react/styles.css';
+// Spec 016, C-5: the usage code of the Astro stories reaches 4.5:1.
+import '../lib/astro-code.css';
 
 // Spec 005, RF-3. No JSX here: gallery/tsconfig.json only includes `.storybook/*.ts`.
 // "system" asks for data-theme="system" (spec 011): the package follows the system preference only when asked.
