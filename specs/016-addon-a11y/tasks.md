@@ -28,7 +28,7 @@ Archivo compartido, en olas distintas: `gallery/.storybook/preview.ts`, T-1 y T-
   Select, en claro, con 3.55:1.
   Nota: hecha. La causa era `opacity: 0.7` del token namespace, no solo el color: la hoja fija `pre .token.namespace { color: inherit !important; opacity: 1 !important }` (el resaltado pinta en línea). `value:`/`label:` en claro 3.55 → 12.75:1, en oscuro 5.66 → 11.00:1; el test mide el color efectivo con opacidad. Tests 1311 → 1323. Capturas aprobadas por el dueño («Apruebo y commitea»).
 
-- [ ] **T-2 — El addon, una violación rompe `npm test`**
+- [x] **T-2 — El addon, una violación rompe `npm test`**
   Cubre: RF-1, RF-2, RF-4, RF-5 (el registro)
   Archivos: `gallery/package.json`, `package-lock.json`, `gallery/.storybook/main.ts`,
   `gallery/.storybook/preview.ts`, `gallery/lib/a11y-exceptions.ts`, `tests/addon-a11y.test.ts`
@@ -45,6 +45,7 @@ Archivo compartido, en olas distintas: `gallery/.storybook/preview.ts`, T-1 y T-
   - `gallery-toolbar.test.ts` sigue en verde con el simulador de visión en la barra.
   Inyección: un input sin etiqueta en una historia pone `npm test` en rojo; desactivar
   `color-contrast` en `preview.ts` pone en rojo RF-4.
+  Nota: hecha. Medida con el proyecto `stories`: 0 violaciones en las 12 historias, sin hallazgos de componentes; excepciones: solo `region`. Las 4 inyecciones se vieron en rojo y se revirtieron (detalle en `notes.md`). Tests 1323 → 1330.
 
 - [ ] **T-3 — Axe en los dos temas**
   Cubre: RF-3

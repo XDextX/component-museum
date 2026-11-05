@@ -91,3 +91,35 @@ así que lo medí directamente.
   Astro, y axe, el resto. Si el dueño prefiere una guarda propia para cada historia, es otra spec.
 - **Sin cambio de spec, para que se sepa:** el addon añade un simulador de visión a la barra, y una
   pestaña «Accessibility» al panel. La 007 quitó cuatro botones concretos; este no es uno de ellos.
+
+## T-2: la medida con el proyecto `stories` y las inyecciones (2026-11-04)
+
+**Medida inicial** (`vitest run --project stories`, axe 4.14.0, addon 10.6.3, `a11y.test: 'error'`,
+`region` desactivada, con la hoja de la T-1, en el tema «Sistema» del proyecto):
+
+| Resultado | Dónde | Detalle |
+|---|---|---|
+| **0 violaciones** | Las 12 historias | 12 tests de historia en verde. |
+| Violaciones de componentes | Ninguna | No hay hallazgo para otra spec. |
+
+Las 114 violaciones de `color-contrast` de la medida del plan ya no salen: las resolvió la T-1.
+Los «incompletos» no rompen, como dice la spec. Esta pasada es una sola, en «Sistema» (claro en el
+Edge de la prueba); las dos pasadas por tema son la T-3.
+
+**Excepciones (`gallery/lib/a11y-exceptions.ts`):** solo `region` («una historia es un fragmento,
+sin regiones de página; el addon ya la desactiva»).
+
+**Inyecciones (vistas en rojo y revertidas):**
+
+| Inyección | Resultado |
+|---|---|
+| Una historia temporal `Tmp/React` con `<input />` sin etiqueta | `vitest run --project stories` en rojo: 1 test fallido, regla `label` («Form elements must have labels»), elemento `<input>`. Historia borrada. |
+| `{ id: 'color-contrast', enabled: false }` añadida a mano a las reglas de `preview.ts` | `addon-a11y.test.ts` en rojo: «disables rules in preview.ts only from that list» (2 `enabled: false`, se esperaba 1). Revertida. |
+| Versión instalada de `@storybook/addon-a11y` a 10.6.2 (en `node_modules`) | Rojo: «expected '10.6.2' to be '10.6.3'». Restaurada. |
+| Excepción `{ rule: 'label', reason: '' }` en la lista | Rojo: «reason of label: expected 0 to be greater than 10». Revertida. |
+
+**Tests:** 1323 → 1330 (7 nuevos en `tests/addon-a11y.test.ts`). `npm test` termina en 0 (212.8 s
+en total, 202.1 s de vitest, con otra carga en la máquina).
+
+**Desvío:** la inyección de «input sin etiqueta» se hizo sobre el proyecto `stories` y no sobre
+`npm test` completo, para no pagar 200 s; es el mismo proyecto que `npm test` ejecuta.
