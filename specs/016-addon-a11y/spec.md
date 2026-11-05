@@ -2,6 +2,7 @@
 
 **Status:** approved · **Approved:** 2026-10-23 · el dueño, para después de la entrega 4; una violación de axe rompe npm test
 **Changed:** 2026-11-01 · cambios de la revisión del 2026-11-01 (C-2 y C-5, en `notes.md`), por decisión del dueño («Apruebo todo»)
+**Changed:** 2026-11-04 · sin límite absoluto de duración de `npm test` (ni 150 ni 170 s): queda solo ≤ 15 s añadidos sobre la 015, medidos contra una base de la 015 del mismo día y la misma máquina, por decisión del dueño («Quitar el límite absoluto»), tras ver 170.8 y 188.9 s con el mismo código
 **Size:** M (5 RF) · **Entrega:** 5 (herramientas de la galería) · **Depende de:** 015
 
 ## Contexto y objetivo
