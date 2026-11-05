@@ -1,8 +1,9 @@
 # Spec 016 — addon-a11y
 
-**Status:** approved · **Approved:** 2026-10-23 · el dueño, para después de la entrega 4; una violación de axe rompe npm test
+**Status:** implemented · **Approved:** 2026-10-23 · el dueño, para después de la entrega 4; una violación de axe rompe npm test
 **Changed:** 2026-11-01 · cambios de la revisión del 2026-11-01 (C-2 y C-5, en `notes.md`), por decisión del dueño («Apruebo todo»)
 **Changed:** 2026-11-04 · sin límite absoluto de duración de `npm test` (ni 150 ni 170 s): queda solo ≤ 15 s añadidos sobre la 015, medidos contra una base de la 015 del mismo día y la misma máquina, por decisión del dueño («Quitar el límite absoluto»), tras ver 170.8 y 188.9 s con el mismo código
+**Implemented:** 2026-11-04 · 5 tareas en 5 olas (T-5, el cierre de Edge en gallery-i18n, añadida por decisión del dueño); tests 1311 → 1347; validada por el reviewer en 1 vuelta; duración 162.1 s contra 174.0 s de la 015 el mismo día (−11.9 s, ruido de 24 s); conocido: timeout en frío de gallery.test.ts tras npm ci; cierre aprobado por el dueño («Sí, ciérrala»)
 **Size:** M (5 RF) · **Entrega:** 5 (herramientas de la galería) · **Depende de:** 015
 
 ## Contexto y objetivo
