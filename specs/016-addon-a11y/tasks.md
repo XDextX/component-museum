@@ -47,7 +47,7 @@ Archivo compartido, en olas distintas: `gallery/.storybook/preview.ts`, T-1 y T-
   `color-contrast` en `preview.ts` pone en rojo RF-4.
   Nota: hecha. Medida con el proyecto `stories`: 0 violaciones en las 12 historias, sin hallazgos de componentes; excepciones: solo `region`. Las 4 inyecciones se vieron en rojo y se revirtieron (detalle en `notes.md`). Tests 1323 → 1330.
 
-- [ ] **T-3 — Axe en los dos temas**
+- [x] **T-3 — Axe en los dos temas**
   Cubre: RF-3
   Archivos: `gallery/vitest.config.ts` (RF-3 se prueba con una ejecución real)
   Hecho cuando:
@@ -59,6 +59,7 @@ Archivo compartido, en olas distintas: `gallery/.storybook/preview.ts`, T-1 y T-
   Inyección: la historia con texto ilegible solo en oscuro se ve en rojo en `stories-dark` y en
   verde en `stories-light`; con los dos proyectos en claro, deja de verse en rojo, y eso prueba la
   pasada.
+  Nota: hecha. Dos proyectos, `stories-light` y `stories-dark`: 24 tests de historia, 12 por tema. Desvío: un archivo de configuración de Vitest solo puede exportar un proyecto, así que el oscuro vive en `gallery/vitest.dark.config.ts` (importa el constructor `themed` de `gallery/vitest.config.ts`) y se añade a `projects` en `vitest.config.ts`. Inyecciones vistas en rojo y revertidas (`notes.md`).
 
 - [ ] **T-4 — El panel y la medida final (C-2 de la 015)**
   Cubre: RF-5, NFR

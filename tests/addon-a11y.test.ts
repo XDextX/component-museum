@@ -59,3 +59,19 @@ describe('the rules axe skips are the listed exceptions (spec 016 RF-4)', () => 
     expect(preview).not.toMatch(/\bdisable\s*:|\bexclude\s*:|\bruleset\b|runOnly|\bdisableOtherRules\b|test:\s*'(?:off|todo)'/);
   });
 });
+
+// Spec 016 RF-3: axe runs once on each gallery theme. Read as text, like the wiring of the 015: unplugging a project leaves the rest green.
+describe('axe runs on the light and the dark canvas (spec 016 RF-3)', () => {
+  it("lists the dark project's config in the projects of vitest.config.ts", () => {
+    expect(code('vitest.config.ts')).toMatch(/'gallery\/vitest\.dark\.config\.ts'/);
+  });
+
+  it('gives each project the initial theme it is named for', () => {
+    // One builder, so one place to check: the theme it receives sets both the name and the initial global.
+    const light = code('gallery', 'vitest.config.ts');
+    expect(light).toMatch(/initialGlobals:\s*\{\s*theme\s*\}/);
+    expect(light).toMatch(/name:\s*`stories-\$\{theme\}`/);
+    expect(light).toMatch(/export default themed\('light'\)/);
+    expect(code('gallery', 'vitest.dark.config.ts')).toMatch(/export default themed\('dark'\)/);
+  });
+});

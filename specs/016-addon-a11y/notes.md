@@ -123,3 +123,21 @@ en total, 202.1 s de vitest, con otra carga en la máquina).
 
 **Desvío:** la inyección de «input sin etiqueta» se hizo sobre el proyecto `stories` y no sobre
 `npm test` completo, para no pagar 200 s; es el mismo proyecto que `npm test` ejecuta.
+
+## T-3: axe en los dos temas (2026-11-04)
+
+**Cómo se pinta cada tema:** `gallery/vitest.config.ts` exporta `themed(theme)`, que crea el proyecto con `storybookTest({ initialGlobals: { theme } })` y el nombre `stories-<tema>`; su export por defecto es `themed('light')`. `gallery/vitest.dark.config.ts` exporta `themed('dark')`. El decorador de `preview.ts` lee ese global y pone `data-theme` en el lienzo (axe lo cita: `div[data-theme="dark"] > p`). Los dos comparten el `globalSetup` del lock, y `shareWithProcess` los deja ser co-dueños en el mismo proceso (RF-6 de la 015).
+
+**Desvío del plan:** el plan decía un solo archivo (`gallery/vitest.config.ts`). Vitest 5.0.5 no admite que un archivo exporte un array ("config must export or return an object") ni `test.projects` anidado dentro de un proyecto ("No projects were found"). Por eso hay un segundo archivo, `gallery/vitest.dark.config.ts`, y una línea más en `projects` de `vitest.config.ts`. El panel de Storybook usa `gallery/vitest.config.ts`, es decir, el proyecto claro.
+
+**Inyecciones de la 016** (historia temporal `Tmp/React` con texto `#2a2a2a`, legible en claro e ilegible en oscuro; borrada después):
+
+| Inyección | Resultado |
+|---|---|
+| La historia con las dos pasadas | `stories-dark` en rojo: `color-contrast` 1.23:1 (`#2a2a2a` sobre `#111827`); `stories-light` en verde. 25 pasados, 1 fallido. |
+| `initialGlobals: { theme: 'light' }` en el constructor (los dos proyectos en claro) | Las 26 historias en verde: la historia deja de verse en rojo, y eso prueba la pasada. El test de texto `gives each project the initial theme it is named for` se pone en rojo. |
+| Quitar `gallery/vitest.dark.config.ts` de `projects` | Rojo: `lists the dark project's config in the projects of vitest.config.ts`. |
+
+**Las guardas de la 015 repetidas** (`vitest run --project unit tests/addon-vitest.test.ts tests/addon-a11y.test.ts`; los textos que leen siguen donde estaban, así que no se tocó ninguna): las 9 inyecciones de la T-5 y la T-6 (1, 1b, 2, 3, 4, 5, T5a, T5b, T5c) siguen en rojo, cada una en su test.
+
+**Tests de historia:** 12 → 24 (12 por tema). Tests de `npm test`: 1330 → ver el reporte de la tarea.
