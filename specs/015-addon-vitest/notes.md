@@ -190,3 +190,26 @@ Las tres conexiones de RF-2 y RF-6 se podían quitar con `unit` en verde. Ahora 
 | `return acquireLock(` a `return noLock(` en `tests/stories-setup.ts` | `takes the lock in stories-setup.ts` |
 
 La primera prueba de la segunda (renombrar a `xglobalSetup`) seguía en verde: la regex casaba dentro de la palabra. Se le puso `\b` y se repitió con la línea quitada.
+
+## T-6
+
+El reviewer de la T-5 encontró cinco inyecciones que dejaban en verde los tres tests de conexión: comentar la entrada de `projects`, comentar la línea `globalSetup`, y tres formas de dejar `return acquireLock(` en el texto sin que se ejecute. Arreglo en `tests/addon-vitest.test.ts`, sin dependencias:
+
+- `read` quita los comentarios (`/* */` y `//`) antes de aplicar la regex. Límite conocido: un `//` dentro de una cadena cortaría la línea; ninguno de los tres archivos lo tiene (queda comentado `shortcut:` en el test).
+- El tercer test exige las dos sentencias seguidas, `if (project.vitest.config.watch) return () => {};` y después `return acquireLock(`. Es lo propuesto por el reviewer; no se encontró algo más robusto del mismo tamaño (ejecutar el setup exigiría un `TestProject` falso y un lock real, como ya se dijo en la T-5).
+
+Inyecciones, una a una, revertidas con `git checkout -- <ruta>` (`npx vitest run --project unit tests/addon-vitest.test.ts`, 1 test en rojo cada vez):
+
+| # | Inyección | Archivo | Test que se pone en rojo |
+|---|---|---|---|
+| 1 | Comentar con `//` la entrada de `projects` | `vitest.config.ts` | `lists 'gallery/vitest.config.ts' in the projects` |
+| 1b | Lo mismo con `/* */` (extra) | `vitest.config.ts` | el mismo |
+| 2 | Comentar la línea `globalSetup` | `gallery/vitest.config.ts` | `gives the stories project the globalSetup that takes the lock` |
+| 3 | Línea de `watch` sustituida por `return () => {};` | `tests/stories-setup.ts` | `takes the lock in stories-setup.ts unless it is a watch run` |
+| 4 | Quitar el `if (…watch) return …` | `tests/stories-setup.ts` | el mismo |
+| 5 | Invertir la condición (`!project…`) | `tests/stories-setup.ts` | el mismo |
+| T5a | Borrar la entrada de `projects` | `vitest.config.ts` | `lists 'gallery/vitest.config.ts' in the projects` |
+| T5b | Borrar la línea `globalSetup` | `gallery/vitest.config.ts` | `gives the stories project the globalSetup that takes the lock` |
+| T5c | `return acquireLock(` a `return noLock(` | `tests/stories-setup.ts` | el tercero |
+
+Ocho pedidas más la 1b, todas en rojo; `git status` queda solo con `tests/addon-vitest.test.ts`.
