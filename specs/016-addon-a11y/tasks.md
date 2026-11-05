@@ -14,7 +14,7 @@ Las marcas C-n citan un cambio de la spec (`notes.md`).
 
 Archivo compartido, en olas distintas: `gallery/.storybook/preview.ts`, T-1 y T-2.
 
-- [ ] **T-1 — El código de uso, a 4.5:1 (C-5)**
+- [x] **T-1 — El código de uso, a 4.5:1 (C-5)**
   Cubre: regla 7; hace posible RF-2
   Archivos: `gallery/lib/astro-code.css`, `gallery/.storybook/preview.ts` (su import),
   `tests/gallery-astro-code.test.ts`
@@ -26,6 +26,7 @@ Archivo compartido, en olas distintas: `gallery/.storybook/preview.ts`, T-1 y T-
     antes del commit (trabajo visual).
   Inyección: quitar el import de la hoja pone en rojo `gallery-astro-code.test.ts` en RadioGroup y
   Select, en claro, con 3.55:1.
+  Nota: hecha. La causa era `opacity: 0.7` del token namespace, no solo el color: la hoja fija `pre .token.namespace { color: inherit !important; opacity: 1 !important }` (el resaltado pinta en línea). `value:`/`label:` en claro 3.55 → 12.75:1, en oscuro 5.66 → 11.00:1; el test mide el color efectivo con opacidad. Tests 1311 → 1323. Capturas aprobadas por el dueño («Apruebo y commitea»).
 
 - [ ] **T-2 — El addon, una violación rompe `npm test`**
   Cubre: RF-1, RF-2, RF-4, RF-5 (el registro)

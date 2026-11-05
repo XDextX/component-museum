@@ -57,6 +57,53 @@ describe('gallery Astro code (spec 007, RF-6)', { timeout: 180_000 }, () => {
     expect(reached).toBe(true);
   });
 
+  // Spec 016, T-1 (C-5): every text of the usage code of the 6 Astro stories reaches 4.5:1, in both themes.
+  // Storybook paints `value:` and `label:` as an HTML namespace, 3.55:1 on white, in RadioGroup and Select.
+  for (const theme of ['light', 'dark'] as const) {
+    for (const story of ['button', 'checkbox', 'input', 'radiogroup', 'select', 'textarea']) {
+      it(`${story}/Astro theme:${theme}: every text of every usage code is 4.5:1 (spec 016, C-5)`, async () => {
+        const context = await browser.newContext({ colorScheme: theme === 'dark' ? 'light' : 'dark' });
+        try {
+          const themed = await context.newPage();
+          await themed.goto(`${served.url}iframe.html?id=${story}-astro--variants&viewMode=story&globals=theme:${theme}`);
+          await themed.locator('#storybook-root pre').first().waitFor();
+          const seen = await themed.locator('#storybook-root pre').evaluateAll((pres) =>
+            pres.flatMap((pre) => {
+              let bg = 'rgb(255, 255, 255)';
+              for (let el: Element | null = pre; el; el = el.parentElement) {
+                const c = getComputedStyle(el).backgroundColor;
+                if (c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') {
+                  bg = c;
+                  break;
+                }
+              }
+              // Only the elements that own text: a span with child spans paints no text of its own.
+              return [...pre.querySelectorAll('span'), pre.querySelector('code') ?? pre]
+                .filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim()))
+                .map((el) => {
+                  // The opacity of the element and its ancestors fades the text into the background (the namespace token has 0.7).
+                  let alpha = 1;
+                  for (let node: Element | null = el; node; node = node.parentElement) alpha *= Number(getComputedStyle(node).opacity);
+                  const [fr = 0, fg = 0, fb = 0, fa = 1] = (getComputedStyle(el).color.match(/[\d.]+/g) ?? []).map(Number);
+                  const [br = 255, bgn = 255, bb = 255] = (bg.match(/[\d.]+/g) ?? []).map(Number);
+                  const a = alpha * fa;
+                  const mix = (f: number, b: number) => Math.round(f * a + b * (1 - a));
+                  return { text: (el.textContent ?? '').trim().slice(0, 20), color: `rgb(${mix(fr, br)}, ${mix(fg, bgn)}, ${mix(fb, bb)})`, bg };
+                });
+            }),
+          );
+          expect(seen.length).toBeGreaterThan(0);
+          const low = seen
+            .map((s) => ({ text: s.text, color: s.color, ratio: Number(contrastRatio(parseRgb(s.color), parseRgb(s.bg)).toFixed(2)) }))
+            .filter((s) => s.ratio < 4.5);
+          expect(low, JSON.stringify(low.slice(0, 5))).toEqual([]);
+        } finally {
+          await context.close();
+        }
+      });
+    }
+  }
+
   // The highlighter follows the gallery theme global (spec 007, RF-5 and RF-6), against the system preference.
   for (const theme of ['light', 'dark'] as const) {
     it(`theme:${theme}: the code block is ${theme} and every highlighted mark has 4.5:1 text`, async () => {
