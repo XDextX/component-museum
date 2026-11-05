@@ -213,3 +213,7 @@ Inyecciones, una a una, revertidas con `git checkout -- <ruta>` (`npx vitest run
 | T5c | `return acquireLock(` a `return noLock(` | `tests/stories-setup.ts` | el tercero |
 
 Ocho pedidas más la 1b, todas en rojo; `git status` queda solo con `tests/addon-vitest.test.ts`.
+
+## Medida final (2026-11-04, sobre 9b200ed)
+
+Máquina recién reiniciada, CPU al 16 % en reposo. Calentamiento tras `npm ci`: 199.6 s, con 1 fallo (`gallery.test.ts`, RF-3 de Button, timeout de 10 s en frío). Cuatro pasadas en caliente, todas en 0 con 1311 pasados y 1 omitido: 162.7, 162.4, 160.8 y 162.4 s; **mediana 162.4 s**. Supera los 150 s; el dueño sube el límite a ≤ 170 s («Subir el límite a 170 s»). La diferencia con los 141.1 s de la T-4 no se explica por el código (T-5 y T-6 solo añaden 3 tests que leen texto) y no se investigó.

@@ -1,8 +1,10 @@
 # Spec 015 — addon-vitest
 
-**Status:** approved · **Approved:** 2026-10-23 · el dueño, para después de la entrega 4; tests de historia dentro de npm test
+**Status:** implemented · **Approved:** 2026-10-23 · el dueño, para después de la entrega 4; tests de historia dentro de npm test
 **Changed:** 2026-11-01 · cambios de la revisión del 2026-11-01 (C-1 a C-4, en `notes.md`), por decisión del dueño («Apruebo todo»)
 **Changed:** 2026-11-01 · límite de `npm test` de 130.7 s (75 % de la base de la 017) a ≤ 150 s, por decisión del dueño («Subirlo a 150 s»), tras medir 139.0 s en la T-1
+**Changed:** 2026-11-04 · límite de `npm test` de ≤ 150 s a ≤ 170 s, por decisión del dueño («Subir el límite a 170 s»), tras medir una mediana de 162.4 s en caliente sobre 9b200ed
+**Implemented:** 2026-11-04 · 6 tareas (T-5 y T-6, guardas de RF-2 y RF-6 pedidas por la validación); tests 1287 → 1312; validada por el reviewer en 2 vueltas, y la T-6 cierra los 5 falsos verdes de la segunda, con sus inyecciones en rojo pero sin una tercera vuelta del reviewer; cierre aprobado por el dueño («Subir el límite a 170 s»)
 **Size:** M (6 RF) · **Entrega:** 5 (herramientas de la galería) · **Depende de:** 014
 
 ## Contexto y objetivo
